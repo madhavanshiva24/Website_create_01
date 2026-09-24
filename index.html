@@ -125,16 +125,16 @@
     padding: 25px;
     border-radius: 20px;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     box-shadow: 0 12px 35px rgba(45, 72, 120, 0.09);
     border: 1px solid #edf1f8;
   }
 
   .card {
-    min-height: 165px;
+    min-height: 175px;
     border-radius: 15px;
-    padding: 28px 18px;
+    padding: 28px 16px;
     text-align: center;
     background: #fbfcff;
     border: 1px solid #edf1f8;
@@ -142,7 +142,10 @@
     transition: .25s ease;
     text-decoration: none;
     color: inherit;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   .card:hover {
@@ -152,27 +155,37 @@
   }
 
   .icon {
-    width: 54px; height: 54px;
-    margin: 0 auto 13px;
+    width: 56px; height: 56px;
+    margin: 0 auto 14px;
     border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 26px;
     background: #eaf2ff;
     font-weight: 700;
     color: #1769ff;
   }
 
-  .card:nth-child(1) .icon { background: #eaf2ff; color: #1769ff; }
-  .card:nth-child(2) .icon { background: #e5f8ee; color: #0f9d58; }
-  .card:nth-child(3) .icon { background: #eee8ff; color: #6b4bff; }
-  .card:nth-child(4) .icon { background: #ffeaf1; color: #e0437a; }
-  .card:nth-child(5) .icon { background: #fff1df; color: #d98213; }
-  .card:nth-child(6) .icon { background: #e3f0ff; color: #1769ff; }
+  /* Colour per card */
+  .card:nth-child(1) .icon { background: #eaf2ff; color: #1769ff; }  /* Concepts */
+  .card:nth-child(2) .icon { background: #ffeaf1; color: #e0437a; }  /* Class X */
+  .card:nth-child(3) .icon { background: #eee8ff; color: #6b4bff; }  /* Class XI & XII */
+  .card:nth-child(4) .icon { background: #fff1df; color: #d98213; }  /* Question Bank */
 
-  .card h3 { font-size: 17px; margin-bottom: 7px; color: #172b57; }
-  .card p { font-size: 12.5px; color: #7b88a1; line-height: 1.4; }
+  .card h3 {
+    font-size: 17px;
+    margin-bottom: 8px;
+    color: #172b57;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .card p {
+    font-size: 12.5px;
+    color: #7b88a1;
+    line-height: 1.45;
+  }
 
   /* ---------- FOOTER ---------- */
   footer {
@@ -185,20 +198,23 @@
   }
 
   /* ---------- MOBILE ---------- */
+  @media (max-width: 900px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+  }
+
   @media (max-width: 800px) {
     header { padding: 0 20px; }
     nav { gap: 12px; }
     nav a { display: none; }
-    .cards { grid-template-columns: repeat(2, 1fr); }
     .hero { padding-top: 50px; }
   }
 
   @media (max-width: 480px) {
     .logo { font-size: 22px; }
     .signin { padding: 9px 13px; }
-    .cards { grid-template-columns: 1fr 1fr; padding: 12px; gap: 10px; }
-    .card { min-height: 145px; padding: 20px 10px; }
-    .icon { width: 44px; height: 44px; font-size: 20px; }
+    .cards { grid-template-columns: 1fr 1fr; padding: 14px; gap: 10px; }
+    .card { min-height: 160px; padding: 22px 10px; }
+    .icon { width: 46px; height: 46px; font-size: 21px; margin-bottom: 11px; }
     .card h3 { font-size: 14.5px; }
     .card p { font-size: 11px; }
     .hero h1 { font-size: 45px; }
@@ -212,8 +228,8 @@
   <a class="logo" href="#">Ganith</a>
   <nav>
     <a href="#">Home</a>
-    <a href="matrix.html" target="_blank" rel="noopener">Matrix</a>
-    <a href="groups-rings.html" target="_blank" rel="noopener">Groups &amp; Rings</a>
+    <a href="#">Concepts</a>
+    <a href="#">Question Bank</a>
     <a href="#">Contact</a>
     <button class="signin" onclick="signIn()">Sign In</button>
   </nav>
@@ -234,40 +250,28 @@
   <section class="cards-container">
     <div class="cards">
 
-      <a class="card" href="matrix.html" target="_blank" rel="noopener">
-        <div class="icon">📄</div>
-        <h3>Matrix</h3>
-        <p>Types, operations &amp; theorems</p>
+      <a class="card" href="#" onclick="comingSoon('Concepts'); return false;">
+        <div class="icon">📘</div>
+        <h3>Concepts</h3>
+        <p>Core math concepts explained</p>
       </a>
 
-      <a class="card" href="groups-rings.html" target="_blank" rel="noopener">
-        <div class="icon">⟨G⟩</div>
-        <h3>Groups &amp; Rings</h3>
-        <p>Abstract algebra notes</p>
+      <a class="card" href="#" onclick="comingSoon('Class X'); return false;">
+        <div class="icon">🔢</div>
+        <h3>Class X</h3>
+        <p>Class 10 notes &amp; problems</p>
       </a>
 
-      <a class="card" href="#" onclick="comingSoon('Solutions'); return false;">
+      <a class="card" href="#" onclick="comingSoon('Class XI & XII'); return false;">
         <div class="icon">🎓</div>
-        <h3>Solutions</h3>
-        <p>Step by step working</p>
+        <h3>Class XI &amp; XII</h3>
+        <p>Senior secondary topics</p>
       </a>
 
-      <a class="card" href="#" onclick="comingSoon('Practice'); return false;">
-        <div class="icon">✎</div>
-        <h3>Practice</h3>
-        <p>Questions &amp; quizzes</p>
-      </a>
-
-      <a class="card" href="#" onclick="comingSoon('Resources'); return false;">
-        <div class="icon">📁</div>
-        <h3>Resources</h3>
-        <p>Books &amp; more</p>
-      </a>
-
-      <a class="card" href="#" onclick="comingSoon('About'); return false;">
-        <div class="icon">ℹ️</div>
-        <h3>About</h3>
-        <p>Learn about Ganith</p>
+      <a class="card" href="#" onclick="comingSoon('Question Bank'); return false;">
+        <div class="icon">❓</div>
+        <h3>Question Bank</h3>
+        <p>Practice questions &amp; solutions</p>
       </a>
 
     </div>
