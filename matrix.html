@@ -1,1 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrices — Ganith Notes</title>
 
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+      tags: 'ams'
+    },
+    options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f8ff;
+    color: #10234f;
+    min-height: 100vh;
+  }
+
+  /* ---------- HEADER ---------- */
+  header {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6%;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e8edf7;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .logo {
+    font-size: 25px;
+    font-weight: 800;
+    color: #10245a;
+    text-decoration: none;
+  }
+
+  .back-btn {
+    text-decoration: none;
+    color: #1769ff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #dce9ff;
+    background: #f7faff;
+    transition: .2s;
+  }
+
+  .back-btn:hover { background: #e6efff; border-color: #1769ff; }
+
+  /* ---------- NOTE ---------- */
+  .note-wrap {
+    max-width: 1120px;
+    margin: 34px auto 40px;
+    padding: 0 20px;
+  }
+
+  .note {
+    background: white;
+    border-radius: 22px;
+    padding: 34px clamp(18px, 4vw, 52px) 52px;
+    box-shadow: 0 12px 35px rgba(45, 72, 120, 0.09);
+    border: 1px solid #edf1f8;
+  }
+
+  .note h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    color: #10245a;
+    text-align: center;
+    padding-bottom: 14px;
+    border-bottom: 3px solid #dce9ff;
+    margin-bottom: 10px;
+  }
+
+  .note .lead {
+    text-align: center;
+    color: #687896;
+    max-width: 70ch;
+    margin: 0 auto 24px;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .note h2 {
+    font-size: 24px;
+    color: #10245a;
+    margin: 38px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e8edf7;
+    scroll-margin-top: 90px;
+  }
+
+  .note h3 {
+    font-size: 19px;
+    color: #1769ff;
+    margin: 26px 0 10px;
+    scroll-margin-top: 90px;
+  }
+
+  .note h4 {
+    font-size: 16px;
+    color: #233a6d;
+    margin: 20px 0 8px;
+    scroll-margin-top: 90px;
+  }
+
+  .note p {
+    color: #3b4a6b;
+    line-height: 1.7;
+    margin: 10px 0;
+    font-size: 15px;
+  }
+
+  .note ul, .note ol {
+    padding-left: 24px;
+    margin: 10px 0;
+    color: #3b4a6b;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .note li { margin: 5px 0; }
+  .note li ul, .note li ol { margin: 5px 0; }
+
+  .note blockquote {
+    border-left: 4px solid #cddcff;
+    background: #f7faff;
+    padding: 12px 18px;
+    margin: 14px 0;
+    border-radius: 0 12px 12px 0;
+    color: #40547a;
+    font-size: 14.5px;
+  }
+
+  .note hr { border: 0; border-top: 1px solid #e8edf7; margin: 24px 0; }
+
+  .term { font-weight: 700; color: #1769ff; }
+  .checkmark { color: #0f9d58; font-weight: 700; }
+
+  /* ---------- TOC ---------- */
+  .toc {
+    background: #f7faff;
+    border: 1px solid #dce9ff;
+    border-radius: 16px;
+    padding: 20px 26px;
+    margin: 22px 0 10px;
+  }
+
+  .toc h3 {
+    margin: 0 0 12px;
+    text-align: center;
+    color: #10245a;
+    font-size: 17px;
+  }
+
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    column-count: 2;
+    column-gap: 30px;
+    margin: 0;
+  }
+
+  .toc li { margin: 4px 0; font-size: 14px; break-inside: avoid; }
+
+  .toc a { text-decoration: none; color: #1769ff; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ---------- BOXES ---------- */
+  .def-box {
+    background: #f0f6ff;
+    border-left: 5px solid #1769ff;
+    border-radius: 0 12px 12px 0;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .def-box .box-title {
+    font-weight: 700; color: #1769ff; font-size: 15px; margin-bottom: 6px;
+  }
+  .def-box p:last-child, .def-box ul:last-child, .def-box ol:last-child { margin-bottom: 0; }
+
+  .key-box {
+    background: #eefbf3;
+    border-left: 5px solid #0f9d58;
+    border-radius: 0 12px 12px 0;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .key-box .box-title {
+    font-weight: 700; color: #0f9d58; font-size: 15px; margin-bottom: 6px;
+  }
+  .key-box p:last-child, .key-box ul:last-child { margin-bottom: 0; }
+
+  .warning-box {
+    background: #fff7ec;
+    border-left: 5px solid #f0a020;
+    border-radius: 0 12px 12px 0;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .warning-box .box-title {
+    font-weight: 700; color: #b8730a; font-size: 15px; margin-bottom: 6px;
+  }
+  .warning-box p:last-child { margin-bottom: 0; }
+
+  /* ---------- TABLES ---------- */
+  .note table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(36, 72, 130, 0.07);
+  }
+
+  .note th {
+    background: #10245a;
+    color: white;
+    font-weight: 600;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 13.5px;
+  }
+
+  .note td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #edf1f8;
+    color: #3b4a6b;
+    vertical-align: top;
+  }
+
+  .note tr:nth-child(even) td { background: #f9fbff; }
+  .note tr:hover td { background: #f0f6ff; }
+
+  .math-display { overflow-x: auto; margin: 14px 0; padding: 4px 0; }
+  .note mjx-container { max-width: 100%; }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    text-align: center;
+    padding: 28px 20px;
+    color: #8995aa;
+    font-size: 13px;
+    border-top: 1px solid #e8edf7;
+    background: rgba(255,255,255,.6);
+  }
+
+  @media (max-width: 800px) {
+    header { padding: 0 20px; }
+    .toc ul { column-count: 1; }
+    .note { padding: 22px 15px 32px; border-radius: 16px; }
+    .note table { font-size: 12.5px; }
+    .note th, .note td { padding: 8px 9px; }
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <a class="logo" href="index.html">Ganith</a>
+  <a class="back-btn" href="index.html">← Back to Home</a>
+</header>
+
+<div class="note-wrap">
+  <article class="note">
+
+    <h1>Matrices</h1>
+    <p class="lead">
+      A complete guide to matrices — their types, operations, determinants,
+      inverses and the key theorems that tie them together.
+    </p>
+
+    <div class="toc">
+      <h3>Table of Contents</h3>
+      <ul>
+        <li><a href="#m-basics">1. Matrix Basics</a></li>
+        <li><a href="#m-element">1.1 Element</a></li>
+        <li><a href="#m-row">1.2 Row</a></li>
+        <li><a href="#m-column">1.3 Column</a></li>
+        <li><a href="#m-order">1.4 Order</a></li>
+        <li><a href="#m-example">Real-World Example</a></li>
+        <li><a href="#m-diagonal">Principal Diagonal</a></li>
+        <li><a href="#m-types">2. Types of Matrices</a></li>
+        <li><a href="#m-row-matrix">Row Matrix</a></li>
+        <li><a href="#m-column-matrix">Column Matrix</a></li>
+        <li><a href="#m-rectangular">Rectangular Matrix</a></li>
+        <li><a href="#m-square">Square Matrix</a></li>
+        <li><a href="#m-zero">Zero / Null Matrix</a></li>
+        <li><a href="#m-diagonal-matrix">Diagonal Matrix</a></li>
+        <li><a href="#m-scalar">Scalar Matrix</a></li>
+        <li><a href="#m-identity">Identity Matrix</a></li>
+        <li><a href="#m-upper">Upper Triangular</a></li>
+        <li><a href="#m-lower">Lower Triangular</a></li>
+        <li><a href="#m-symmetric">Symmetric Matrix</a></li>
+        <li><a href="#m-skew">Skew-Symmetric Matrix</a></li>
+        <li><a href="#m-comparison">Comparison Table</a></li>
+        <li><a href="#m-operations">3. Matrix Operations</a></li>
+        <li><a href="#m-addition">Addition</a></li>
+        <li><a href="#m-subtraction">Subtraction</a></li>
+        <li><a href="#m-scalar-mult">Scalar Multiplication</a></li>
+        <li><a href="#m-multiplication">Matrix Multiplication</a></li>
+        <li><a href="#m-transpose">Transpose</a></li>
+        <li><a href="#m-determinant">Determinant</a></li>
+        <li><a href="#m-singular">Singular &amp; Non-Singular</a></li>
+        <li><a href="#m-minors">Minors</a></li>
+        <li><a href="#m-cofactors">Cofactors</a></li>
+        <li><a href="#m-adjoint">Adjoint</a></li>
+        <li><a href="#m-inverse">Inverse</a></li>
+        <li><a href="#m-elementary">Elementary Operations</a></li>
+        <li><a href="#m-row-reduction">Row Reduction</a></li>
+        <li><a href="#m-powers">Matrix Powers</a></li>
+        <li><a href="#m-trace">Trace</a></li>
+        <li><a href="#m-properties">4. Properties of Matrices</a></li>
+        <li><a href="#m-equality">Equality of Matrices</a></li>
+        <li><a href="#m-theorems">5. Key Theorems</a></li>
+      </ul>
+    </div>
+
+    <!-- ============ BASICS ============ -->
+    <h2 id="m-basics">1. Matrix Basics</h2>
+
+    <p>
+      Think of a matrix as a <span class="term">table or grid of information</span>.
+      Just like a spreadsheet has rows and columns filled with numbers, a matrix is
+      the mathematical version of that grid.
+    </p>
+
+    <div class="def-box">
+      <div class="box-title">Definition — Matrix</div>
+      <p>
+        A <strong>matrix</strong> is a rectangular arrangement of numbers or elements
+        in rows and columns, where each position is identified by its row and column.
+      </p>
+    </div>
+
+    <p>General form of an \(m \times n\) matrix:</p>
+    <div class="math-display">
+      \[
+      A =
+      \begin{bmatrix}
+      a_{11} & a_{12} & \cdots & a_{1n} \\
+      a_{21} & a_{22} & \cdots & a_{2n} \\
+      \vdots & \vdots & \ddots & \vdots \\
+      a_{m1} & a_{m2} & \cdots & a_{mn}
+      \end{bmatrix}_{m\times n}
+      \]
+    </div>
+
+    <h3 id="m-element">1.1 Element (or Entry)</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        An <strong>element</strong> is a single number or symbol inside a matrix.
+        The element in the \(i\)-th row and \(j\)-th column is written \(a_{ij}\).
+      </p>
+    </div>
+    <ul>
+      <li>\(a_{11}\) → 1st row, 1st column</li>
+      <li>\(a_{23}\) → 2nd row, 3rd column</li>
+      <li>\(a_{mn}\) → \(m\)-th row, \(n\)-th column</li>
+    </ul>
+    <p><strong>Total elements:</strong> an \(m \times n\) matrix has \(m \times n\) elements.</p>
+
+    <h3 id="m-row">1.2 Row</h3>
+    <p>A <strong>row</strong> is a horizontal arrangement of elements.</p>
+    <ul>
+      <li>Row 1: \(a_{11}, a_{12}, \ldots, a_{1n}\)</li>
+      <li>Row 2: \(a_{21}, a_{22}, \ldots, a_{2n}\)</li>
+      <li>Row \(m\): \(a_{m1}, a_{m2}, \ldots, a_{mn}\)</li>
+    </ul>
+
+    <h3 id="m-column">1.3 Column</h3>
+    <p>A <strong>column</strong> is a vertical arrangement of elements.</p>
+    <ul>
+      <li>Column 1: \(a_{11}, a_{21}, \ldots, a_{m1}\)</li>
+      <li>Column 2: \(a_{12}, a_{22}, \ldots, a_{m2}\)</li>
+      <li>Column \(n\): \(a_{1n}, a_{2n}, \ldots, a_{mn}\)</li>
+    </ul>
+
+    <h3 id="m-order">1.4 Order of a Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        The <strong>order</strong> (or size) is written as
+        \(\text{rows} \times \text{columns}\) — always rows first, then columns.
+      </p>
+    </div>
+    <p>For \(A_{m \times n}\): order = \(m \times n\), total elements = \(m \times n\).</p>
+
+    <h3>Summary</h3>
+    <table>
+      <thead>
+        <tr><th>Term</th><th>Meaning</th><th>General form</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Matrix</td><td>Rectangular arrangement of numbers</td><td>\(A_{m \times n}\)</td></tr>
+        <tr><td>Element</td><td>Single number inside the matrix</td><td>\(a_{ij}\)</td></tr>
+        <tr><td>Row</td><td>Horizontal line of elements</td><td>\(a_{i1}, a_{i2}, \ldots, a_{in}\)</td></tr>
+        <tr><td>Column</td><td>Vertical line of elements</td><td>\(a_{1j}, a_{2j}, \ldots, a_{mj}\)</td></tr>
+        <tr><td>Order</td><td>Rows × Columns</td><td>\(m \times n\)</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="m-example">Real-World Example — Class Marksheet</h3>
+    <p>Marks of 3 students in 4 subjects, written as a matrix:</p>
+    <div class="math-display">
+      \[
+      M =
+      \begin{bmatrix}
+      85 & 90 & 78 & 88 \\
+      72 & 65 & 80 & 70 \\
+      95 & 92 & 88 & 91
+      \end{bmatrix}
+      \]
+    </div>
+    <ul>
+      <li><span class="term">Order:</span> \(3 \times 4\)</li>
+      <li><span class="term">Total elements:</span> \(3 \times 4 = 12\)</li>
+      <li><span class="term">Row 1:</span> Riya's four marks</li>
+      <li><span class="term">Column 1:</span> All Maths marks</li>
+    </ul>
+
+    <div class="key-box">
+      <div class="box-title">Key Takeaway</div>
+      <p>
+        A matrix is simply a <strong>table of numbers</strong>. Row, column, element
+        and order are just names for the parts of that table.
+      </p>
+    </div>
+
+    <h3 id="m-diagonal">Principal Diagonal</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        In a <strong>square matrix</strong>, the principal diagonal runs from
+        top-left to bottom-right. Its elements are \(a_{11}, a_{22}, \ldots, a_{nn}\)
+        — those with row number = column number.
+      </p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} \mathbf{4} & 2 & 3 \\ 5 & \mathbf{7} & 6 \\ 1 & 8 & \mathbf{9} \end{bmatrix}
+      \]
+    </div>
+    <p>Principal diagonal elements: \(\mathbf{4, 7, 9}\).</p>
+
+    <div class="warning-box">
+      <div class="box-title">Note</div>
+      <p>The principal diagonal exists <strong>only for square matrices</strong>.</p>
+    </div>
+
+    <!-- ============ TYPES ============ -->
+    <h2 id="m-types">2. Types of Matrices</h2>
+
+    <h3 id="m-row-matrix">Row Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A matrix with <strong>only one row</strong> (any number of columns).</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 3 & 7 & 5 & 2 \end{bmatrix}_{1 \times 4}
+      \]
+    </div>
+
+    <h3 id="m-column-matrix">Column Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A matrix with <strong>only one column</strong> (any number of rows).</p>
+    </div>
+    <div class="math-display">
+      \[
+      B = \begin{bmatrix} 4 \\ 9 \\ 6 \end{bmatrix}_{3 \times 1}
+      \]
+    </div>
+
+    <h3 id="m-rectangular">Rectangular Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A matrix where rows \(\neq\) columns (\(m \neq n\)).</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}_{2 \times 3}
+      \]
+    </div>
+
+    <h3 id="m-square">Square Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A matrix where rows = columns (\(m = n\)).</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 5 & 3 & 1 \\ 2 & 7 & 4 \\ 6 & 9 & 8 \end{bmatrix}_{3 \times 3}
+      \]
+    </div>
+
+    <h3 id="m-zero">Zero / Null Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A matrix in which <strong>every element is zero</strong>. Denoted \(O\).</p>
+    </div>
+    <div class="math-display">
+      \[
+      O = \begin{bmatrix} 0 & 0 & 0 \\ 0 & 0 & 0 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-diagonal-matrix">Diagonal Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A <strong>square matrix</strong> in which all non-diagonal elements are zero.</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 4 & 0 & 0 \\ 0 & 7 & 0 \\ 0 & 0 & 2 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-scalar">Scalar Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A diagonal matrix in which all principal diagonal elements are <strong>equal</strong>.</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 5 & 0 & 0 \\ 0 & 5 & 0 \\ 0 & 0 & 5 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-identity">Identity / Unit Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A scalar matrix in which all diagonal elements are <strong>1</strong>. Denoted \(I\).</p>
+    </div>
+    <div class="math-display">
+      \[
+      I_3 = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix}
+      \]
+    </div>
+    <p><strong>Property:</strong> \(AI = IA = A\).</p>
+
+    <h3 id="m-upper">Upper Triangular Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A square matrix in which all elements <strong>below</strong> the principal diagonal are zero.</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 2 & 5 & 7 \\ 0 & 3 & 4 \\ 0 & 0 & 6 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-lower">Lower Triangular Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A square matrix in which all elements <strong>above</strong> the principal diagonal are zero.</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 3 & 0 & 0 \\ 5 & 7 & 0 \\ 2 & 4 & 9 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-symmetric">Symmetric Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A square matrix \(A\) is <strong>symmetric</strong> if \(A^T = A\), i.e. \(a_{ij} = a_{ji}\).</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 2 & 5 & 8 \\ 5 & 3 & 7 \\ 8 & 7 & 4 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-skew">Skew-Symmetric Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>A square matrix \(A\) is <strong>skew-symmetric</strong> if \(A^T = -A\), i.e. \(a_{ij} = -a_{ji}\).</p>
+      <p>All principal diagonal elements <strong>must be zero</strong>.</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 0 & 3 & -5 \\ -3 & 0 & 7 \\ 5 & -7 & 0 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-comparison">Quick Comparison Table</h3>
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Key Condition</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Row Matrix</td><td>Only 1 row</td></tr>
+        <tr><td>Column Matrix</td><td>Only 1 column</td></tr>
+        <tr><td>Rectangular Matrix</td><td>\(m \neq n\)</td></tr>
+        <tr><td>Square Matrix</td><td>\(m = n\)</td></tr>
+        <tr><td>Zero / Null Matrix</td><td>All elements = 0</td></tr>
+        <tr><td>Diagonal Matrix</td><td>Non-diagonal elements = 0</td></tr>
+        <tr><td>Scalar Matrix</td><td>Diagonal elements all equal</td></tr>
+        <tr><td>Identity Matrix</td><td>Diagonal elements all = 1</td></tr>
+        <tr><td>Upper Triangular</td><td>Below diagonal = 0</td></tr>
+        <tr><td>Lower Triangular</td><td>Above diagonal = 0</td></tr>
+        <tr><td>Symmetric Matrix</td><td>\(A^T = A\)</td></tr>
+        <tr><td>Skew-Symmetric Matrix</td><td>\(A^T = -A\), diagonal = 0</td></tr>
+      </tbody>
+    </table>
+
+    <div class="key-box">
+      <div class="box-title">Hierarchy</div>
+      <p style="text-align:center;">
+        Square Matrix → Diagonal Matrix → Scalar Matrix → Identity Matrix
+      </p>
+    </div>
+
+    <hr>
+
+    <!-- ============ OPERATIONS ============ -->
+    <h2 id="m-operations">3. Matrix Operations</h2>
+
+    <h3 id="m-addition">Matrix Addition</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        Add two matrices of the <strong>same order</strong> by adding corresponding
+        elements: \(A + B = [a_{ij} + b_{ij}]\).
+      </p>
+    </div>
+    <div class="math-display">
+      \[
+      \begin{bmatrix} 2 & 5 \\ 7 & 1 \end{bmatrix}
+      +
+      \begin{bmatrix} 3 & 4 \\ 6 & 8 \end{bmatrix}
+      =
+      \begin{bmatrix} 5 & 9 \\ 13 & 9 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-subtraction">Matrix Subtraction</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>Subtract corresponding elements of matrices with the <strong>same order</strong>.</p>
+    </div>
+    <div class="math-display">
+      \[
+      \begin{bmatrix} 9 & 6 \\ 4 & 10 \end{bmatrix}
+      -
+      \begin{bmatrix} 3 & 2 \\ 1 & 7 \end{bmatrix}
+      =
+      \begin{bmatrix} 6 & 4 \\ 3 & 3 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-scalar-mult">Scalar Multiplication</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>Multiply <strong>every element</strong> of the matrix by a scalar \(k\).</p>
+    </div>
+    <div class="math-display">
+      \[
+      3\begin{bmatrix} 2 & -1 \\ 4 & 5 \end{bmatrix}
+      =
+      \begin{bmatrix} 6 & -3 \\ 12 & 15 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-multiplication">Matrix Multiplication</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        If \(A\) is \(m \times n\) and \(B\) is \(n \times p\), then \(AB\) is
+        \(m \times p\). The element in row \(i\), column \(j\) is the dot product
+        of row \(i\) of \(A\) with column \(j\) of \(B\).
+      </p>
+      <p><strong>Requirement:</strong> columns of \(A\) = rows of \(B\).</p>
+    </div>
+    <div class="math-display">
+      \[
+      \begin{bmatrix} a & b \\ c & d \end{bmatrix}
+      \begin{bmatrix} e & f \\ g & h \end{bmatrix}
+      =
+      \begin{bmatrix} ae+bg & af+bh \\ ce+dg & cf+dh \end{bmatrix}
+      \]
+    </div>
+    <div class="math-display">
+      \[
+      \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
+      \begin{bmatrix} 5 & 6 \\ 7 & 8 \end{bmatrix}
+      =
+      \begin{bmatrix} 19 & 22 \\ 43 & 50 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-transpose">Transpose</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>\(A^T\) is obtained by turning rows into columns and columns into rows.</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}
+      \Rightarrow
+      A^T = \begin{bmatrix} 1 & 4 \\ 2 & 5 \\ 3 & 6 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-determinant">Determinant</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        A single number associated with a <strong>square matrix</strong>, written
+        \(\det(A)\) or \(|A|\). It tells us whether the matrix is invertible.
+      </p>
+    </div>
+    <p>For \(2 \times 2\): \(\det(A) = ad - bc\).</p>
+    <p>For \(3 \times 3\), expand along the first row:</p>
+    <div class="math-display">
+      \[
+      \det(A) = a\begin{vmatrix} e & f \\ h & i \end{vmatrix}
+      - b\begin{vmatrix} d & f \\ g & i \end{vmatrix}
+      + c\begin{vmatrix} d & e \\ g & h \end{vmatrix}
+      \]
+    </div>
+    <div class="math-display">
+      \[
+      \begin{vmatrix} 3 & 8 \\ 4 & 6 \end{vmatrix}
+      = (3)(6) - (8)(4) = 18 - 32 = -14
+      \]
+    </div>
+
+    <h3 id="m-singular">Singular and Non-Singular Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Definitions</div>
+      <ul>
+        <li><strong>Singular:</strong> \(\det(A) = 0\) → no inverse exists.</li>
+        <li><strong>Non-singular:</strong> \(\det(A) \neq 0\) → inverse exists.</li>
+      </ul>
+    </div>
+
+    <h3 id="m-minors">Minors</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        The minor \(M_{ij}\) of element \(a_{ij}\) is the determinant obtained by
+        <strong>deleting row \(i\) and column \(j\)</strong>.
+      </p>
+    </div>
+    <p>For \(A = \begin{bmatrix} 2 & 4 & 1 \\ 3 & 5 & 7 \\ 6 & 8 & 9 \end{bmatrix}\):</p>
+    <div class="math-display">
+      \[
+      M_{11} = \begin{vmatrix} 5 & 7 \\ 8 & 9 \end{vmatrix} = -11,
+      \quad
+      M_{12} = \begin{vmatrix} 3 & 7 \\ 6 & 9 \end{vmatrix} = -15,
+      \quad
+      M_{13} = \begin{vmatrix} 3 & 5 \\ 6 & 8 \end{vmatrix} = -6
+      \]
+    </div>
+
+    <h3 id="m-cofactors">Cofactors</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>\(C_{ij} = (-1)^{i+j} M_{ij}\). The sign alternates like a checkerboard.</p>
+    </div>
+    <div class="math-display">
+      \[
+      \text{Sign pattern} =
+      \begin{bmatrix} + & - & + \\ - & + & - \\ + & - & + \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-adjoint">Adjoint (Adjugate)</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>\(\text{adj}(A)\) is the <strong>transpose of the cofactor matrix</strong>: \(\text{adj}(A) = C^T\).</p>
+    </div>
+
+    <h3 id="m-inverse">Inverse</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>\(A^{-1}\) satisfies \(AA^{-1} = A^{-1}A = I\). It exists only if \(\det(A) \neq 0\), and</p>
+      \[
+      A^{-1} = \frac{1}{\det(A)} \cdot \text{adj}(A)
+      \]
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 2 & 1 \\ 5 & 3 \end{bmatrix},
+      \quad \det(A) = 1,
+      \quad A^{-1} = \begin{bmatrix} 3 & -1 \\ -5 & 2 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-elementary">Elementary Row &amp; Column Operations</h3>
+    <div class="def-box">
+      <div class="box-title">Three Types</div>
+      <ol>
+        <li><strong>Interchange:</strong> \(R_i \leftrightarrow R_j\)</li>
+        <li><strong>Scale:</strong> \(R_i \to kR_i\)</li>
+        <li><strong>Add multiple:</strong> \(R_i \to R_i + kR_j\)</li>
+      </ol>
+    </div>
+    <div class="math-display">
+      \[
+      \begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{bmatrix}
+      \xrightarrow{R_1 \leftrightarrow R_3}
+      \begin{bmatrix} 7 & 8 & 9 \\ 4 & 5 & 6 \\ 1 & 2 & 3 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-row-reduction">Row Reduction (Gaussian Elimination)</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        Using elementary row operations to transform a matrix into
+        <strong>row echelon form</strong> (zeros below each leading entry).
+      </p>
+    </div>
+    <div class="math-display">
+      \[
+      \begin{bmatrix} 2 & 4 & 6 \\ 1 & 3 & 5 \\ 3 & 7 & 8 \end{bmatrix}
+      \xrightarrow{R_1 \leftrightarrow R_2}
+      \begin{bmatrix} 1 & 3 & 5 \\ 2 & 4 & 6 \\ 3 & 7 & 8 \end{bmatrix}
+      \xrightarrow{R_2 - 2R_1,\ R_3 - 3R_1}
+      \begin{bmatrix} 1 & 3 & 5 \\ 0 & -2 & -4 \\ 0 & -2 & -7 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-powers">Matrix Powers</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>\(A^n = A \cdot A \cdots A\) (\(n\) times). By convention \(A^0 = I\).</p>
+    </div>
+    <div class="math-display">
+      \[
+      A = \begin{bmatrix} 1 & 2 \\ 0 & 1 \end{bmatrix},
+      \quad A^2 = \begin{bmatrix} 1 & 4 \\ 0 & 1 \end{bmatrix},
+      \quad A^n = \begin{bmatrix} 1 & 2n \\ 0 & 1 \end{bmatrix}
+      \]
+    </div>
+
+    <h3 id="m-trace">Trace</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>The sum of the principal diagonal elements: \(\text{tr}(A) = a_{11} + a_{22} + \cdots + a_{nn}\).</p>
+    </div>
+    <p>For \(A = \begin{bmatrix} 5 & 1 & 2 \\ 3 & 8 & 4 \\ 7 & 6 & 9 \end{bmatrix}\),
+      \(\text{tr}(A) = 5 + 8 + 9 = 22\).</p>
+
+    <hr>
+
+    <!-- ============ PROPERTIES ============ -->
+    <h2 id="m-properties">4. Properties of Matrices</h2>
+
+    <h3>Addition Properties</h3>
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Statement</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Commutative</td><td>\(A + B = B + A\)</td></tr>
+        <tr><td>Associative</td><td>\((A + B) + C = A + (B + C)\)</td></tr>
+        <tr><td>Additive identity</td><td>\(A + O = O + A = A\)</td></tr>
+        <tr><td>Additive inverse</td><td>\(A + (-A) = O\)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Multiplication Properties</h3>
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Statement</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Not commutative</td><td>\(AB \neq BA\) in general</td></tr>
+        <tr><td>Associative</td><td>\((AB)C = A(BC)\)</td></tr>
+        <tr><td>Identity</td><td>\(AI = IA = A\)</td></tr>
+        <tr><td>Zero</td><td>\(AO = OA = O\)</td></tr>
+        <tr><td>Distributive (left)</td><td>\(A(B + C) = AB + AC\)</td></tr>
+        <tr><td>Distributive (right)</td><td>\((A + B)C = AC + BC\)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warning-box">
+      <div class="box-title">Warning — Cancellation Law Fails</div>
+      <p>If \(AB = AC\), it does <strong>not</strong> follow that \(B = C\).</p>
+    </div>
+
+    <h3>Scalar Multiplication Properties</h3>
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Statement</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Commutative</td><td>\(kA = Ak\)</td></tr>
+        <tr><td>Associative</td><td>\((kl)A = k(lA)\)</td></tr>
+        <tr><td>Identity</td><td>\(1 \cdot A = A\)</td></tr>
+        <tr><td>Zero</td><td>\(0 \cdot A = O\)</td></tr>
+        <tr><td>Distributive (matrix)</td><td>\(k(A + B) = kA + kB\)</td></tr>
+        <tr><td>Distributive (scalar)</td><td>\((k + l)A = kA + lA\)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Transpose Properties</h3>
+    <div class="key-box">
+      <div class="box-title">Key Rules</div>
+      <ul>
+        <li>\((A^T)^T = A\)</li>
+        <li>\((A + B)^T = A^T + B^T\)</li>
+        <li>\((kA)^T = kA^T\)</li>
+        <li>\((AB)^T = B^T A^T\) — reversal law</li>
+      </ul>
+    </div>
+
+    <h3>Inverse Properties</h3>
+    <div class="key-box">
+      <div class="box-title">Key Rules</div>
+      <ul>
+        <li>\((A^{-1})^{-1} = A\)</li>
+        <li>\((AB)^{-1} = B^{-1}A^{-1}\)</li>
+        <li>\((A^T)^{-1} = (A^{-1})^T\)</li>
+        <li>\(\det(A^{-1}) = \dfrac{1}{\det(A)}\)</li>
+        <li>The inverse is unique</li>
+      </ul>
+    </div>
+
+    <h3 id="m-equality">Equality of Matrices</h3>
+    <div class="def-box">
+      <div class="box-title">Definition</div>
+      <p>
+        Two matrices are <strong>equal</strong> if they have the same order and all
+        corresponding elements are equal:
+      </p>
+      \[
+      A = B \iff a_{ij} = b_{ij} \ \text{for all } i, j
+      \]
+    </div>
+
+    <hr>
+
+    <!-- ============ THEOREMS ============ -->
+    <h2 id="m-theorems">5. Key Theorems</h2>
+
+    <h3>Theorem 1 — Symmetric &amp; Skew from Any Square Matrix</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>
+        For any square matrix \(A\), \(A + A^T\) is symmetric and \(A - A^T\) is
+        skew-symmetric.
+      </p>
+    </div>
+    <p><strong>Proof:</strong> Let \(B = A + A^T\). Then</p>
+    <div class="math-display">
+      \[
+      B^T = (A + A^T)^T = A^T + (A^T)^T = A^T + A = B
+      \]
+    </div>
+    <p>So \(B\) is symmetric. Similarly \(C = A - A^T\) satisfies \(C^T = -C\). \(\blacksquare\)</p>
+
+    <h3>Theorem 2 — Decomposition</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>Any square matrix can be written as the sum of a symmetric and a skew-symmetric matrix:</p>
+      \[
+      A = \frac{1}{2}(A + A^T) + \frac{1}{2}(A - A^T)
+      \]
+    </div>
+
+    <h3>Theorem 3 — Uniqueness of Inverse</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>The inverse of a square matrix, if it exists, is unique.</p>
+    </div>
+    <p><strong>Proof:</strong> Suppose \(B\) and \(C\) are both inverses of \(A\). Then</p>
+    <div class="math-display">
+      \[
+      B = BI = B(AC) = (BA)C = IC = C
+      \]
+    </div>
+    <p>So \(B = C\). \(\blacksquare\)</p>
+
+    <h3>Theorem 4 — Inverse of a Product</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>If \(A\) and \(B\) are invertible of the same order, then \((AB)^{-1} = B^{-1}A^{-1}\).</p>
+    </div>
+    <div class="math-display">
+      \[
+      (AB)(B^{-1}A^{-1}) = A(BB^{-1})A^{-1} = AA^{-1} = I
+      \]
+      \[
+      (B^{-1}A^{-1})(AB) = B^{-1}(A^{-1}A)B = B^{-1}B = I
+      \]
+    </div>
+    <p>Hence \((AB)^{-1} = B^{-1}A^{-1}\). \(\blacksquare\)</p>
+
+    <h3>Theorem 5 — Product Determinant</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>For square matrices \(A\) and \(B\) of the same order:</p>
+      \[
+      |AB| = |A| \cdot |B|
+      \]
+    </div>
+
+    <h3>Theorem 6 — Invertibility Condition</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>A square matrix \(A\) is invertible <strong>if and only if</strong> it is non-singular.</p>
+    </div>
+
+    <h3>Theorem 7 — Adjoint Determinant</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>For a square matrix \(A\) of order \(n\):</p>
+      \[
+      |\text{adj}(A)| = |A|^{n-1}
+      \]
+    </div>
+
+    <h3>Theorem 8 — Inverse Determinant</h3>
+    <div class="def-box">
+      <div class="box-title">Statement</div>
+      <p>If \(A\) is invertible, then:</p>
+      \[
+      |A^{-1}| = \frac{1}{|A|}
+      \]
+    </div>
+
+    <h3>Properties of Determinants</h3>
+    <div class="key-box">
+      <div class="box-title">Key Rules</div>
+      <ul>
+        <li>\(\det(A^T) = \det(A)\)</li>
+        <li>\(\det(AB) = \det(A)\det(B)\)</li>
+        <li>\(\det(kA) = k^n \det(A)\) for an \(n \times n\) matrix</li>
+        <li>\(\det(A^{-1}) = 1/\det(A)\)</li>
+        <li>If a row or column is all zeros, \(\det = 0\)</li>
+        <li>If two rows/columns are identical, \(\det = 0\)</li>
+        <li>Swapping two rows changes the sign of the determinant</li>
+        <li>Adding a multiple of one row to another does not change the determinant</li>
+      </ul>
+    </div>
+
+    <div class="warning-box">
+      <div class="box-title">Common Mistake</div>
+      <p>\(|kA| \neq k|A|\) in general. For an \(n \times n\) matrix, \(|kA| = k^n|A|\).</p>
+    </div>
+
+    <h3>Splitting of a Determinant</h3>
+    <div class="def-box">
+      <div class="box-title">Sum Property</div>
+      <p>If one row (or column) is a sum of two terms, the determinant splits into two determinants:</p>
+      \[
+      \begin{vmatrix} a_1 + x_1 & a_2 + x_2 \\ b_1 & b_2 \end{vmatrix}
+      =
+      \begin{vmatrix} a_1 & a_2 \\ b_1 & b_2 \end{vmatrix}
+      +
+      \begin{vmatrix} x_1 & x_2 \\ b_1 & b_2 \end{vmatrix}
+      \]
+    </div>
+
+    <div class="warning-box">
+      <div class="box-title">Warning</div>
+      <p>
+        Splitting <strong>two</strong> rows gives <strong>four</strong> determinants,
+        not two. In general, splitting \(n\) rows gives \(2^n\) determinants.
+      </p>
+    </div>
+
+    <p style="text-align:center; color:#1769ff; font-weight:700; margin-top:34px;">
+      — End of Matrix Notes —
+    </p>
+
+  </article>
+</div>
+
+<footer>© 2026 Ganith. Learn • Practice • Excel</footer>
+
+</body>
+</html>
