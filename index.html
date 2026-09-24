@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ganith — Your Learning Hub</title>
+<title>Concepts — Ganith</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -89,7 +89,7 @@
 
   /* ---------- CARDS ---------- */
   .cards-container {
-    max-width: 1120px;
+    max-width: 900px;
     margin: 32px auto 0;
     padding: 0 20px 60px;
   }
@@ -99,16 +99,16 @@
     padding: 25px;
     border-radius: 20px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
     box-shadow: 0 12px 35px rgba(45, 72, 120, 0.09);
     border: 1px solid #edf1f8;
   }
 
   .card {
-    min-height: 175px;
+    min-height: 200px;
     border-radius: 15px;
-    padding: 28px 16px;
+    padding: 32px 20px;
     text-align: center;
     background: #fbfcff;
     border: 1px solid #edf1f8;
@@ -129,26 +129,24 @@
   }
 
   .icon {
-    width: 56px; height: 56px;
-    margin: 0 auto 14px;
-    border-radius: 14px;
+    width: 62px; height: 62px;
+    margin: 0 auto 16px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 26px;
-    background: #eaf2ff;
+    font-size: 28px;
     font-weight: 700;
-    color: #1769ff;
   }
 
-  /* Colour per card */
-  .card:nth-child(1) .icon { background: #eaf2ff; color: #1769ff; }  /* Concepts */
-  .card:nth-child(2) .icon { background: #ffeaf1; color: #e0437a; }  /* Class X */
-  .card:nth-child(3) .icon { background: #eee8ff; color: #6b4bff; }  /* Class XI & XII */
-  .card:nth-child(4) .icon { background: #fff1df; color: #d98213; }  /* Question Bank */
+  /* Matrix card */
+  .card:nth-child(1) .icon { background: #eaf2ff; color: #1769ff; }
+
+  /* Groups & Rings card */
+  .card:nth-child(2) .icon { background: #e5f8ee; color: #0f9d58; }
 
   .card h3 {
-    font-size: 17px;
+    font-size: 19px;
     margin-bottom: 8px;
     color: #172b57;
     font-weight: 700;
@@ -156,9 +154,11 @@
   }
 
   .card p {
-    font-size: 12.5px;
+    font-size: 13px;
     color: #7b88a1;
-    line-height: 1.45;
+    line-height: 1.5;
+    max-width: 28ch;
+    margin: 0 auto;
   }
 
   /* ---------- FOOTER ---------- */
@@ -172,23 +172,19 @@
   }
 
   /* ---------- MOBILE ---------- */
-  @media (max-width: 900px) {
-    .cards { grid-template-columns: repeat(2, 1fr); }
-  }
-
   @media (max-width: 800px) {
     header { padding: 0 20px; }
     .hero { padding-top: 50px; }
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr; padding: 18px; gap: 14px; }
+    .card { min-height: 180px; padding: 26px 18px; }
+    .icon { width: 54px; height: 54px; font-size: 24px; margin-bottom: 13px; }
+    .card h3 { font-size: 17px; }
+    .card p { font-size: 12.5px; }
+    .hero h1 { font-size: 42px; }
     .logo { font-size: 22px; }
-    .cards { grid-template-columns: 1fr 1fr; padding: 14px; gap: 10px; }
-    .card { min-height: 160px; padding: 22px 10px; }
-    .icon { width: 46px; height: 46px; font-size: 21px; margin-bottom: 11px; }
-    .card h3 { font-size: 14.5px; }
-    .card p { font-size: 11px; }
-    .hero h1 { font-size: 45px; }
   }
 </style>
 </head>
@@ -202,41 +198,29 @@
 <main>
 
   <section class="hero">
-    <h1>Ganith</h1>
-    <h2>Your Learning Hub</h2>
+    <h1>Concepts</h1>
+    <h2>Clear. Simple. Complete.</h2>
     <p>
-      Everything you need to learn, practice and excel.
-      Find notes, solutions, questions and resources
-      designed for your learning journey.
+      Understand the core ideas of mathematics with structured notes,
+      definitions, examples and proofs — written in plain language.
     </p>
   </section>
 
   <section class="cards-container">
     <div class="cards">
 
-      <!-- Concepts → opens concepts.html -->
-      <a class="card" href="concepts.html">
-        <div class="icon">📘</div>
-        <h3>Concepts</h3>
-        <p>Core math concepts explained</p>
+      <!-- Matrix -->
+      <a class="card" href="matrix.html" target="_blank" rel="noopener">
+        <div class="icon">[·]</div>
+        <h3>Matrix</h3>
+        <p>Types, operations, determinants, inverses &amp; theorems</p>
       </a>
 
-      <a class="card" href="#" onclick="comingSoon('Class X'); return false;">
-        <div class="icon">🔢</div>
-        <h3>Class X</h3>
-        <p>Class 10 notes &amp; problems</p>
-      </a>
-
-      <a class="card" href="#" onclick="comingSoon('Class XI & XII'); return false;">
-        <div class="icon">🎓</div>
-        <h3>Class XI &amp; XII</h3>
-        <p>Senior secondary topics</p>
-      </a>
-
-      <a class="card" href="#" onclick="comingSoon('Question Bank'); return false;">
-        <div class="icon">❓</div>
-        <h3>Question Bank</h3>
-        <p>Practice questions &amp; solutions</p>
+      <!-- Groups & Rings -->
+      <a class="card" href="groups-rings.html" target="_blank" rel="noopener">
+        <div class="icon">⟨G⟩</div>
+        <h3>Groups &amp; Rings</h3>
+        <p>Abstract algebra — groups, subgroups, ideals, fields</p>
       </a>
 
     </div>
@@ -245,12 +229,6 @@
 </main>
 
 <footer>© 2026 Ganith. Learn • Practice • Excel</footer>
-
-<script>
-  function comingSoon(name) {
-    alert(name + " page will be added soon.");
-  }
-</script>
 
 </body>
 </html>
