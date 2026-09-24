@@ -171,29 +171,20 @@
   .card:nth-child(5) .icon { background: #fff1df; color: #d98213; }
   .card:nth-child(6) .icon { background: #e3f0ff; color: #1769ff; }
 
-  .card h3 {
-    font-size: 17px;
-    margin-bottom: 7px;
-    color: #172b57;
-  }
-
-  .card p {
-    font-size: 12.5px;
-    color: #7b88a1;
-    line-height: 1.4;
-  }
+  .card h3 { font-size: 17px; margin-bottom: 7px; color: #172b57; }
+  .card p { font-size: 12.5px; color: #7b88a1; line-height: 1.4; }
 
   /* ---------- SEARCH ---------- */
   .search-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 42px 20px 60px;
+    padding: 42px 20px 20px;
     gap: 14px;
   }
 
   .search-box {
-    width: min(640px, 100%);
+    width: min(720px, 100%);
     height: 58px;
     background: white;
     border: 1px solid #dce4f1;
@@ -237,6 +228,122 @@
 
   .search-button:hover { background: #0755df; transform: scale(1.05); }
 
+  .search-hint {
+    font-size: 12.5px;
+    color: #8995aa;
+    text-align: center;
+    max-width: 640px;
+    line-height: 1.5;
+  }
+
+  /* ---------- RESULTS LIST ---------- */
+  .results-section {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  .results-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding: 0 4px;
+  }
+
+  .results-head h3 {
+    font-size: 16px;
+    color: #10245a;
+    font-weight: 700;
+  }
+
+  .results-count {
+    font-size: 13px;
+    color: #7b88a1;
+  }
+
+  .results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .result {
+    display: block;
+    background: white;
+    border: 1px solid #edf1f8;
+    border-radius: 14px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: .18s ease;
+    box-shadow: 0 4px 14px rgba(36, 72, 130, 0.05);
+  }
+
+  .result:hover {
+    border-color: #cddcff;
+    transform: translateX(4px);
+    box-shadow: 0 8px 22px rgba(36, 72, 130, 0.11);
+  }
+
+  .result-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: .3px;
+  }
+
+  .badge--matrix  { background: #eaf2ff; color: #1769ff; }
+  .badge--groups  { background: #e5f8ee; color: #0f9d58; }
+
+  .result-section {
+    font-size: 12px;
+    color: #8995aa;
+  }
+
+  .result-title {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: #10245a;
+    margin-bottom: 4px;
+  }
+
+  .result-snippet {
+    font-size: 13.5px;
+    color: #5a6b88;
+    line-height: 1.55;
+  }
+
+  .result mark {
+    background: #fff3c4;
+    color: #10245a;
+    padding: 0 2px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 50px 20px;
+    color: #7b88a1;
+    font-size: 14.5px;
+    background: white;
+    border: 1px dashed #dce4f1;
+    border-radius: 16px;
+  }
+
+  .no-results strong { color: #10245a; display: block; margin-bottom: 6px; font-size: 16px; }
+
   /* ---------- FOOTER ---------- */
   footer {
     text-align: center;
@@ -265,6 +372,7 @@
     .card h3 { font-size: 14.5px; }
     .card p { font-size: 11px; }
     .hero h1 { font-size: 45px; }
+    .result { padding: 14px 16px; }
   }
 </style>
 </head>
@@ -275,8 +383,8 @@
   <a class="logo" href="#">Ganith</a>
   <nav>
     <a href="#">Home</a>
-    <a href="matrix.html">Matrix</a>
-    <a href="groups-rings.html">Groups &amp; Rings</a>
+    <a href="matrix.html" target="_blank" rel="noopener">Matrix</a>
+    <a href="groups-rings.html" target="_blank" rel="noopener">Groups &amp; Rings</a>
     <a href="#">Contact</a>
     <button class="signin" onclick="signIn()">Sign In</button>
   </nav>
@@ -296,58 +404,62 @@
 
   <section class="cards-container">
     <div class="cards">
-
-      <!-- Matrix -->
       <a class="card" href="matrix.html" target="_blank" rel="noopener">
         <div class="icon">📄</div>
         <h3>Matrix</h3>
         <p>Types, operations &amp; theorems</p>
       </a>
-
-      <!-- Groups & Rings -->
       <a class="card" href="groups-rings.html" target="_blank" rel="noopener">
         <div class="icon">⟨G⟩</div>
         <h3>Groups &amp; Rings</h3>
         <p>Abstract algebra notes</p>
       </a>
-
-      <!-- Placeholders (no content yet) -->
       <a class="card" href="#" onclick="comingSoon('Solutions'); return false;">
         <div class="icon">🎓</div>
         <h3>Solutions</h3>
         <p>Step by step working</p>
       </a>
-
       <a class="card" href="#" onclick="comingSoon('Practice'); return false;">
         <div class="icon">✎</div>
         <h3>Practice</h3>
         <p>Questions &amp; quizzes</p>
       </a>
-
       <a class="card" href="#" onclick="comingSoon('Resources'); return false;">
         <div class="icon">📁</div>
         <h3>Resources</h3>
         <p>Books &amp; more</p>
       </a>
-
       <a class="card" href="#" onclick="comingSoon('Search'); return false;">
         <div class="icon">🔍</div>
         <h3>Search</h3>
         <p>Find anything fast</p>
       </a>
-
     </div>
   </section>
 
+  <!-- SEARCH -->
   <section class="search-section">
-    <form class="search-box" onsubmit="searchGanith(event)">
+    <form class="search-box" onsubmit="event.preventDefault(); doSearch();" role="search">
       <span class="search-icon">⌕</span>
       <label for="search" hidden>Search Ganith</label>
       <input id="search" type="search"
-             placeholder="Search anything in Ganith…"
+             placeholder="Search anything — try “row matrix”, “ideal”, “lagrange”…"
              autocomplete="off">
       <button class="search-button" type="submit" aria-label="Search">→</button>
     </form>
+    <p class="search-hint">
+      Search looks inside <strong>Matrix</strong> and <strong>Groups &amp; Rings</strong> notes.
+      Type multiple words — e.g. <em>row matrix</em> or <em>prime ideal</em>.
+    </p>
+  </section>
+
+  <!-- RESULTS LIST (Hidden by default) -->
+  <section class="results-section" id="resultsSection" hidden>
+    <div class="results-head">
+      <h3 id="resultsTitle">Results</h3>
+      <span class="results-count" id="resultsCount"></span>
+    </div>
+    <div class="results-list" id="resultsList"></div>
   </section>
 
 </main>
@@ -355,29 +467,217 @@
 <footer>© 2026 Ganith. Learn • Practice • Excel</footer>
 
 <script>
+  /* ---------------- Sign-in / placeholders ---------------- */
   function signIn() { alert("Sign-in page will be added here."); }
+  function comingSoon(name) { alert(name + " page will be added soon."); }
 
-  function comingSoon(name) {
-    alert(name + " page will be added soon.");
+  /* =====================================================================
+     INLINE SEARCH INDEX
+     Every entry maps to a heading (anchor) inside matrix.html or groups-rings.html
+     ===================================================================== */
+  const GANITH_SEARCH_INDEX = [
+    // --- MATRIX ---
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-basics', title: 'Matrix Basics', section: 'Introduction', keywords: 'matrix basics introduction definition rectangular arrangement grid table rows columns spreadsheet', snippet: 'A matrix is a rectangular arrangement of numbers or elements in rows and columns.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-element', title: 'Element (or Entry)', section: 'Matrix Basics', keywords: 'element entry aij subscript row column position single number', snippet: 'The element in the i-th row and j-th column is written aij. An m×n matrix has m×n elements.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-row', title: 'Row', section: 'Matrix Basics', keywords: 'row horizontal arrangement elements line', snippet: 'A row is a horizontal arrangement of elements. An m×n matrix has m rows, each with n elements.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-column', title: 'Column', section: 'Matrix Basics', keywords: 'column vertical arrangement elements line', snippet: 'A column is a vertical arrangement of elements. An m×n matrix has n columns, each with m elements.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-order', title: 'Order of a Matrix', section: 'Matrix Basics', keywords: 'order size rows columns mxn rows first', snippet: 'Order = number of rows × number of columns, always written rows first.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-example', title: 'Real-World Example (Marksheet)', section: 'Matrix Basics', keywords: 'real world example marksheet students marks school spreadsheet', snippet: 'Marks of 3 students in 4 subjects as a 3×4 matrix — order, elements, rows and columns.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-diagonal', title: 'Principal Diagonal', section: 'Matrix Basics', keywords: 'principal diagonal main leading a11 a22 ann square matrix top left bottom right', snippet: 'Elements from top-left to bottom-right of a square matrix where row = column.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-types', title: 'Types of Matrices', section: 'Matrix Types', keywords: 'types of matrices classification different kinds', snippet: 'Overview of all matrix types — row, column, square, diagonal, symmetric and more.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-row-matrix', title: 'Row Matrix', section: 'Types of Matrices', keywords: 'row matrix single row 1xn horizontal one row only', snippet: 'A matrix with only one row (any number of columns), e.g. [3 7 5 2].' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-column-matrix', title: 'Column Matrix', section: 'Types of Matrices', keywords: 'column matrix single column mx1 vertical one column only', snippet: 'A matrix with only one column (any number of rows).' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-rectangular', title: 'Rectangular Matrix', section: 'Types of Matrices', keywords: 'rectangular matrix m not equal n rows columns unequal', snippet: 'A matrix where number of rows ≠ number of columns.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-square', title: 'Square Matrix', section: 'Types of Matrices', keywords: 'square matrix m equals n rows columns equal principal diagonal determinant inverse', snippet: 'A matrix where rows = columns. Only square matrices have determinant and inverse.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-zero', title: 'Zero / Null Matrix', section: 'Types of Matrices', keywords: 'zero matrix null matrix all elements zero O additive identity', snippet: 'A matrix in which every element is zero. A + O = A.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-diagonal-matrix', title: 'Diagonal Matrix', section: 'Types of Matrices', keywords: 'diagonal matrix non diagonal elements zero only principal diagonal nonzero', snippet: 'A square matrix where all non-diagonal elements are zero.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-scalar', title: 'Scalar Matrix', section: 'Types of Matrices', keywords: 'scalar matrix diagonal equal elements same value kI', snippet: 'A diagonal matrix in which all principal diagonal elements are equal.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-identity', title: 'Identity / Unit Matrix', section: 'Types of Matrices', keywords: 'identity unit matrix I ones diagonal 1 multiplicative identity AI IA A', snippet: 'A scalar matrix with all diagonal elements equal to 1. AI = IA = A.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-upper', title: 'Upper Triangular Matrix', section: 'Types of Matrices', keywords: 'upper triangular matrix below diagonal zero ij i greater than j', snippet: 'A square matrix where all elements below the principal diagonal are zero.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-lower', title: 'Lower Triangular Matrix', section: 'Types of Matrices', keywords: 'lower triangular matrix above diagonal zero ij i less than j', snippet: 'A square matrix where all elements above the principal diagonal are zero.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-symmetric', title: 'Symmetric Matrix', section: 'Types of Matrices', keywords: 'symmetric matrix transpose equal aij aji AT A', snippet: 'A square matrix A with Aᵀ = A, i.e. aᵢⱼ = aⱼᵢ.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-skew', title: 'Skew-Symmetric Matrix', section: 'Types of Matrices', keywords: 'skew symmetric matrix transpose negative aij minus aji AT minus A diagonal zero', snippet: 'A square matrix A with Aᵀ = −A. All diagonal elements must be zero.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-comparison', title: 'Comparison Table of Matrix Types', section: 'Types of Matrices', keywords: 'comparison table summary matrix types key condition', snippet: 'Side-by-side comparison of every matrix type with its defining condition.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-operations', title: 'Matrix Operations', section: 'Operations', keywords: 'matrix operations arithmetic add subtract multiply', snippet: 'Overview of matrix arithmetic — addition, subtraction, scalar and matrix multiplication.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-addition', title: 'Matrix Addition', section: 'Operations', keywords: 'matrix addition add same order corresponding elements sum A B', snippet: 'Add two matrices of the same order by adding corresponding elements.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-subtraction', title: 'Matrix Subtraction', section: 'Operations', keywords: 'matrix subtraction subtract same order corresponding elements difference', snippet: 'Subtract corresponding elements of matrices with the same order.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-scalar-mult', title: 'Scalar Multiplication', section: 'Operations', keywords: 'scalar multiplication kA multiply every element scalar', snippet: 'Multiply every element of the matrix by a scalar k.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-multiplication', title: 'Matrix Multiplication', section: 'Operations', keywords: 'matrix multiplication product dot product row column mxn nxp not commutative', snippet: 'For A (m×n) and B (n×p), AB is m×p. Columns of A must equal rows of B.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-transpose', title: 'Transpose of a Matrix', section: 'Operations', keywords: 'transpose AT rows into columns swap mirror', snippet: 'Aᵀ is obtained by turning rows into columns and columns into rows.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-determinant', title: 'Determinant', section: 'Operations', keywords: 'determinant det ad bc 2x2 3x3 expansion minor cofactor', snippet: 'A single number for a square matrix. For 2×2: det = ad − bc.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-singular', title: 'Singular and Non-Singular Matrix', section: 'Operations', keywords: 'singular non singular determinant zero invertible no inverse', snippet: 'det = 0 → singular (no inverse). det ≠ 0 → non-singular (inverse exists).' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-minors', title: 'Minors', section: 'Operations', keywords: 'minors Mij delete row column determinant smaller', snippet: 'The minor Mᵢⱼ is the determinant after deleting row i and column j.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-cofactors', title: 'Cofactors', section: 'Operations', keywords: 'cofactors Cij sign checkerboard minus one power i plus j', snippet: 'Cᵢⱼ = (−1)^(i+j) Mᵢⱼ. Sign alternates like a checkerboard.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-adjoint', title: 'Adjoint (Adjugate)', section: 'Operations', keywords: 'adjoint adjugate transpose of cofactor matrix adj A', snippet: 'adj(A) is the transpose of the cofactor matrix.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-inverse', title: 'Inverse of a Matrix', section: 'Operations', keywords: 'inverse A inverse adjoint determinant formula non singular', snippet: 'A⁻¹ = adj(A) / det(A). Exists only if det(A) ≠ 0.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-elementary', title: 'Elementary Row & Column Operations', section: 'Operations', keywords: 'elementary row column operations interchange scale add multiple Ri Cj', snippet: 'Three operations: swap, scale, add multiple — used for row reduction.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-row-reduction', title: 'Row Reduction (Gaussian Elimination)', section: 'Operations', keywords: 'row reduction gaussian elimination echelon form leading entry solve systems', snippet: 'Transform a matrix into row echelon form using elementary row operations.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-powers', title: 'Matrix Powers', section: 'Operations', keywords: 'matrix powers An repeated product A squared A cubed identity', snippet: 'Aⁿ = A · A · … · A (n times). By convention A⁰ = I.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-trace', title: 'Trace of a Matrix', section: 'Operations', keywords: 'trace tr sum principal diagonal trace AB BA', snippet: 'Sum of the principal diagonal elements: tr(A) = a₁₁ + a₂₂ + … + aₙₙ.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-properties', title: 'Properties of Matrices', section: 'Properties', keywords: 'properties matrix commutative associative distributive identity zero', snippet: 'Addition, multiplication, scalar and transpose properties of matrices.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-equality', title: 'Equality of Matrices', section: 'Properties', keywords: 'equality equal matrices same order corresponding elements aij bij', snippet: 'Two matrices are equal if they have the same order and matching elements.' },
+    { page: 'matrix.html', pageLabel: 'Matrices', anchor: 'm-theorems', title: 'Key Theorems on Matrices', section: 'Theorems', keywords: 'theorems matrix symmetric skew decomposition uniqueness inverse product determinant adjoint', snippet: 'Symmetric/skew decomposition, uniqueness of inverse, product determinant, and more.' },
+
+    // --- GROUPS & RINGS ---
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-binary', title: 'Binary Operation', section: 'Groups', keywords: 'binary operation closure set S star ordered pair', snippet: 'A rule assigning to every ordered pair (a, b) of elements of S exactly one element a * b.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-group', title: 'Group — Definition', section: 'Groups', keywords: 'group definition closure associativity identity inverse axioms G1 G2 G3 G4', snippet: 'A set with a binary operation satisfying closure, associativity, identity, inverse.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-abelian', title: 'Abelian Group', section: 'Groups', keywords: 'abelian commutative group ab ba abel', snippet: 'A group where a * b = b * a for all elements.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-examples', title: 'Examples of Groups', section: 'Groups', keywords: 'examples groups integers rational real GLn non examples', snippet: 'Standard groups like (ℤ, +), (ℚ \ {0}, ×), and non-examples.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-properties', title: 'Elementary Properties of Groups', section: 'Groups', keywords: 'properties uniqueness identity inverse reversal law cancellation left right', snippet: 'Uniqueness of identity and inverse, (ab)⁻¹ = b⁻¹a⁻¹, cancellation laws.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-order', title: 'Order of a Group & Order of an Element', section: 'Groups', keywords: 'order group element smallest n power e divides lagrange', snippet: 'Order of group = number of elements. Order of element = smallest n with aⁿ = e.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-subgroup', title: 'Subgroups', section: 'Groups', keywords: 'subgroup H less than G one step test ab inverse closure', snippet: 'H ≤ G if H is a group under the same operation. Test: ab⁻¹ ∈ H.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-cyclic', title: 'Cyclic Groups', section: 'Groups', keywords: 'cyclic group generator a angle brackets powers abelian', snippet: 'G = ⟨a⟩ — every element is a power of a. Every cyclic group is abelian.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-cosets', title: 'Cosets', section: 'Groups', keywords: 'cosets left right aH Ha partition disjoint equal size', snippet: 'Left coset aH = {ah : h ∈ H}. Cosets are disjoint and have the same size.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-lagrange', title: "Lagrange's Theorem", section: 'Groups', keywords: 'lagrange theorem order divides index cosets subgroup finite', snippet: 'If H ≤ G then |H| divides |G|, and [G : H] = |G|/|H|.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-normal', title: 'Normal Subgroups', section: 'Groups', keywords: 'normal subgroup aH Ha trianglelefteq conjugate', snippet: 'H is normal if aH = Ha for all a ∈ G. Equivalently aHa⁻¹ = H.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-quotient', title: 'Quotient Groups', section: 'Groups', keywords: 'quotient group factor group GH cosets normal order', snippet: 'G/H = {aH : a ∈ G} with (aH)(bH) = (ab)H. |G/H| = |G|/|H|.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-hom', title: 'Group Homomorphism', section: 'Groups', keywords: 'homomorphism isomorphism monomorphism epimorphism kernel image', snippet: 'φ(ab) = φ(a)φ(b). Kernel is normal; image is a subgroup.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-fund', title: 'Fundamental Theorem of Homomorphism', section: 'Groups', keywords: 'fundamental theorem homomorphism quotient kernel image isomorphic', snippet: 'G / ker φ ≅ Im φ for any group homomorphism φ.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-ring', title: 'Ring — Definition', section: 'Rings', keywords: 'ring definition abelian group addition multiplication distributive associative', snippet: 'A set with two operations: (R, +) is abelian group, · is associative, distributive.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-types', title: 'Types of Rings', section: 'Rings', keywords: 'types rings commutative unity zero divisor integral domain division field', snippet: 'Commutative, with unity, integral domain, division ring, and field.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-ring-examples', title: 'Examples of Rings', section: 'Rings', keywords: 'examples rings integers rationals complex z mod n z6 zero divisors', snippet: 'ℤ, ℚ, ℝ, ℂ, ℤₙ, matrix rings and polynomial rings with their types.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-ring-props', title: 'Elementary Properties of Rings', section: 'Rings', keywords: 'properties rings a times zero minus a minus b negative one', snippet: 'a · 0 = 0, a(−b) = −(ab), (−a)(−b) = ab.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-subring', title: 'Subrings', section: 'Rings', keywords: 'subring S subset closed subtraction multiplication subring test', snippet: 'S is a subring if closed under subtraction and multiplication.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-ideals', title: 'Ideals', section: 'Rings', keywords: 'ideal subgroup absorption ra ar nZ left right two sided', snippet: 'An ideal is closed under subtraction and absorbs multiplication by ring elements.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-quotient-ring', title: 'Quotient Rings', section: 'Rings', keywords: 'quotient ring factor ring RI cosets a+I ideal', snippet: 'R/I = {a + I : a ∈ R} forms a ring. ℤ/nℤ ≅ ℤₙ.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-ring-hom', title: 'Ring Homomorphism', section: 'Rings', keywords: 'ring homomorphism preserves plus and multiplication kernel ideal image subring', snippet: 'φ(a+b) = φ(a) + φ(b) and φ(ab) = φ(a)φ(b). Kernel is an ideal.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-maximal', title: 'Maximal and Prime Ideals', section: 'Rings', keywords: 'maximal prime ideal RM field RP integral domain proper ideal', snippet: 'M is maximal ⇔ R/M is a field. P is prime ⇔ R/P is an integral domain.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-field', title: 'Fields', section: 'Rings', keywords: 'field commutative division ring inverse nonzero integral domain zn prime', snippet: 'A commutative ring with unity where every non-zero element is invertible.' },
+    { page: 'groups-rings.html', pageLabel: 'Groups & Rings', anchor: 'gr-theorems', title: 'Key Theorems with Proofs', section: 'Theorems', keywords: 'theorems proofs uniqueness identity reversal law lagrange fundamental homomorphism', snippet: 'Uniqueness of identity, reversal law, Lagrange, and the Fundamental Homomorphism Theorem.' }
+  ];
+
+  /* ---------------- Search engine ---------------- */
+  const inputEl      = document.getElementById('search');
+  const resultsSec   = document.getElementById('resultsSection');
+  const resultsList  = document.getElementById('resultsList');
+  const resultsTitle = document.getElementById('resultsTitle');
+  const resultsCount = document.getElementById('resultsCount');
+
+  /* Escape user input for safe HTML insertion */
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
   }
 
-  /* Smart search: recognise known topics and jump to their page */
-  function searchGanith(event) {
-    event.preventDefault();
-    var q = document.getElementById('search').value.trim().toLowerCase();
-    if (!q) { document.getElementById('search').focus(); return; }
+  /* Highlight matching words in a piece of text */
+  function highlight(text, words) {
+    let out = escapeHTML(text);
+    words.forEach(w => {
+      if (!w) return;
+      const re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+      out = out.replace(re, '<mark>$1</mark>');
+    });
+    return out;
+  }
 
-    if (q.indexOf('matrix') !== -1 || q.indexOf('determinant') !== -1 ||
-        q.indexOf('inverse') !== -1 || q.indexOf('transpose') !== -1) {
-      window.open('matrix.html', '_blank');
-    } else if (q.indexOf('group') !== -1 || q.indexOf('ring') !== -1 ||
-               q.indexOf('ideal') !== -1 || q.indexOf('field') !== -1 ||
-               q.indexOf('algebra') !== -1) {
-      window.open('groups-rings.html', '_blank');
-    } else {
-      alert("Searching Ganith for: " + q);
+  /* Search the index. Every query word must appear somewhere
+     in title + section + keywords + snippet (AND logic).
+     Results scored & sorted by relevance. */
+  function searchAll(query) {
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+
+    const hits = [];
+
+    for (const entry of GANITH_SEARCH_INDEX) {
+      const titleL    = entry.title.toLowerCase();
+      const sectionL  = entry.section.toLowerCase();
+      const keywordsL = entry.keywords.toLowerCase();
+      const snippetL  = entry.snippet.toLowerCase();
+      const haystack  = titleL + ' ' + sectionL + ' ' + keywordsL + ' ' + snippetL;
+
+      // every query word must appear somewhere
+      if (!words.every(w => haystack.includes(w))) continue;
+
+      let score = 0;
+      for (const w of words) {
+        if (titleL.includes(w))    score += 12;
+        if (keywordsL.includes(w)) score += 6;
+        if (sectionL.includes(w))  score += 4;
+        if (snippetL.includes(w))  score += 2;
+      }
+      // small bonus if the full phrase appears in title
+      if (titleL.includes(query.toLowerCase())) score += 15;
+
+      hits.push({ ...entry, score });
     }
+
+    hits.sort((a, b) => b.score - a.score);
+    return hits;
   }
+
+  /* Render the list of results */
+  function renderResults(query) {
+    const q = query.trim();
+
+    if (q === '') {
+      resultsSec.hidden = true;
+      return;
+    }
+
+    const hits = searchAll(q);
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+
+    resultsSec.hidden = false;
+    resultsTitle.textContent = 'Results for “' + q + '”';
+    resultsCount.textContent = hits.length === 0
+      ? 'no matches'
+      : hits.length + (hits.length === 1 ? ' match' : ' matches') + ' across all notes';
+
+    if (hits.length === 0) {
+      resultsList.innerHTML =
+        '<div class="no-results">' +
+          '<strong>No matches found.</strong>' +
+          'Try simpler words like “matrix”, “group”, “ideal”, “determinant” or “lagrange”.' +
+        '</div>';
+      return;
+    }
+
+    resultsList.innerHTML = hits.map(h => {
+      const badgeClass = h.page.startsWith('matrix')
+        ? 'badge--matrix'
+        : 'badge--groups';
+
+      const url = h.page + '#' + h.anchor;
+
+      return (
+        '<a class="result" href="' + url + '" target="_blank" rel="noopener">' +
+          '<div class="result-top">' +
+            '<span class="badge ' + badgeClass + '">' + escapeHTML(h.pageLabel) + '</span>' +
+            '<span class="result-section">' + escapeHTML(h.section) + ' › ' + escapeHTML(h.title) + '</span>' +
+          '</div>' +
+          '<div class="result-title">' + highlight(h.title, words) + '</div>' +
+          '<div class="result-snippet">' + highlight(h.snippet, words) + '</div>' +
+        '</a>'
+      );
+    }).join('');
+  }
+
+  /* Run on submit (Enter / arrow button) */
+  function doSearch() {
+    renderResults(inputEl.value);
+    const first = resultsList.querySelector('.result');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* Live search as user types (debounced) */
+  let debounce;
+  inputEl.addEventListener('input', function () {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => renderResults(inputEl.value), 130);
+  });
+
+  /* Keyboard: "/" focuses search, Esc clears */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement !== inputEl) {
+      e.preventDefault();
+      inputEl.focus();
+    } else if (e.key === 'Escape' && document.activeElement === inputEl) {
+      inputEl.value = '';
+      resultsSec.hidden = true;
+    }
+  });
 </script>
 
 </body>
