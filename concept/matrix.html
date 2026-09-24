@@ -1094,5 +1094,30 @@
 
 <footer>© 2026 Ganith. Learn • Practice • Excel</footer>
 
+
+
+
+<script>
+document.addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener("copy", function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener("cut", function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener("keydown", function(e) {
+    if (e.ctrlKey && ["c", "x", "u", "s", "p"].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+    }
+});
+</script>
+
+</body>
+  
 </body>
 </html>
