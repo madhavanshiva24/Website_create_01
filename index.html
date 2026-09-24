@@ -19,7 +19,7 @@
     height: 72px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start; /* Logo sits on the left */
     padding: 0 6%;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(8px);
@@ -35,32 +35,6 @@
     color: #10245a;
     text-decoration: none;
   }
-
-  nav { display: flex; align-items: center; gap: 26px; }
-
-  nav a {
-    text-decoration: none;
-    color: #24365d;
-    font-size: 14px;
-    font-weight: 500;
-    transition: color .15s;
-  }
-
-  nav a:hover { color: #1769ff; }
-
-  .signin {
-    border: none;
-    background: #1769ff;
-    color: white;
-    padding: 11px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: background .2s;
-  }
-
-  .signin:hover { background: #0755df; }
 
   /* ---------- HERO ---------- */
   .hero {
@@ -204,14 +178,11 @@
 
   @media (max-width: 800px) {
     header { padding: 0 20px; }
-    nav { gap: 12px; }
-    nav a { display: none; }
     .hero { padding-top: 50px; }
   }
 
   @media (max-width: 480px) {
     .logo { font-size: 22px; }
-    .signin { padding: 9px 13px; }
     .cards { grid-template-columns: 1fr 1fr; padding: 14px; gap: 10px; }
     .card { min-height: 160px; padding: 22px 10px; }
     .icon { width: 46px; height: 46px; font-size: 21px; margin-bottom: 11px; }
@@ -226,13 +197,6 @@
 
 <header>
   <a class="logo" href="index.html">Ganith</a>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="concepts.html">Concepts</a>
-    <a href="#">Question Bank</a>
-    <a href="#">Contact</a>
-    <button class="signin" onclick="signIn()">Sign In</button>
-  </nav>
 </header>
 
 <main>
@@ -283,10 +247,6 @@
 <footer>© 2026 Ganith. Learn • Practice • Excel</footer>
 
 <script>
-  function signIn() {
-    alert("Sign-in page will be added here.");
-  }
-
   function comingSoon(name) {
     alert(name + " page will be added soon.");
   }
