@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concepts — Ganith</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f8ff;
+    color: #10234f;
+    min-height: 100vh;
+  }
+
+  /* ---------- HEADER ---------- */
+  header {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6%;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e8edf7;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .logo {
+    font-size: 25px;
+    font-weight: 800;
+    color: #10245a;
+    text-decoration: none;
+  }
+
+  nav { display: flex; align-items: center; gap: 26px; }
+
+  nav a {
+    text-decoration: none;
+    color: #24365d;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color .15s;
+  }
+
+  nav a:hover { color: #1769ff; }
+
+  .signin {
+    border: none;
+    background: #1769ff;
+    color: white;
+    padding: 11px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background .2s;
+  }
+
+  .signin:hover { background: #0755df; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    text-align: center;
+    padding: 68px 20px 30px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    width: 280px; height: 280px;
+    background: #dce9ff;
+    border-radius: 50%;
+    left: -130px; top: -80px;
+    z-index: -1;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    width: 220px; height: 220px;
+    background: #e5ddff;
+    border-radius: 50%;
+    right: -100px; top: 30px;
+    z-index: -1;
+  }
+
+  .hero h1 {
+    font-size: clamp(38px, 5.5vw, 58px);
+    color: #10245a;
+    margin-bottom: 12px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  .hero h2 {
+    font-size: clamp(19px, 3vw, 26px);
+    margin-bottom: 14px;
+    color: #233a6d;
+    font-weight: 700;
+  }
+
+  .hero p {
+    color: #687896;
+    max-width: 620px;
+    margin: auto;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* ---------- CARDS ---------- */
+  .cards-container {
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 0 20px 60px;
+  }
+
+  .cards {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    box-shadow: 0 12px 35px rgba(45, 72, 120, 0.09);
+    border: 1px solid #edf1f8;
+  }
+
+  .card {
+    min-height: 220px;
+    border-radius: 15px;
+    padding: 32px 22px;
+    text-align: center;
+    background: #fbfcff;
+    border: 1px solid #edf1f8;
+    cursor: pointer;
+    transition: .25s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(36, 72, 130, 0.14);
+    border-color: #cddcff;
+  }
+
+  .icon {
+    width: 68px; height: 68px;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 700;
+  }
+
+  /* Matrix card */
+  .card--matrix .icon {
+    background: #eaf2ff;
+    color: #1769ff;
+  }
+
+  /* Groups & Rings card */
+  .card--groups .icon {
+    background: #e5f8ee;
+    color: #0f9d58;
+  }
+
+  .card h3 {
+    font-size: 21px;
+    margin-bottom: 8px;
+    color: #172b57;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .card p {
+    font-size: 13.5px;
+    color: #7b88a1;
+    line-height: 1.5;
+    max-width: 26ch;
+    margin: 0 auto;
+  }
+
+  /* Subtle accent bar under title */
+  .card-title-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card--matrix .card-title-wrap::after {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 3px;
+    border-radius: 3px;
+    background: #1769ff;
+    margin-top: 10px;
+  }
+
+  .card--groups .card-title-wrap::after {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 3px;
+    border-radius: 3px;
+    background: #0f9d58;
+    margin-top: 10px;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    text-align: center;
+    padding: 28px 20px;
+    color: #8995aa;
+    font-size: 13px;
+    border-top: 1px solid #e8edf7;
+    background: rgba(255,255,255,.6);
+  }
+
+  /* ---------- MOBILE ---------- */
+  @media (max-width: 800px) {
+    header { padding: 0 20px; }
+    nav { gap: 12px; }
+    nav a { display: none; }
+    .hero { padding-top: 50px; }
+  }
+
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr; padding: 18px; gap: 14px; }
+    .card { min-height: 175px; padding: 26px 18px; }
+    .icon { width: 58px; height: 58px; font-size: 26px; margin-bottom: 13px; }
+    .card h3 { font-size: 18px; }
+    .card p { font-size: 12.5px; }
+    .hero h1 { font-size: 38px; }
+    .logo { font-size: 22px; }
+    .signin { padding: 9px 13px; }
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <a class="logo" href="index.html">Ganith</a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="concepts.html">Concepts</a>
+    <a href="#">Question Bank</a>
+    <a href="#">Contact</a>
+    <button class="signin" onclick="signIn()">Sign In</button>
+  </nav>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h1>Concepts</h1>
+    <h2>Clear. Simple. Complete.</h2>
+    <p>
+      Understand the core ideas of mathematics with structured notes,
+      definitions, examples and proofs — written in plain language.
+    </p>
+  </section>
+
+  <section class="cards-container">
+    <div class="cards">
+
+      <!-- Matrix -->
+      <a class="card card--matrix" href="matrix.html" target="_blank" rel="noopener">
+        <div class="icon">[·]</div>
+        <div class="card-title-wrap">
+          <h3>Matrix</h3>
+        </div>
+        <p>Types, operations, determinants, inverses &amp; theorems</p>
+      </a>
+
+      <!-- Groups & Rings -->
+      <a class="card card--groups" href="groups-rings.html" target="_blank" rel="noopener">
+        <div class="icon">⟨G⟩</div>
+        <div class="card-title-wrap">
+          <h3>Groups &amp; Rings</h3>
+        </div>
+        <p>Abstract algebra — groups, subgroups, ideals, fields</p>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>© 2026 Ganith. Learn • Practice • Excel</footer>
+
+<script>
+  function signIn() {
+    alert("Sign-in page will be added here.");
+  }
+</script>
+
+</body>
+</html>
