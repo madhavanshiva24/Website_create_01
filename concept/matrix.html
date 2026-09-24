@@ -1117,7 +1117,25 @@ document.addEventListener("keydown", function(e) {
 });
 </script>
 
-</body>
+<style>
+
+/* Your existing CSS */
+body {
+    background: #111;
+}
+
+/* ADD THIS */
+html,
+body,
+body * {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+}
+
+</style>
   
 </body>
 </html>
