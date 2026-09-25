@@ -99,7 +99,8 @@
     padding: 25px;
     border-radius: 20px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* Updated grid to handle 5 items perfectly */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 16px;
     box-shadow: 0 12px 35px rgba(45, 72, 120, 0.09);
     border: 1px solid #edf1f8;
@@ -146,6 +147,7 @@
   .card:nth-child(2) .icon { background: #ffeaf1; color: #e0437a; }  /* Class 10 */
   .card:nth-child(3) .icon { background: #eee8ff; color: #6b4bff; }  /* Class 11 & 12 */
   .card:nth-child(4) .icon { background: #fff1df; color: #d98213; }  /* Solutions */
+  .card:nth-child(5) .icon { background: #e0f7fa; color: #00838f; }  /* Lab (New!) */
 
   .card h3 {
     font-size: 17px;
@@ -240,6 +242,13 @@
         <div class="icon">❓</div>
         <h3>Solutions</h3>
         <p>Questions &amp; solutions</p>
+      </a>
+
+      <!-- 5. LAB → New Card added as requested -->
+      <a class="card" href="Lab/">
+        <div class="icon">🧪</div>
+        <h3>Lab</h3>
+        <p>Experiments &amp; Projects</p>
       </a>
 
     </div>
