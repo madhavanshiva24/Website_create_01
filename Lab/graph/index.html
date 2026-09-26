@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>GANITH — Advanced Mathematical Graphing & Visualization</title>
 <script src="https://cdn.jsdelivr.net/npm/mathjs@14.0.1/lib/browser/math.js"></script>
 <style>
@@ -13,7 +13,7 @@
   --shadow:0 2px 10px rgba(24,34,53,.08);
 }
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:var(--bg)}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:var(--bg);-webkit-tap-highlight-color:transparent}
 button,input,select{font:inherit}
 button{cursor:pointer}
 .app{height:100vh;height:100dvh;display:grid;grid-template-rows:54px 1fr 48px}
@@ -115,7 +115,7 @@ select.top-select{height:38px;border:1px solid var(--border);border-radius:8px;b
 .export-note{font-size:12px;color:var(--muted);margin:4px 0 0}
 .export-error{min-height:16px;font-size:12px;color:var(--danger);font-weight:600;margin-top:6px}
 
-/* --- Mobile Overlay & FAB --- */
+/* --- Mobile Overlay, FAB & Zoom Controls --- */
 .sidebar-overlay {
   display: none;
   position: fixed;
@@ -149,6 +149,44 @@ select.top-select{height:38px;border:1px solid var(--border);border-radius:8px;b
   line-height: 1;
 }
 
+/* Zoom Controls */
+.zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+.zoom-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 24px;
+  font-weight: bold;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.1s;
+  padding: 0;
+  line-height: 1;
+}
+.zoom-btn:hover {
+  background: var(--panel2);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.zoom-btn:active {
+  transform: scale(0.92);
+  background: var(--accent);
+  color: white;
+}
+
 @media(max-width:900px){
   .main{grid-template-columns:1fr;grid-template-rows:1fr}
   .sidebar{
@@ -161,6 +199,17 @@ select.top-select{height:38px;border:1px solid var(--border);border-radius:8px;b
   .brand-sub{display:none}
   .topbtn.hide-mobile{display:none}
   .fab{display:flex}
+  
+  /* Adjust zoom controls for mobile to sit above the FAB */
+  .zoom-controls {
+    bottom: 86px;
+    right: 20px;
+  }
+  .zoom-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
   
   /* Topbar adjustments */
   .topbar{gap:5px;padding:4px 6px}
@@ -296,6 +345,13 @@ select.top-select{height:38px;border:1px solid var(--border);border-radius:8px;b
   <div class="legend" id="legend"></div>
   <div class="coords" id="coords">X: 0.000 Y: 0.000</div>
   <div class="status" id="status">Ready</div>
+  
+  <!-- Zoom Controls -->
+  <div class="zoom-controls">
+    <button class="zoom-btn" id="zoomInBtn" title="Zoom In">+</button>
+    <button class="zoom-btn" id="zoomOutBtn" title="Zoom Out">−</button>
+  </div>
+
   <button class="fab" id="fabAdd" title="Add Expression">＋</button>
 </section>
 </main>
@@ -906,6 +962,10 @@ const UI={
       App.render();
     };
 
+    // --- Zoom Controls ---
+    document.getElementById("zoomInBtn").onclick = () => Graph.zoom(1.25);
+    document.getElementById("zoomOutBtn").onclick = () => Graph.zoom(1 / 1.25);
+
     // --- Mobile Sidebar & FAB ---
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -952,6 +1012,8 @@ const Graph={
   dragging:false,lastX:0,lastY:0,pointerX:0,pointerY:0,raf:0,
   _compiledCache:new Map(),
   _exporting:false,
+  activePointers:new Map(),
+  _lastPinchDist:null,
 
   init(){
     this.canvas=document.getElementById("graph");
@@ -959,9 +1021,13 @@ const Graph={
     this.resize();
     window.addEventListener("resize",()=>this.resize());
     this.canvas.addEventListener("wheel",e=>this.wheel(e),{passive:false});
+    
+    // Touch & Pointer events for panning and pinch-to-zoom
     this.canvas.addEventListener("pointerdown",e=>this.down(e));
     window.addEventListener("pointermove",e=>this.move(e));
-    window.addEventListener("pointerup",()=>this.up());
+    window.addEventListener("pointerup",e=>this.up(e));
+    window.addEventListener("pointercancel",e=>this.up(e));
+    
     this.canvas.addEventListener("dblclick",e=>this.doubleClick(e));
     this.canvas.addEventListener("pointerleave",()=>{
       document.getElementById("coords").textContent="X: — Y: —";
@@ -1001,46 +1067,90 @@ const Graph={
   worldToScreen(x,y){ return {x:this.ox+x*this.scale,y:this.oy-y*this.scaleY}; },
   screenToWorld(px,py){ return {x:(px-this.ox)/this.scale,y:(this.oy-py)/this.scaleY}; },
 
+  // Centralized Zoom Logic
+  zoom(factor, centerX = null, centerY = null) {
+    if (centerX === null || centerY === null) {
+      centerX = this.width / 2;
+      centerY = this.height / 2;
+    }
+    const before = this.screenToWorld(centerX, centerY);
+    this.scale = Math.max(2, Math.min(2000, this.scale * factor));
+    this.scaleY = Math.max(2, Math.min(2000, this.scaleY * factor));
+    const after = this.screenToWorld(centerX, centerY);
+    this.ox += (after.x - before.x) * this.scale;
+    this.oy -= (after.y - before.y) * this.scaleY;
+    this.request();
+  },
+
   wheel(e){
     e.preventDefault();
     const rect=this.canvas.getBoundingClientRect();
     const px=e.clientX-rect.left,py=e.clientY-rect.top;
-    const before=this.screenToWorld(px,py);
     const factor=Math.exp(-e.deltaY*.0012);
-    this.scale =Math.max(2,Math.min(1000,this.scale *factor));
-    this.scaleY=Math.max(2,Math.min(1000,this.scaleY*factor));
-    const after=this.screenToWorld(px,py);
-    this.ox+=(after.x-before.x)*this.scale;
-    this.oy-=(after.y-before.y)*this.scaleY;
-    this.request();
+    this.zoom(factor, px, py);
   },
 
-  down(e){ this.dragging=true; this.lastX=e.clientX; this.lastY=e.clientY; this.canvas.setPointerCapture?.(e.pointerId); },
+  down(e){ 
+    this.activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (this.activePointers.size === 1) {
+      this.dragging = true; 
+      this.lastX = e.clientX; 
+      this.lastY = e.clientY;
+    }
+    this.canvas.setPointerCapture?.(e.pointerId); 
+  },
 
   move(e){
     const rect=this.canvas.getBoundingClientRect();
     const px=e.clientX-rect.left,py=e.clientY-rect.top;
     const w=this.screenToWorld(px,py);
     document.getElementById("coords").textContent=`X: ${w.x.toFixed(3)} Y: ${w.y.toFixed(3)}`;
-    if(!this.dragging)return;
-    const dx=e.clientX-this.lastX,dy=e.clientY-this.lastY;
-    this.ox+=dx;this.oy+=dy;
-    this.lastX=e.clientX;this.lastY=e.clientY;
+
+    if (this.activePointers.has(e.pointerId)) {
+      this.activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    }
+
+    // Pinch-to-zoom logic
+    if (this.activePointers.size === 2) {
+      const pointers = Array.from(this.activePointers.values());
+      const p1 = pointers[0];
+      const p2 = pointers[1];
+      const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      
+      if (this._lastPinchDist) {
+        const factor = dist / this._lastPinchDist;
+        if (Math.abs(factor - 1) > 0.01) {
+          const centerX = (p1.x + p2.x) / 2 - rect.left;
+          const centerY = (p1.y + p2.y) / 2 - rect.top;
+          this.zoom(factor, centerX, centerY);
+        }
+      }
+      this._lastPinchDist = dist;
+      this.dragging = false; // Disable pan while pinching
+      return;
+    }
+
+    if(!this.dragging) return;
+    const dx=e.clientX-this.lastX, dy=e.clientY-this.lastY;
+    this.ox+=dx; this.oy+=dy;
+    this.lastX=e.clientX; this.lastY=e.clientY;
     this.request();
   },
 
-  up(){this.dragging=false},
+  up(e){
+    this.activePointers.delete(e.pointerId);
+    if (this.activePointers.size < 2) {
+      this._lastPinchDist = null;
+    }
+    if (this.activePointers.size === 0) {
+      this.dragging = false;
+    }
+  },
 
   doubleClick(e){
     const rect=this.canvas.getBoundingClientRect();
     const px=e.clientX-rect.left,py=e.clientY-rect.top;
-    const before=this.screenToWorld(px,py);
-    this.scale =Math.min(1000,this.scale *1.5);
-    this.scaleY=Math.min(1000,this.scaleY*1.5);
-    const after=this.screenToWorld(px,py);
-    this.ox+=(after.x-before.x)*this.scale;
-    this.oy-=(after.y-before.y)*this.scaleY;
-    this.request();
+    this.zoom(1.5, px, py);
   },
 
   fitAll(){ this.reset(); },
