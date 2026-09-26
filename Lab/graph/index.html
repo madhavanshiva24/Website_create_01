@@ -45,9 +45,11 @@ select.top-select{height:38px;border:1px solid var(--border);border-radius:8px;b
 .add-row button{height:44px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-weight:600}
 .add-row button.primary{background:var(--accent);color:white;border-color:var(--accent);font-size:15px}
 .add-row button.primary:hover{background:#2558c8}
-.function-library{border-top:1px solid var(--border);background:var(--panel);max-height:365px;overflow-y:auto;flex:none}
+.function-library{border-top:1px solid var(--border);background:var(--panel);max-height:365px;overflow-y:auto;flex:none;transition:max-height 0.2s ease}
+.function-library.collapsed{max-height:38px;overflow:hidden}
 .function-library-header{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 9px;border-bottom:1px solid var(--border);font-size:10px;font-weight:900;letter-spacing:1px;position:sticky;top:0;background:var(--panel);z-index:2}
 .small-btn{border:1px solid var(--border);background:var(--panel2);border-radius:6px;padding:4px 7px;font-size:10px;color:var(--text)}
+.function-library-body{display:flex;flex-direction:column}
 .function-group{border-bottom:1px solid var(--border)}
 .function-group-title{width:100%;border:0;background:transparent;color:var(--text);display:flex;align-items:center;justify-content:space-between;padding:8px 9px;cursor:pointer;font-size:11px;font-weight:700;text-align:left}
 .function-group-title:hover{background:var(--panel2)}
@@ -267,74 +269,79 @@ select.top-select{height:38px;border:1px solid var(--border);border-radius:8px;b
     <button class="icon-btn sidebar-close" id="sidebarClose">×</button>
   </div>
   <div class="expr-list" id="expressionList"></div>
-  <div class="function-library">
+  
+  <!-- Modified Function Library with Collapse/Expand -->
+  <div class="function-library" id="functionLibrary">
     <div class="function-library-header">
       <span>MATHEMATICAL FUNCTIONS</span>
-      <button class="small-btn" id="expandFunctions">Expand</button>
+      <button class="small-btn" id="toggleLibraryBtn">−</button>
     </div>
-    <div class="function-group">
-      <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Trigonometric</span><small>sin cos tan</small></button>
-      <div class="function-buttons">
-        <button onclick="FunctionLibrary.insert('sin(')">sin</button>
-        <button onclick="FunctionLibrary.insert('cos(')">cos</button>
-        <button onclick="FunctionLibrary.insert('tan(')">tan</button>
-        <button onclick="FunctionLibrary.insert('sec(')">sec</button>
-        <button onclick="FunctionLibrary.insert('csc(')">csc</button>
-        <button onclick="FunctionLibrary.insert('cot(')">cot</button>
+    <div class="function-library-body" id="functionLibraryBody">
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Trigonometric</span><small>sin cos tan</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('sin(')">sin</button>
+          <button onclick="FunctionLibrary.insert('cos(')">cos</button>
+          <button onclick="FunctionLibrary.insert('tan(')">tan</button>
+          <button onclick="FunctionLibrary.insert('sec(')">sec</button>
+          <button onclick="FunctionLibrary.insert('csc(')">csc</button>
+          <button onclick="FunctionLibrary.insert('cot(')">cot</button>
+        </div>
       </div>
-    </div>
-    <div class="function-group">
-      <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Inverse Trigonometric</span><small>asin acos atan</small></button>
-      <div class="function-buttons">
-        <button onclick="FunctionLibrary.insert('asin(')">sin⁻¹</button>
-        <button onclick="FunctionLibrary.insert('acos(')">cos⁻¹</button>
-        <button onclick="FunctionLibrary.insert('atan(')">tan⁻¹</button>
-        <button onclick="FunctionLibrary.insert('asec(')">sec⁻¹</button>
-        <button onclick="FunctionLibrary.insert('acsc(')">csc⁻¹</button>
-        <button onclick="FunctionLibrary.insert('acot(')">cot⁻¹</button>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Inverse Trigonometric</span><small>asin acos atan</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('asin(')">sin⁻¹</button>
+          <button onclick="FunctionLibrary.insert('acos(')">cos⁻¹</button>
+          <button onclick="FunctionLibrary.insert('atan(')">tan⁻¹</button>
+          <button onclick="FunctionLibrary.insert('asec(')">sec⁻¹</button>
+          <button onclick="FunctionLibrary.insert('acsc(')">csc⁻¹</button>
+          <button onclick="FunctionLibrary.insert('acot(')">cot⁻¹</button>
+        </div>
       </div>
-    </div>
-    <div class="function-group">
-      <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Hyperbolic</span><small>sinh cosh tanh</small></button>
-      <div class="function-buttons">
-        <button onclick="FunctionLibrary.insert('sinh(')">sinh</button>
-        <button onclick="FunctionLibrary.insert('cosh(')">cosh</button>
-        <button onclick="FunctionLibrary.insert('tanh(')">tanh</button>
-        <button onclick="FunctionLibrary.insert('sech(')">sech</button>
-        <button onclick="FunctionLibrary.insert('csch(')">csch</button>
-        <button onclick="FunctionLibrary.insert('coth(')">coth</button>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Hyperbolic</span><small>sinh cosh tanh</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('sinh(')">sinh</button>
+          <button onclick="FunctionLibrary.insert('cosh(')">cosh</button>
+          <button onclick="FunctionLibrary.insert('tanh(')">tanh</button>
+          <button onclick="FunctionLibrary.insert('sech(')">sech</button>
+          <button onclick="FunctionLibrary.insert('csch(')">csch</button>
+          <button onclick="FunctionLibrary.insert('coth(')">coth</button>
+        </div>
       </div>
-    </div>
-    <div class="function-group">
-      <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Inverse Hyperbolic</span><small>asinh acosh atanh</small></button>
-      <div class="function-buttons">
-        <button onclick="FunctionLibrary.insert('asinh(')">sinh⁻¹</button>
-        <button onclick="FunctionLibrary.insert('acosh(')">cosh⁻¹</button>
-        <button onclick="FunctionLibrary.insert('atanh(')">tanh⁻¹</button>
-        <button onclick="FunctionLibrary.insert('asech(')">sech⁻¹</button>
-        <button onclick="FunctionLibrary.insert('acsch(')">csch⁻¹</button>
-        <button onclick="FunctionLibrary.insert('acoth(')">coth⁻¹</button>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Inverse Hyperbolic</span><small>asinh acosh atanh</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('asinh(')">sinh⁻¹</button>
+          <button onclick="FunctionLibrary.insert('acosh(')">cosh⁻¹</button>
+          <button onclick="FunctionLibrary.insert('atanh(')">tanh⁻¹</button>
+          <button onclick="FunctionLibrary.insert('asech(')">sech⁻¹</button>
+          <button onclick="FunctionLibrary.insert('acsch(')">csch⁻¹</button>
+          <button onclick="FunctionLibrary.insert('acoth(')">coth⁻¹</button>
+        </div>
       </div>
-    </div>
-    <div class="function-group">
-      <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Logarithmic</span><small>ln log log₂</small></button>
-      <div class="function-buttons">
-        <button onclick="FunctionLibrary.insert('ln(')">ln</button>
-        <button onclick="FunctionLibrary.insert('log10(')">log₁₀</button>
-        <button onclick="FunctionLibrary.insert('log2(')">log₂</button>
-        <button onclick="FunctionLibrary.insert('logb(')">logb</button>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Logarithmic</span><small>ln log log₂</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('ln(')">ln</button>
+          <button onclick="FunctionLibrary.insert('log10(')">log₁₀</button>
+          <button onclick="FunctionLibrary.insert('log2(')">log₂</button>
+          <button onclick="FunctionLibrary.insert('logb(')">logb</button>
+        </div>
       </div>
-    </div>
-    <div class="function-group">
-      <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Exponential</span><small>eˣ 10ˣ</small></button>
-      <div class="function-buttons">
-        <button onclick="FunctionLibrary.insert('exp(')">eˣ</button>
-        <button onclick="FunctionLibrary.insert('10^(')">10ˣ</button>
-        <button onclick="FunctionLibrary.insert('2^(')">2ˣ</button>
-        <button onclick="FunctionLibrary.insert('pow(')">aˣ</button>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Exponential</span><small>eˣ 10ˣ</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('exp(')">eˣ</button>
+          <button onclick="FunctionLibrary.insert('10^(')">10ˣ</button>
+          <button onclick="FunctionLibrary.insert('2^(')">2ˣ</button>
+          <button onclick="FunctionLibrary.insert('pow(')">aˣ</button>
+        </div>
       </div>
     </div>
   </div>
+  
   <div class="add-row">
     <button class="primary" id="addExpressionBtn">＋ Expression</button>
   </div>
@@ -766,46 +773,6 @@ const FunctionLibrary={
       const label=span.textContent.replace(/^▸|^▾/,"").trim();
       span.textContent=(group.classList.contains("open")?"▾ ":"▸ ")+label;
     }
-  },
-  toggleAll(){
-    const groups=[...document.querySelectorAll(".function-group")];
-    const open=groups.some(g=>!g.classList.contains("open"));
-    groups.forEach(g=>{
-      g.classList.toggle("open",open);
-      const span=g.querySelector("span");
-      if(span){
-        const label=span.textContent.replace(/^▸|^▾/,"").trim();
-        span.textContent=(open?"▾ ":"▸ ")+label;
-      }
-    });
-  },
-  insert(value){
-    let input=document.querySelector(".expr-input:focus");
-    if(!input){
-      const idx=App.state.expressions.findIndex(e=>e.id===App.state.selected);
-      input=document.querySelectorAll(".expr-input")[idx]||document.querySelector(".expr-input:last-of-type");
-    }
-    if(!input){
-      App.addExpression(value);
-      return;
-    }
-    const start=input.selectionStart ?? input.value.length;
-    const end=input.selectionEnd ?? input.value.length;
-    const before=input.value.slice(0,start);
-    const after=input.value.slice(end);
-    let insertion=value;
-    const constants=["pi","e","phi","tau","Infinity","alpha","beta","gammaVar","delta","theta","lambda","mu","sigma","omega"];
-    if(constants.includes(value) && /[0-9A-Za-z_)πφτ]$/.test(before)){
-      insertion="*"+value;
-    }
-    input.value=before+insertion+after;
-    input.dispatchEvent(new Event("input",{bubbles:true}));
-    input.focus();
-    const pos=start+insertion.length;
-    input.setSelectionRange(pos,pos);
-    const id=input.dataset.id;
-    App.state.selected=id;
-    Graph.request();
   }
 };
 
@@ -934,7 +901,6 @@ const UI={
 
   bind(){
     document.getElementById("addExpressionBtn").onclick=()=>App.addExpression();
-    document.getElementById("expandFunctions").onclick=()=>FunctionLibrary.toggleAll();
     document.getElementById("newBtn").onclick=()=>App.newProject();
     document.getElementById("undoBtn").onclick=()=>App.undo();
     document.getElementById("redoBtn").onclick=()=>App.redo();
@@ -965,6 +931,14 @@ const UI={
     // --- Zoom Controls ---
     document.getElementById("zoomInBtn").onclick = () => Graph.zoom(1.25);
     document.getElementById("zoomOutBtn").onclick = () => Graph.zoom(1 / 1.25);
+
+    // --- Function Library Toggle ---
+    document.getElementById("toggleLibraryBtn").onclick = (e) => {
+      const lib = document.getElementById("functionLibrary");
+      lib.classList.toggle("collapsed");
+      const isCollapsed = lib.classList.contains("collapsed");
+      e.target.textContent = isCollapsed ? "+" : "−";
+    };
 
     // --- Mobile Sidebar & FAB ---
     const sidebar = document.getElementById("sidebar");
