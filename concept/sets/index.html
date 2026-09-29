@@ -1,1 +1,2815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set Theory and Relations — A Standard Textbook Treatment</title>
 
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\\[','\\]']],
+    tags: 'none',
+    macros: {
+      card: ["n\\!\\left(#1\\right)", 1],
+      powerset: "\\mathcal{P}",
+      Set: ["\\left\\{#1\\right\\}", 1],
+      suchthat: "\\,\\middle|\\,"
+    }
+  },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+};
+</script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+/* ============================================================
+   PALETTE
+   ============================================================ */
+:root{
+  --chapterblue:#19487d;
+  --definitionblue:#19487d;
+  --examplegreen:#1c6948;
+  --remarkorange:#915214;
+  --lawpurple:#5b3987;
+  --venn:#5b9bd5;
+  --line:#d9dee5;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  padding:0 0 70px;
+  background:#eef0f3;
+  color:#1b1b1b;
+  font-family:"Latin Modern Roman","Computer Modern",Cambria,Georgia,"Times New Roman",serif;
+  font-size:17px;
+  line-height:1.58;
+  counter-reset:section;
+}
+.page{
+  max-width:1000px;
+  margin:0 auto;
+  background:#fff;
+  padding:52px 60px 80px;
+  box-shadow:0 3px 28px rgba(0,0,0,.10);
+}
+
+/* ============================================================
+   TITLE PAGE
+   ============================================================ */
+.titlepage{
+  text-align:center;
+  padding:40px 0 20px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:34px;
+}
+.titlepage h1{
+  font-size:2.35rem;
+  letter-spacing:.02em;
+  color:var(--chapterblue);
+  margin:0 0 .35em;
+  line-height:1.2;
+}
+.titlepage .subtitle{
+  font-size:1.2rem;
+  color:#3c4654;
+  margin:0 0 26px;
+}
+.titlepage .venn-hero{max-width:520px;margin:0 auto 26px;}
+.titlepage .blurb{
+  font-size:1.02rem;
+  color:#3c4654;
+  margin:.4em 0;
+}
+.titlepage .meta{font-size:1.02rem;color:#3c4654;margin-top:1.1em;}
+
+/* ============================================================
+   HEADINGS
+   ============================================================ */
+h2{
+  font-size:1.55rem;
+  color:var(--chapterblue);
+  margin:2.6em 0 .7em;
+  padding-bottom:.28em;
+  border-bottom:2px solid var(--chapterblue);
+  letter-spacing:.01em;
+}
+.sec:first-of-type > h2{margin-top:1.4em;}
+h3{
+  font-size:1.2rem;
+  color:#173c6b;
+  margin:1.9em 0 .5em;
+}
+h4{
+  font-size:1.03rem;
+  color:#1c4374;
+  margin:1.4em 0 .4em;
+  font-weight:700;
+}
+h5{
+  font-size:1rem;
+  margin:1.2em 0 .35em;
+  font-weight:700;
+  color:#1c4374;
+}
+.sec{counter-increment:section;counter-reset:subsec def ex prop rem thm law;}
+.sec.unnumbered{counter-increment:none;counter-reset:none;}
+.sec:not(.unnumbered) > h2::before{content:counter(section) ". ";}
+h3.sub::before{counter-increment:subsec;content:counter(section) "." counter(subsec) " ";}
+
+p{margin:.55em 0;}
+
+/* ============================================================
+   BOXES
+   ============================================================ */
+.box{
+  margin:1em 0;
+  padding:.72em 1.05em .8em;
+  border-left:4px solid #999;
+  border-radius:0 5px 5px 0;
+  background:#f7f9fb;
+}
+.box > p:first-child{margin-top:0;}
+.box > p:last-child{margin-bottom:0;}
+
+.def{border-left-color:var(--definitionblue);background:#f3f7fc;}
+.def::before{
+  counter-increment:def;
+  content:"Definition " counter(section) "." counter(def) ". ";
+  font-weight:700;color:var(--definitionblue);
+}
+.ex{border-left-color:var(--examplegreen);background:#f2f9f5;}
+.ex::before{
+  counter-increment:ex;
+  content:"Example " counter(section) "." counter(ex) ". ";
+  font-weight:700;color:var(--examplegreen);
+}
+.ex[data-opt]::before{
+  content:"Example " counter(section) "." counter(ex) " (" attr(data-opt) "). ";
+}
+.prop{border-left-color:var(--chapterblue);background:#f3f7fc;}
+.prop::before{
+  counter-increment:prop;
+  content:"Property " counter(section) "." counter(prop) ". ";
+  font-weight:700;color:var(--chapterblue);
+}
+.prop[data-opt]::before{
+  content:"Property " counter(section) "." counter(prop) " (" attr(data-opt) "). ";
+}
+.rem{border-left-color:var(--remarkorange);background:#fdf7ef;}
+.rem::before{
+  counter-increment:rem;
+  content:"Remark " counter(section) "." counter(rem) ". ";
+  font-weight:700;color:var(--remarkorange);
+}
+.thm{border-left-color:var(--chapterblue);background:#f3f7fc;}
+.thm::before{
+  counter-increment:thm;
+  content:"Theorem " counter(section) "." counter(thm) ". ";
+  font-weight:700;color:var(--chapterblue);
+}
+.law{border-left-color:var(--lawpurple);background:#f7f4fb;}
+.law::before{
+  counter-increment:law;
+  content:"Law " counter(section) "." counter(law) ". ";
+  font-weight:700;color:var(--lawpurple);
+}
+
+.keyidea{
+  margin:1em 0;
+  padding:.68em 1.05em;
+  border-left:4px solid var(--examplegreen);
+  border-radius:0 5px 5px 0;
+  background:#f2f9f5;
+}
+.keyidea .tag{font-weight:700;color:var(--examplegreen);}
+
+.cmistake{
+  margin:1em 0;
+  padding:.68em 1.05em;
+  border-left:4px solid var(--remarkorange);
+  border-radius:0 5px 5px 0;
+  background:#fdf7ef;
+}
+.cmistake .tag{font-weight:700;color:var(--remarkorange);}
+
+.wex{
+  margin:1em 0;
+  padding:.68em 1.05em;
+  border-left:4px solid var(--examplegreen);
+  border-radius:0 5px 5px 0;
+  background:#f5faf7;
+}
+.wex .tag{font-weight:700;color:var(--examplegreen);}
+
+.proof{
+  margin:.9em 0;
+  padding:.55em 1.05em;
+  border-left:3px solid #b9c2cc;
+  background:#fafbfc;
+  font-style:italic;
+}
+.proof .qed{float:right;font-style:normal;color:#5a6470;}
+
+.objectives{
+  margin:1em 0;
+  padding:.7em 1.2em 1em;
+  border:1px solid var(--line);
+  border-left:4px solid var(--chapterblue);
+  border-radius:0 5px 5px 0;
+  background:#f7f9fc;
+}
+.objectives .tag{font-weight:700;color:var(--chapterblue);}
+
+.summary{
+  margin:1.1em 0;
+  padding:.8em 1.2em 1em;
+  border:1px solid var(--line);
+  border-left:4px solid var(--chapterblue);
+  border-radius:0 5px 5px 0;
+  background:#f7f9fc;
+}
+.summary .tag{font-weight:700;color:var(--chapterblue);}
+
+/* ============================================================
+   LISTS
+   ============================================================ */
+ul,ol{margin:.5em 0 .5em 1.4em;padding:0;}
+li{margin:.22em 0;}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+table{
+  border-collapse:collapse;
+  margin:1em 0;
+  width:100%;
+  font-size:.97rem;
+}
+table.center{width:auto;margin-left:auto;margin-right:auto;}
+th,td{
+  padding:.45em .8em;
+  text-align:left;
+  vertical-align:top;
+}
+thead th{
+  border-top:1.6px solid #2b3440;
+  border-bottom:1px solid #2b3440;
+  font-weight:700;
+  color:#173c6b;
+}
+tbody tr:last-child td{border-bottom:1.6px solid #2b3440;}
+tbody td{border-bottom:1px solid #e3e7ec;}
+
+/* ============================================================
+   VENN / SVG
+   ============================================================ */
+.venn{display:block;max-width:100%;height:auto;margin:0 auto;}
+.venn text{
+  font-family:Georgia,"Times New Roman",serif;
+  font-style:italic;
+  font-size:0.26px;
+  fill:#16202b;
+}
+.venn .upright{font-style:normal;}
+.v-box{fill:none;stroke:#3d4653;stroke-width:1.4;}
+.v-outline{fill:none;stroke:var(--venn);stroke-width:1.6;}
+.v-fill{fill:var(--venn);fill-opacity:.32;}
+.v-fill-strong{fill:var(--venn);fill-opacity:.55;}
+.v-fill-light{fill:var(--venn);fill-opacity:.18;}
+.v-target{fill:var(--venn);fill-opacity:.32;}
+.v-white{fill:#ffffff;}
+.v-dot{fill:#16202b;}
+.v-line{stroke:#3d4653;stroke-width:1;}
+
+.figrow{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:flex-end;
+  gap:18px;
+  margin:1.1em 0;
+}
+.figrow > figure{
+  margin:0;
+  flex:1 1 190px;
+  max-width:260px;
+  text-align:center;
+}
+.figrow > figure svg{width:100%;height:auto;}
+figure.single{margin:1.1em 0;text-align:center;}
+figure.single svg{max-width:100%;}
+figure figcaption{
+  font-size:.88rem;
+  color:#4a5461;
+  margin-top:.35em;
+  font-style:italic;
+}
+
+/* ============================================================
+   TOC
+   ============================================================ */
+.toc{
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:1.1em 1.5em 1.3em;
+  background:#f9fafc;
+  margin:1.4em 0 2em;
+}
+.toc h2{
+  border:none;
+  margin:0 0 .5em;
+  font-size:1.3rem;
+  padding:0;
+}
+.toc ol{list-style:none;margin:0;padding:0;}
+.toc > ol > li{margin:.28em 0;font-weight:700;color:#173c6b;}
+.toc ol ol{margin:.18em 0 .4em 1.3em;}
+.toc ol ol li{font-weight:400;color:#3c4654;font-size:.94rem;}
+.toc a{color:inherit;text-decoration:none;}
+.toc a:hover{text-decoration:underline;color:var(--chapterblue);}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.note{font-style:italic;color:#4a5461;}
+hr.sep{border:none;border-top:1px solid var(--line);margin:2.2em 0;}
+.mjx-container{overflow-x:auto;overflow-y:hidden;}
+
+@media (max-width:820px){
+  .page{padding:28px 20px 50px;}
+  .titlepage h1{font-size:1.7rem;}
+  body{font-size:16px;}
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<!-- ============================================================
+     TITLE PAGE
+     ============================================================ -->
+<div class="titlepage">
+  <h1>SET THEORY AND RELATIONS</h1>
+  <p class="subtitle">A Standard Textbook Treatment</p>
+
+  <div class="venn-hero">
+    <svg class="venn" viewBox="0 0 7 4.6" role="img" aria-label="Two overlapping circles A and B inside a universal rectangle">
+      <rect class="v-box" x="0.05" y="0.05" width="6.9" height="4.1"></rect>
+      <circle class="v-outline" cx="2.1" cy="2.1" r="1.25"></circle>
+      <circle class="v-outline" cx="4.9" cy="2.1" r="1.25"></circle>
+      <text x="2.1" y="3.75" text-anchor="middle" style="font-size:0.4px">A</text>
+      <text x="4.9" y="3.75" text-anchor="middle" style="font-size:0.4px">B</text>
+      <text x="3.5" y="2.2" text-anchor="middle" style="font-size:0.36px">A ∩ B</text>
+      <text x="3.5" y="0.5" text-anchor="middle" style="font-size:0.36px">A ∪ B</text>
+    </svg>
+  </div>
+
+  <p class="blurb">Definitions, representations, operations, Venn diagrams,<br>
+     cardinality, Cartesian products, relations, and counting</p>
+  <p class="meta">Mathematics</p>
+</div>
+
+<!-- ============================================================
+     TABLE OF CONTENTS
+     ============================================================ -->
+<nav class="toc">
+  <h2>Chapter Guide</h2>
+  <ol>
+    <li><a href="#s1">SET THEORY</a>
+      <ol>
+        <li><a href="#s1-1">1.1 Introduction</a></li>
+        <li><a href="#s1-2">1.2 Definition of a Set</a></li>
+        <li><a href="#s1-3">1.3 Representation of Sets</a></li>
+        <li><a href="#s1-4">1.4 Types of Sets</a></li>
+        <li><a href="#s1-5">1.5 Order / Cardinal Number</a></li>
+        <li><a href="#s1-6">1.6 Equivalent Sets</a></li>
+        <li><a href="#s1-7">1.7 Equal Sets</a></li>
+        <li><a href="#s1-8">1.8 Subsets</a></li>
+        <li><a href="#s1-9">1.9 Properties of Subsets</a></li>
+        <li><a href="#s1-10">1.10 Proper and Improper Subsets</a></li>
+        <li><a href="#s1-11">1.11 Number System Subset Relation</a></li>
+        <li><a href="#s1-12">1.12 Power Set</a></li>
+        <li><a href="#s1-13">1.13 Comparable Sets</a></li>
+        <li><a href="#s1-14">1.14 Universal Set</a></li>
+      </ol>
+    </li>
+    <li><a href="#s2">OPERATIONS ON SETS</a>
+      <ol>
+        <li><a href="#s2-1">2.1 Union of Sets</a></li>
+        <li><a href="#s2-2">2.2 Intersection of Sets</a></li>
+        <li><a href="#s2-3">2.3 Disjoint Sets</a></li>
+        <li><a href="#s2-4">2.4 Difference of Sets</a></li>
+        <li><a href="#s2-5">2.5 Properties of Difference</a></li>
+        <li><a href="#s2-6">2.6 Symmetric Difference</a></li>
+        <li><a href="#s2-7">2.7 Complement of a Set</a></li>
+        <li><a href="#s2-8">2.8 Properties of Complement</a></li>
+      </ol>
+    </li>
+    <li><a href="#s3">LAWS / ALGEBRA OF SETS</a>
+      <ol>
+        <li><a href="#s3-1">3.1 Commutative Laws</a></li>
+        <li><a href="#s3-2">3.2 Associative Laws</a></li>
+        <li><a href="#s3-3">3.3 Distributive Laws</a></li>
+        <li><a href="#s3-4">3.4 Identity Laws</a></li>
+        <li><a href="#s3-5">3.5 Domination Laws</a></li>
+        <li><a href="#s3-6">3.6 Idempotent Laws</a></li>
+        <li><a href="#s3-7">3.7 Complement Laws</a></li>
+        <li><a href="#s3-8">3.8 Difference Identity</a></li>
+        <li><a href="#s3-9">3.9 Symmetric Difference</a></li>
+        <li><a href="#s3-10">3.10 De Morgan's Laws</a></li>
+      </ol>
+    </li>
+    <li><a href="#s4">CARDINALITY FORMULAS</a>
+      <ol>
+        <li><a href="#s4-1">4.1 Union and Intersection</a></li>
+        <li><a href="#s4-2">4.2 Difference Formulas</a></li>
+        <li><a href="#s4-3">4.3 Complement</a></li>
+        <li><a href="#s4-4">4.4 Symmetric Difference</a></li>
+        <li><a href="#s4-5">4.5 Disjoint Sets</a></li>
+        <li><a href="#s4-6">4.6 Three-Set Inclusion-Exclusion</a></li>
+        <li><a href="#s4-7">4.7 General Inclusion-Exclusion</a></li>
+      </ol>
+    </li>
+    <li><a href="#s5">VENN DIAGRAMS</a>
+      <ol>
+        <li><a href="#s5-1">5.1 Venn Diagram Basics</a></li>
+        <li><a href="#s5-2">5.2 Basic Venn Diagrams</a></li>
+        <li><a href="#s5-3">5.3 Compound Venn Diagrams</a></li>
+        <li><a href="#s5-4">5.4 De Morgan's Laws (Venn Diagrams)</a></li>
+        <li><a href="#s5-5">5.5 Two-Set Applications</a></li>
+        <li><a href="#s5-6">5.6 Three-Set Applications</a></li>
+      </ol>
+    </li>
+    <li><a href="#s6">RELATIONS</a>
+      <ol>
+        <li><a href="#s6-1">6.1 Introduction</a></li>
+        <li><a href="#s6-2">6.2 Ordered Pair</a></li>
+        <li><a href="#s6-3">6.3 Cartesian Product</a></li>
+        <li><a href="#s6-4">6.4 B × A</a></li>
+        <li><a href="#s6-5">6.5 Empty Cartesian Product</a></li>
+        <li><a href="#s6-6">6.6 Cartesian Product with Itself</a></li>
+        <li><a href="#s6-7">6.7 Cardinal Number of Cartesian Product</a></li>
+        <li><a href="#s6-8">6.8 Graphical / Lattice Representation</a></li>
+        <li><a href="#s6-9">6.9 Ordered Triplet</a></li>
+        <li><a href="#s6-10">6.10 Cartesian Product of Three Sets</a></li>
+        <li><a href="#s6-11">6.11 n-Tuple</a></li>
+        <li><a href="#s6-12">6.12 Describing a Relation</a></li>
+        <li><a href="#s6-13">6.13 Inverse Relation</a></li>
+      </ol>
+    </li>
+    <li><a href="#s7">TYPES OF RELATIONS</a>
+      <ol>
+        <li><a href="#s7-1">7.1 One-One Relation</a></li>
+        <li><a href="#s7-2">7.2 One-to-Many Relation</a></li>
+        <li><a href="#s7-3">7.3 Many-One Relation</a></li>
+        <li><a href="#s7-4">7.4 Many-Many Relation</a></li>
+        <li><a href="#s7-5">7.5 Reflexive Relation</a></li>
+        <li><a href="#s7-6">7.6 Symmetric Relation</a></li>
+        <li><a href="#s7-7">7.7 Anti-Symmetric Relation</a></li>
+        <li><a href="#s7-8">7.8 Transitive Relation</a></li>
+        <li><a href="#s7-9">7.9 Equivalence Relation</a></li>
+      </ol>
+    </li>
+    <li><a href="#s8">COUNTING RELATIONS</a></li>
+    <li><a href="#s9">CONCEPTUAL CONSOLIDATION</a>
+      <ol>
+        <li><a href="#s9-1">9.1 A systematic way to read a set expression</a></li>
+        <li><a href="#s9-2">9.2 Membership translation table</a></li>
+        <li><a href="#s9-3">9.3 Worked Venn-diagram method</a></li>
+        <li><a href="#s9-4">9.4 A reliable procedure for inclusion-exclusion</a></li>
+        <li><a href="#s9-5">9.5 Equality, equivalence, and subset: a comparison</a></li>
+        <li><a href="#s9-6">9.6 Cartesian product: a coordinate interpretation</a></li>
+        <li><a href="#s9-7">9.7 Relation as a subset of a Cartesian product</a></li>
+        <li><a href="#s9-8">9.8 Property-checking checklist for relations</a></li>
+        <li><a href="#s9-9">9.9 End-of-chapter summary</a></li>
+      </ol>
+    </li>
+    <li><a href="#s10">ORIGINAL SOURCE WORKSHEET / CUQ</a></li>
+    <li><a href="#s11">ADDITIONAL PRACTICE</a>
+      <ol>
+        <li><a href="#s11-1">11.1 Venn Diagram Problems</a></li>
+        <li><a href="#s11-2">11.2 Cartesian Product Problems</a></li>
+        <li><a href="#s11-3">11.3 Relation Problems</a></li>
+        <li><a href="#s11-4">11.4 Mixed Problems</a></li>
+        <li><a href="#s11-5">11.5 Answer Key</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+
+<!-- ============================================================
+     CHAPTER GUIDE
+     ============================================================ -->
+<section class="sec unnumbered" id="guide">
+<h2>Chapter Guide</h2>
+
+<p>This chapter develops the language and basic algebra of sets and then uses
+sets to construct Cartesian products and relations. The presentation retains
+the original content and examples while adding explanatory notes, worked
+examples, visual interpretations, and practice-oriented observations.</p>
+
+<div class="objectives">
+  <span class="tag">Learning objectives</span>
+  <ul>
+    <li>Define a set and distinguish membership from non-membership.</li>
+    <li>Represent sets in roster and set-builder forms and convert between them.</li>
+    <li>Classify sets as empty, singleton, finite, or infinite.</li>
+    <li>Compare sets using equality, equivalence, subset, proper subset, and comparability.</li>
+    <li>Construct power sets and use the formula \(\card{P(A)}=2^{\card A}\).</li>
+    <li>Perform union, intersection, difference, symmetric difference, and complement.</li>
+    <li>Apply the laws of set algebra and De Morgan's laws.</li>
+    <li>Use cardinality formulas and inclusion-exclusion to solve counting problems.</li>
+    <li>Interpret set relationships using Venn diagrams.</li>
+    <li>Construct Cartesian products and understand ordered pairs and tuples.</li>
+    <li>Define and classify relations using reflexive, symmetric, anti-symmetric, and transitive properties.</li>
+    <li>Determine inverse relations and count relations on finite sets.</li>
+  </ul>
+</div>
+
+<h3 class="sub" style="counter-increment:none">Standard notation used throughout</h3>
+
+<table class="center">
+  <thead>
+    <tr><th>Symbol</th><th>Meaning</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>\(\in\)</td><td>is an element of</td></tr>
+    <tr><td>\(\notin\)</td><td>is not an element of</td></tr>
+    <tr><td>\(\subseteq\)</td><td>is a subset of</td></tr>
+    <tr><td>\(\subset\)</td><td>is a proper subset of, in this chapter's convention</td></tr>
+    <tr><td>\(\varnothing\)</td><td>empty set</td></tr>
+    <tr><td>\(U,\xi\)</td><td>universal set</td></tr>
+    <tr><td>\(\cup\)</td><td>union</td></tr>
+    <tr><td>\(\cap\)</td><td>intersection</td></tr>
+    <tr><td>\(A'\) or \(A^c\)</td><td>complement of \(A\)</td></tr>
+    <tr><td>\(A-B\)</td><td>difference of \(A\) and \(B\)</td></tr>
+    <tr><td>\(A\triangle B\)</td><td>symmetric difference</td></tr>
+    <tr><td>\(A\times B\)</td><td>Cartesian product</td></tr>
+    <tr><td>\(R^{-1}\)</td><td>inverse relation</td></tr>
+    <tr><td>\(\card A\)</td><td>cardinal number/order of a finite set \(A\)</td></tr>
+  </tbody>
+</table>
+
+<div class="cmistake">
+  <span class="tag">Common mistake.</span>
+  Do not confuse an element with a subset. For example, if \(A=\{1,2,3\}\),
+  then \(1\in A\), whereas \(\{1\}\subseteq A\). The statements \(1\subseteq A\)
+  and \(\{1\}\in A\) are different statements and are generally false.
+</div>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  A set is determined by its elements, not by the order in which those
+  elements are written. Thus \(\{1,2,3\}=\{3,1,2\}\), and repeated listing of an
+  element does not create a new element.
+</div>
+</section>
+
+<!-- ============================================================
+     1. SET THEORY
+     ============================================================ -->
+<section class="sec" id="s1">
+<h2>SET THEORY</h2>
+
+<h3 class="sub" id="s1-1">Introduction</h3>
+<p>In everyday life, we deal with collections of objects of one kind or another.</p>
+
+<div class="ex">
+  <ul>
+    <li>The collection of even natural numbers less than \(12\), i.e., \(2,4,6,8,10\).</li>
+    <li>The collection of vowels in the English alphabet, i.e., \(a,e,i,o,u\).</li>
+  </ul>
+</div>
+
+<h3 class="sub" id="s1-2">Definition of a Set</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  The word <em>well-defined</em> is essential. A collection is a set only when
+  membership can be decided unambiguously. The elements themselves need not be
+  numbers; they may be people, symbols, objects, or other sets.
+</div>
+
+<div class="wex">
+  <span class="tag">Worked Example.</span>
+  Consider
+  \[
+  A=\{2,4,6,8,10\}.
+  \]
+  The statement \(6\in A\) is true, while \(7\notin A\). Notice that the elements
+  are distinct and their order is irrelevant.
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6.6 3.2" role="img" aria-label="A set containing five distinct elements">
+    <ellipse class="v-outline" cx="3.3" cy="1.7" rx="3.0" ry="1.35"></ellipse>
+    <text x="0.55" y="2.9" text-anchor="middle" style="font-size:0.34px">A</text>
+    <g>
+      <circle class="v-dot" cx="1.5" cy="1.7" r="0.045"></circle>
+      <text x="1.5" y="2.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">2</text>
+      <circle class="v-dot" cx="2.7" cy="1.7" r="0.045"></circle>
+      <text x="2.7" y="2.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">4</text>
+      <circle class="v-dot" cx="3.9" cy="1.7" r="0.045"></circle>
+      <text x="3.9" y="2.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">6</text>
+      <circle class="v-dot" cx="5.1" cy="1.7" r="0.045"></circle>
+      <text x="5.1" y="2.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">8</text>
+      <circle class="v-dot" cx="6.05" cy="1.7" r="0.045"></circle>
+      <text x="6.05" y="2.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">10</text>
+    </g>
+    <text x="3.3" y="0.42" text-anchor="middle" style="font-style:normal;font-size:0.27px">A set containing five distinct elements</text>
+  </svg>
+</figure>
+
+<div class="def">
+  A <strong>set</strong> is a well-defined collection of distinct objects.
+</div>
+
+<p>By “well-defined collection” we mean that given a set and an object, it must be possible to decide whether or not the object belongs to the set.</p>
+
+<p>The objects are called the <strong>members</strong> or <strong>elements</strong> of the set. Sets are denoted by capital letters and their members by small letters. Elements are written within braces \(\{\}\).</p>
+
+<p>If \(x\) is a member of the set \(S\), we write
+\[
+x\in S
+\]
+(read as “\(x\) belongs to \(S\)”). If \(x\) is not a member of \(S\), we write
+\[
+x\notin S
+\]
+(read as “\(x\) does not belong to \(S\)”). If \(x\) and \(y\) both belong to \(S\), we write \(x,y\in S\).</p>
+
+<h3 class="sub" id="s1-3">Representation of Sets</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  Roster form is usually convenient when the set has few elements. Set-builder
+  form is usually more efficient when the elements follow a rule or when the
+  set is large or infinite.
+</div>
+
+<p>There are two ways to represent a given set.</p>
+
+<h4>A. Roster (or Tabular / List) Form</h4>
+<p>In this form, list all the members of the set, separate them by commas, and enclose them within braces.</p>
+
+<div class="ex">
+  The set \(S\) of even natural numbers less than \(12\) in tabular form is
+  \[
+  S=\{2,4,6,8,10\}.
+  \]
+  Note that \(8\in S\) while \(7\notin S\).
+</div>
+
+<h4>B. Set-Builder (or Rule) Form</h4>
+<p>In this form, write one or more variables representing an arbitrary member of the set, followed by a statement or property which must be satisfied by each member.</p>
+
+<div class="ex">
+  The set \(S\) of even natural numbers less than \(12\) in set-builder form is
+  \[
+  S=\{x \mid x \text{ is an even natural number less than }12\}.
+  \]
+</div>
+
+<p><strong>Conversion.</strong> To convert from set-builder to roster form, list the elements that satisfy the condition. To convert from roster to set-builder, identify the common property of the elements.</p>
+
+<h3 class="sub" id="s1-4">Types of Sets</h3>
+
+<h4>Empty Set</h4>
+<div class="def">
+  A set containing no element is called the <strong>empty set</strong>. It is also called the <strong>null set</strong> or <strong>void set</strong>. It is denoted by \(\varnothing\) or \(\{\}\).
+</div>
+<div class="ex">
+  The collection of all integers whose square is less than \(0\) is the empty set.
+</div>
+
+<h4>Singleton Set</h4>
+<div class="def">
+  A set is said to be a <strong>singleton set</strong> if it contains only one element.
+</div>
+<div class="ex">
+  \(\{x:x+4=0,\ x\in\mathbb{Z}\}\) is a singleton set, because the set contains only one integer, namely \(-4\).
+</div>
+
+<h4>Finite Set</h4>
+<div class="def">
+  A set with a finite number of elements is called a <strong>finite set</strong>.
+</div>
+<div class="ex">
+  The set of all students studying in a given school is a finite set.
+</div>
+
+<h4>Infinite Set</h4>
+<div class="def">
+  A set with an infinite number of elements is called an <strong>infinite set</strong>.
+</div>
+<div class="ex">
+  The set of natural numbers is an infinite set.
+</div>
+
+<h3 class="sub" id="s1-5">Order / Cardinal Number</h3>
+
+<div class="wex">
+  <span class="tag">Worked Example.</span>
+  If
+  \[
+  A=\{2,4,6,8\},\qquad B=\{a,b,c,d,e\},
+  \]
+  then \(\card A=4\) and \(\card B=5\). The actual nature of the elements is
+  irrelevant when counting the order of a finite set.
+</div>
+
+<div class="def">
+  The number of different elements in a finite set \(S\) is called the <strong>order</strong> of \(S\), denoted by \(n(S)\). The number of distinct elements in a finite set is also called its <strong>cardinal number</strong>.
+</div>
+
+<div class="rem">
+  The order of an infinite set is not defined.
+</div>
+
+<div class="ex">
+  If \(A=\{1,2,3,4,5\}\), then \(n(A)=5\).
+  If \(B=\{1,2,3\}\), then \(n(B)=3\).
+</div>
+
+<h3 class="sub" id="s1-6">Equivalent Sets</h3>
+<div class="def">
+  Two finite sets \(A\) and \(B\) are said to be <strong>equivalent</strong>, written \(A\sim B\) or \(A\approx B\), iff they contain the same number of distinct elements, i.e., iff
+  \[
+  n(A)=n(B).
+  \]
+</div>
+
+<div class="ex">
+  <ol>
+    <li>The sets \(\{1\}\) and \(\{2\}\) are equivalent.</li>
+    <li>The sets \(\{3,4\}\) and \(\{x\in\mathbb{Z}:x^2=4\}\) are equivalent.</li>
+  </ol>
+</div>
+
+<div class="rem">
+  Equivalent sets do not necessarily contain the same elements.
+</div>
+
+<h3 class="sub" id="s1-7">Equal Sets</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  Equality is stronger than having the same number of elements. Two sets are
+  equal precisely when they contain exactly the same elements.
+</div>
+
+<div class="cmistake">
+  <span class="tag">Common mistake.</span>
+  The sets \(\{1,2,3\}\) and \(\{a,b,c\}\) are equivalent but not equal. Equality
+  requires the same elements; equivalence requires only the same cardinality.
+</div>
+
+<div class="def">
+  Two sets \(A\) and \(B\) are said to be <strong>equal</strong>, written \(A=B\), iff every member of \(A\) is a member of \(B\) and every member of \(B\) is a member of \(A\).
+</div>
+
+<p>Equivalently,</p>
+\[
+A=B \iff A\subseteq B \text{ and } B\subseteq A.
+\]
+
+<div class="rem">
+  Equal sets are always equivalent, but equivalent sets may not be equal.
+</div>
+
+<div class="ex">
+  <ol>
+    <li>\(\{-1,+1\}\) and \(\{x:x^2=1\}\) are equal.</li>
+    <li>\(\{0\}\) and \(\{3\}\) are not equal, but they are equivalent.</li>
+  </ol>
+</div>
+
+<h3 class="sub" id="s1-8">Subsets</h3>
+
+<div class="wex">
+  <span class="tag">Worked Example.</span>
+  Let
+  \[
+  A=\{1,2\},\qquad B=\{1,2,3,4\}.
+  \]
+  Every element of \(A\) occurs in \(B\), so \(A\subseteq B\). However,
+  \(B\nsubseteq A\) because \(3\in B\) but \(3\notin A\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 3.8" role="img" aria-label="A is a subset of B which is a subset of U">
+    <rect class="v-box" x="0.05" y="0.05" width="5.9" height="3.7"></rect>
+    <circle class="v-outline" cx="3" cy="1.9" r="1.35"></circle>
+    <circle class="v-outline" cx="3" cy="1.9" r="0.72"></circle>
+    <text x="5.55" y="3.5" text-anchor="middle" style="font-size:0.34px">U</text>
+    <text x="3" y="1.98" text-anchor="middle" style="font-size:0.32px">A</text>
+    <text x="3" y="0.62" text-anchor="middle" style="font-size:0.32px">B</text>
+    <text x="1.45" y="3.4" text-anchor="middle" style="font-size:0.3px">A ⊆ B ⊆ U</text>
+  </svg>
+</figure>
+
+<div class="def">
+  Let \(A,B\) be two sets such that every member of \(A\) is a member of \(B\). Then \(A\) is called a <strong>subset</strong> of \(B\), written
+  \[
+  A\subseteq B.
+  \]
+</div>
+
+<p>Thus,</p>
+\[
+A\subseteq B \iff (x\in A \Rightarrow x\in B).
+\]
+<p>If there exists at least one element in \(A\) which is not a member of \(B\), then \(A\) is not a subset of \(B\), written \(A\nsubseteq B\).</p>
+
+<div class="ex">
+  Let \(A=\{-1,2,5\}\) and \(B=\{3,-1,2,7,5\}\). Then \(A\subseteq B\). Note that \(B\nsubseteq A\).
+</div>
+
+<p>The set of all even natural numbers is a subset of the set of natural numbers.</p>
+
+<h3 class="sub" id="s1-9">Properties of Subsets</h3>
+<div class="prop">
+  \(\varnothing\subseteq A\), as there is no element in \(\varnothing\) which is not in \(A\).
+</div>
+<div class="prop">
+  Every set is a subset of itself: \(A\subseteq A\).
+</div>
+<div class="prop">
+  If \(A\subseteq B\) and \(B\subseteq C\), then \(A\subseteq C\).
+</div>
+<div class="prop">
+  \(A=B\) iff \(A\subseteq B\) and \(B\subseteq A\).
+</div>
+
+<div class="proof">
+  <strong>Proof of Property 3.</strong> Let \(x\in A\). Since \(A\subseteq B\), \(x\in B\). Since \(B\subseteq C\), \(x\in C\). Hence \(x\in A\Rightarrow x\in C\), so \(A\subseteq C\).
+  <span class="qed">□</span>
+</div>
+
+<div class="proof">
+  <strong>Proof of Property 4.</strong> If \(A=B\), then \(x\in A\Rightarrow x\in B\), so \(A\subseteq B\). Similarly \(B\subseteq A\). Conversely, if \(A\subseteq B\) and \(B\subseteq A\), then \(x\in A\Rightarrow x\in B\) and \(x\in B\Rightarrow x\in A\), so \(A=B\).
+  <span class="qed">□</span>
+</div>
+
+<h3 class="sub" id="s1-10">Proper and Improper Subsets</h3>
+<div class="def">
+  Let \(A\) be a subset of \(B\). We say \(A\) is a <strong>proper subset</strong> of \(B\) if \(A\neq B\), i.e., if there exists at least one element in \(B\) which does not belong to \(A\). A subset which is not proper is called an <strong>improper subset</strong>.
+</div>
+
+<div class="rem">
+  Every set is an improper subset of itself. If \(A\) is non-empty, then \(\varnothing\) is a proper subset of \(A\).
+</div>
+
+<div class="ex">
+  If \(A=\{1,2,3\}\), then proper subsets of \(A\) are
+  \[
+  \varnothing,\{1\},\{2\},\{3\},\{1,2\},\{1,3\},\{2,3\}.
+  \]
+</div>
+
+<div class="ex">
+  Let \(A=\{1,2,3,4,5\}\), \(B=\{2,3,4\}\). Then \(B\subseteq A\) but \(A\neq B\). Hence \(B\) is a proper subset of \(A\).
+</div>
+
+<div class="ex">
+  \[
+  \mathbb{N}\subset\mathbb{W}\subset\mathbb{Z}\subset\mathbb{Q}\subset\mathbb{R}.
+  \]
+</div>
+
+<div class="rem">
+  If \(A\subseteq B\), then \(A\) may equal \(B\). If \(A\subset B\), then \(A\neq B\):
+  \[
+  A\subset B \Rightarrow A\subseteq B,\ A\neq B.
+  \]
+</div>
+
+<div class="rem">
+  If \(A\subseteq B\), we may have \(B\subseteq A\), but if \(A\subset B\), we cannot have \(B\subset A\).
+</div>
+
+<h3 class="sub" id="s1-11">Number System Subset Relation</h3>
+\[
+\mathbb{N}\subset\mathbb{W}\subset\mathbb{Z}\subset\mathbb{Q}\subset\mathbb{R}.
+\]
+<p>Here \(\mathbb{N}\) = natural numbers, \(\mathbb{W}\) = whole numbers, \(\mathbb{Z}\) = integers, \(\mathbb{Q}\) = rationals, \(\mathbb{R}\) = reals.</p>
+
+<h3 class="sub" id="s1-12">Power Set</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  The power set contains sets as its elements. Therefore, if \(a\in A\), then
+  \(\{a\}\in P(A)\), while \(a\) itself need not be an element of \(P(A)\).
+</div>
+
+<div class="wex">
+  <span class="tag">Worked Example.</span>
+  For \(A=\{a,b,c\}\), there are \(2^3=8\) subsets. They are grouped by size:
+  \[
+  \begin{aligned}
+  &\text{0 elements: } \varnothing,\\
+  &\text{1 element: } \{a\},\{b\},\{c\},\\
+  &\text{2 elements: } \{a,b\},\{a,c\},\{b,c\},\\
+  &\text{3 elements: } \{a,b,c\}.
+  \end{aligned}
+  \]
+  Thus \(\card{P(A)}=8\).
+</div>
+
+<div class="def">
+  The set formed by all the subsets of a given set \(A\) is called the <strong>power set</strong> of \(A\), usually denoted by \(P(A)\).
+</div>
+
+<div class="ex">
+  Let \(A=\{0\}\). Then
+  \[
+  P(A)=\{\varnothing,\{0\}\}.
+  \]
+  Note that \(n(P(A))=2=2^1\).
+</div>
+
+<div class="ex">
+  If \(A=\{1,2,3\}\), then \(n(P(A))=8=2^3\).
+</div>
+
+<div class="thm">
+  For any finite set \(A\),
+  \[
+  n(P(A))=2^{n(A)}.
+  \]
+</div>
+
+<h4>Rule to Write the Power Set of a Finite Set \(A\)</h4>
+<ol>
+  <li>First write \(\varnothing\).</li>
+  <li>Next, write all singleton subsets.</li>
+  <li>Then write all subsets containing two elements.</li>
+  <li>Continue this way, and in the end write \(A\) itself.</li>
+  <li>Enclose all these subsets in braces to get \(P(A)\).</li>
+</ol>
+
+<div class="ex">
+  Let \(A=\{a,b\}\). Then
+  \[
+  P(A)=\{\varnothing,\{a\},\{b\},\{a,b\}\}.
+  \]
+</div>
+
+<h3 class="sub" id="s1-13">Comparable Sets</h3>
+<div class="def">
+  Two sets \(A\) and \(B\) are said to be <strong>comparable</strong> iff either \(A\subset B\) or \(B\subset A\).
+</div>
+
+<div class="ex">
+  \(A=\{1,2\}\) and \(B=\{1,2,4,5\}\) are comparable since \(A\subset B\).
+</div>
+
+<h3 class="sub" id="s1-14">Universal Set</h3>
+<div class="def">
+  In any application of set theory, all sets under investigation are regarded as subsets of a fixed set. This fixed set is called the <strong>universal set</strong>, usually denoted by \(X\), \(U\), or \(\xi\).
+</div>
+</section>
+
+<!-- ============================================================
+     2. OPERATIONS ON SETS
+     ============================================================ -->
+<section class="sec" id="s2">
+<h2>OPERATIONS ON SETS</h2>
+
+<h3 class="sub" id="s2-1">Union of Sets</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  The word <em>or</em> in the definition of union is inclusive: an element
+  belonging to both \(A\) and \(B\) is still included in \(A\cup B\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 3.3" role="img" aria-label="Venn diagram of A union B">
+    <rect class="v-box" x="0.05" y="0.05" width="5.9" height="3.2"></rect>
+    <circle class="v-fill" cx="2.25" cy="1.65" r="1.05"></circle>
+    <circle class="v-fill" cx="3.75" cy="1.65" r="1.05"></circle>
+    <circle class="v-outline" cx="2.25" cy="1.65" r="1.05"></circle>
+    <circle class="v-outline" cx="3.75" cy="1.65" r="1.05"></circle>
+    <text x="1.35" y="2.95" text-anchor="middle" style="font-size:0.3px">A</text>
+    <text x="4.65" y="2.95" text-anchor="middle" style="font-size:0.3px">B</text>
+    <text x="5.55" y="2.95" text-anchor="middle" style="font-size:0.3px">U</text>
+    <text x="3" y="0.42" text-anchor="middle" style="font-size:0.32px">A ∪ B</text>
+  </svg>
+</figure>
+
+<div class="def">
+  The <strong>union</strong> of two sets \(A\) and \(B\) is the set of all those elements which are either in \(A\) or in \(B\) (including those which are in both). Symbolically,
+  \[
+  A\cup B=\{x:x\in A \text{ or } x\in B\}.
+  \]
+</div>
+
+<p>Clearly,</p>
+\[
+x\in A\cup B \iff x\in A \text{ or } x\in B,
+\]
+<p>and</p>
+\[
+x\notin A\cup B \iff x\notin A \text{ and } x\notin B.
+\]
+<p>Also,</p>
+\[
+A\subseteq A\cup B,\qquad B\subseteq A\cup B.
+\]
+
+<div class="ex">
+  Let \(A=\{a,e,i,o,u\}\), \(B=\{a,b,c\}\). Then
+  \[
+  A\cup B=\{a,b,c,e,i,o,u\}.
+  \]
+  The common element \(a\) is taken only once.
+</div>
+
+<div class="ex">
+  Let \(A=\{1,3,5\}\), \(B=\{1,2,3\}\). Then
+  \[
+  A\cup B=\{1,2,3,5\}.
+  \]
+</div>
+
+<h4>Union of Three or More Sets</h4>
+<p>The union of \(n\) \((n\ge 3)\) sets \(A_1,A_2,\ldots,A_n\):</p>
+\[
+\bigcup_{i=1}^{n} A_i
+=\{x:x\in A_i \text{ for at least one } i,\ 1\le i\le n\}.
+\]
+
+<div class="ex">
+  If
+  \[
+  A=\{1,2,3,4\},\ B=\{3,4,5,6\},\ C=\{5,6,7,8\},\ D=\{7,8,9,10\},
+  \]
+  then
+  \begin{align*}
+  A\cup B&=\{1,2,3,4,5,6\},\\
+  A\cup B\cup C&=\{1,2,3,4,5,6,7,8\},\\
+  B\cup C\cup D&=\{3,4,5,6,7,8,9,10\}.
+  \end{align*}
+</div>
+
+<h3 class="sub" id="s2-2">Intersection of Sets</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  The word <em>and</em> identifies the intersection. An element is in \(A\cap B\)
+  only when it satisfies both membership conditions simultaneously.
+</div>
+
+<div class="def">
+  The <strong>intersection</strong> of two sets \(A\) and \(B\) is the set of all those elements which belong to both \(A\) and \(B\):
+  \[
+  A\cap B=\{x:x\in A \text{ and } x\in B\}.
+  \]
+</div>
+
+<p>Also,</p>
+\[
+x\in A\cap B \iff x\in A \text{ and } x\in B,
+\]
+\[
+x\notin A\cap B \iff x\notin A \text{ or } x\notin B.
+\]
+<p>It follows that</p>
+\[
+A\cap B\subseteq A,\qquad A\cap B\subseteq B.
+\]
+
+<div class="ex">
+  (i) \(A=\{3,5,7,9,11\}\), \(B=\{7,9,11,13\}\):
+  \[
+  A\cap B=\{7,9,11\}.
+  \]
+  (ii) \(A=\{a,b,c\}\), \(B=\varnothing\):
+  \[
+  A\cap B=\varnothing.
+  \]
+</div>
+
+<div class="ex">
+  Let \(A=\{x:x \text{ is a natural number}\}\), \(B=\{x:x \text{ is an even natural number}\}\). Then
+  \[
+  A\cap B=\{2,4,6,\ldots\}=B.
+  \]
+</div>
+
+<h4>Intersection of More Sets</h4>
+\[
+\bigcap_{i=1}^{n} A_i=\{x:x\in A_i \text{ for all } i,\ 1\le i\le n\}.
+\]
+
+<h3 class="sub" id="s2-3">Disjoint Sets</h3>
+<div class="def">
+  Two sets \(A\) and \(B\) are <strong>disjoint</strong> if
+  \[
+  A\cap B=\varnothing.
+  \]
+  If \(A\cap B\neq\varnothing\), they are <strong>intersecting</strong> or <strong>overlapping</strong>.
+</div>
+
+<div class="ex">
+  \(A=\{1,2,3\}\), \(B=\{a,b,c\}\). \(A\cap B=\varnothing\), so \(A\) and \(B\) are disjoint.
+</div>
+
+<h3 class="sub" id="s2-4">Difference of Sets</h3>
+
+<div class="cmistake">
+  <span class="tag">Common mistake.</span>
+  Set difference is directional. In general,
+  \[
+  A-B\neq B-A.
+  \]
+  The expression \(A-B\) asks for elements that are in \(A\) but not in \(B\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 3.2" role="img" aria-label="Venn diagram of A minus B">
+    <defs>
+      <clipPath id="clipAB1"><circle cx="2.25" cy="1.6" r="1.0"></circle></clipPath>
+    </defs>
+    <rect class="v-box" x="0.05" y="0.05" width="5.9" height="3.1"></rect>
+    <g clip-path="url(#clipAB1)">
+      <rect class="v-target" x="0" y="0" width="6" height="3.2"></rect>
+    </g>
+    <circle class="v-white" cx="3.75" cy="1.6" r="1.0"></circle>
+    <circle class="v-outline" cx="2.25" cy="1.6" r="1.0"></circle>
+    <circle class="v-outline" cx="3.75" cy="1.6" r="1.0"></circle>
+    <text x="1.35" y="2.88" text-anchor="middle" style="font-size:0.3px">A</text>
+    <text x="4.65" y="2.88" text-anchor="middle" style="font-size:0.3px">B</text>
+    <text x="3" y="0.42" text-anchor="middle" style="font-size:0.32px">A − B</text>
+    <text x="5.55" y="2.88" text-anchor="middle" style="font-size:0.3px">U</text>
+  </svg>
+</figure>
+
+<div class="def">
+  If \(A\) and \(B\) are two sets, then their <strong>difference</strong> \(A-B\) is
+  \[
+  A-B=\{x:x\in A \text{ and } x\notin B\}.
+  \]
+  Similarly,
+  \[
+  B-A=\{x:x\in B \text{ and } x\notin A\}.
+  \]
+</div>
+
+<p>Logical forms:</p>
+\[
+x\in(A-B)\iff x\in A \text{ and } x\notin B,
+\]
+\[
+x\in(B-A)\iff x\in B \text{ and } x\notin A.
+\]
+
+<div class="ex">
+  Let \(A=\{1,2,3,4\}\), \(B=\{3,4,5,6\}\). Then
+  \[
+  A-B=\{1,2\},\qquad B-A=\{5,6\}.
+  \]
+</div>
+
+<h3 class="sub" id="s2-5">Properties of Difference</h3>
+<div class="prop">
+  \(A-B=A\cap B'\).
+</div>
+<div class="prop">
+  \(A-B=\varnothing \iff A\subseteq B\).
+</div>
+<div class="prop">
+  \(A-B=A \iff A\cap B=\varnothing\).
+</div>
+<div class="prop">
+  \((A-B)\cup(B-A)=(A\cup B)-(A\cap B)\).
+</div>
+<div class="prop">
+  \(A-(B\cup C)=(A-B)\cap(A-C)\).
+</div>
+<div class="prop">
+  \(A-(B\cap C)=(A-B)\cup(A-C)\).
+</div>
+
+<div class="proof">
+  <strong>Proof of Property 1.</strong> \(x\in A-B \iff x\in A\) and \(x\notin B \iff x\in A\) and \(x\in B' \iff x\in A\cap B'\).
+  <span class="qed">□</span>
+</div>
+
+<div class="proof">
+  <strong>Proof of Property 2.</strong> If \(A-B=\varnothing\), then every element of \(A\) is in \(B\), so \(A\subseteq B\). Conversely, if \(A\subseteq B\), then no element of \(A\) is outside \(B\), so \(A-B=\varnothing\).
+  <span class="qed">□</span>
+</div>
+
+<h3 class="sub" id="s2-6">Symmetric Difference</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  The symmetric difference keeps the elements belonging to exactly one of the
+  sets and removes the common part.
+</div>
+
+<div class="def">
+  The <strong>symmetric difference</strong> of two sets \(A\) and \(B\) is
+  \[
+  A\triangle B=(A-B)\cup(B-A).
+  \]
+  Equivalently,
+  \[
+  A\triangle B=(A\cup B)-(A\cap B).
+  \]
+</div>
+
+<p>The symmetric difference consists of all elements that belong to exactly one of the two sets.</p>
+
+<div class="ex">
+  Let \(A=\{1,2,3,4\}\), \(B=\{3,4,5,6\}\). Then
+  \[
+  A-B=\{1,2\},\quad B-A=\{5,6\},
+  \]
+  so
+  \[
+  A\triangle B=\{1,2,5,6\}.
+  \]
+  Also,
+  \[
+  (A\cup B)-(A\cap B)=\{1,2,5,6\}.
+  \]
+</div>
+
+<div class="prop" data-opt="Basic Properties">
+  \[
+  A\triangle B=B\triangle A,
+  \]
+  \[
+  A\triangle\varnothing=A,
+  \]
+  \[
+  A\triangle A=\varnothing.
+  \]
+</div>
+
+<div class="prop" data-opt="Additional Properties">
+  \[
+  A\triangle U=A',
+  \]
+  \[
+  (A\triangle B)\triangle C=A\triangle(B\triangle C).
+  \]
+</div>
+
+<div class="rem">
+  The last two identities are additional properties (not always stated in the original source) included here for completeness.
+</div>
+
+<h3 class="sub" id="s2-7">Complement of a Set</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  A complement is meaningful only after the universal set has been specified.
+  The same set \(A\) can have different complements in different universal sets.
+</div>
+
+<div class="def">
+  If \(U\) is the universal set and \(A\subseteq U\), then the <strong>complement</strong> of \(A\) is
+  \[
+  A'=U-A=\{x:x\in U \text{ and } x\notin A\}.
+  \]
+  It is also written \(A^c\).
+</div>
+
+<div class="ex">
+  Let \(U=\{1,2,3,4,5,6,7,8,9,10\}\) and \(A=\{2,4,6,8,10\}\). Then
+  \[
+  A'=\{1,3,5,7,9\}.
+  \]
+</div>
+
+<h3 class="sub" id="s2-8">Properties of Complement</h3>
+<div class="prop">
+  \((A')'=A\).
+</div>
+<div class="prop">
+  \(A\cup A'=U\).
+</div>
+<div class="prop">
+  \(A\cap A'=\varnothing\).
+</div>
+<div class="prop">
+  \(U'=\varnothing\) and \(\varnothing'=U\).
+</div>
+<div class="prop">
+  \(A-B=A\cap B'\).
+</div>
+<div class="prop">
+  \(A-A=\varnothing\).
+</div>
+<div class="prop">
+  \(U-A=A'\).
+</div>
+<div class="prop">
+  \((A\cup B)'=A'\cap B'\) \quad (De Morgan's Law).
+</div>
+<div class="prop">
+  \((A\cap B)'=A'\cup B'\) \quad (De Morgan's Law).
+</div>
+</section>
+
+<!-- ============================================================
+     3. LAWS / ALGEBRA OF SETS
+     ============================================================ -->
+<section class="sec" id="s3">
+<h2>LAWS / ALGEBRA OF SETS</h2>
+
+<h3 class="sub" id="s3-1">Commutative Laws</h3>
+<div class="law">
+  \[
+  A\cup B=B\cup A,\qquad A\cap B=B\cap A.
+  \]
+</div>
+
+<h3 class="sub" id="s3-2">Associative Laws</h3>
+<div class="law">
+  \[
+  A\cup(B\cup C)=(A\cup B)\cup C,
+  \]
+  \[
+  A\cap(B\cap C)=(A\cap B)\cap C.
+  \]
+</div>
+
+<h3 class="sub" id="s3-3">Distributive Laws</h3>
+<div class="law">
+  \[
+  A\cup(B\cap C)=(A\cup B)\cap(A\cup C),
+  \]
+  \[
+  A\cap(B\cup C)=(A\cap B)\cup(A\cap C).
+  \]
+</div>
+
+<div class="ex">
+  Let \(A=\{1,2\}\), \(B=\{2,3\}\), \(C=\{3,4\}\).
+  \[
+  B\cap C=\{3\},\quad A\cup(B\cap C)=\{1,2,3\}.
+  \]
+  \[
+  A\cup B=\{1,2,3\},\quad A\cup C=\{1,2,3,4\},\quad (A\cup B)\cap(A\cup C)=\{1,2,3\}.
+  \]
+  Both sides are equal.
+</div>
+
+<h3 class="sub" id="s3-4">Identity Laws</h3>
+<div class="law">
+  \[
+  A\cup\varnothing=A,\qquad A\cap U=A.
+  \]
+</div>
+
+<h3 class="sub" id="s3-5">Domination Laws</h3>
+<div class="law">
+  \[
+  A\cup U=U,\qquad A\cap\varnothing=\varnothing.
+  \]
+</div>
+
+<h3 class="sub" id="s3-6">Idempotent Laws</h3>
+<div class="law">
+  \[
+  A\cup A=A,\qquad A\cap A=A.
+  \]
+</div>
+
+<h3 class="sub" id="s3-7">Complement Laws</h3>
+<div class="law">
+  \[
+  A\cup A'=U,\qquad A\cap A'=\varnothing,
+  \]
+  \[
+  (A')'=A,\qquad U'=\varnothing,\qquad \varnothing'=U.
+  \]
+</div>
+
+<h3 class="sub" id="s3-8">Difference Identity</h3>
+<div class="law">
+  \[
+  A-B=A\cap B'.
+  \]
+</div>
+
+<h3 class="sub" id="s3-9">Symmetric Difference</h3>
+<div class="law">
+  \[
+  A\triangle B=(A-B)\cup(B-A),
+  \]
+  \[
+  A\triangle B=(A\cup B)-(A\cap B).
+  \]
+</div>
+
+<h3 class="sub" id="s3-10">De Morgan's Laws</h3>
+<div class="law">
+  \[
+  (A\cup B)'=A'\cap B',
+  \]
+  \[
+  (A\cap B)'=A'\cup B'.
+  \]
+  For three sets:
+  \[
+  (A\cup B\cup C)'=A'\cap B'\cap C',
+  \]
+  \[
+  (A\cap B\cap C)'=A'\cup B'\cup C'.
+  \]
+</div>
+
+<div class="ex" data-opt="De Morgan's Law Verification">
+  Let \(U=\{1,2,3,4,5,6\}\), \(A=\{1,2,3\}\), \(B=\{3,4,5\}\).
+  \[
+  A\cup B=\{1,2,3,4,5\},\quad (A\cup B)'=\{6\}.
+  \]
+  \[
+  A'=\{4,5,6\},\ B'=\{1,2,6\},\quad A'\cap B'=\{6\}.
+  \]
+  Thus \((A\cup B)'=A'\cap B'\).
+</div>
+</section>
+
+<!-- ============================================================
+     4. CARDINALITY FORMULAS
+     ============================================================ -->
+<section class="sec" id="s4">
+<h2>CARDINALITY FORMULAS</h2>
+
+<p>For finite sets \(A,B\) with \(U\) as universal set:</p>
+
+<h3 class="sub" id="s4-1">Union and Intersection</h3>
+
+<div class="wex">
+  <span class="tag">Worked Example.</span>
+  If \(\card A=18\), \(\card B=12\), and \(\card{A\cap B}=5\), then
+  \[
+  \card{A\cup B}=18+12-5=25.
+  \]
+  The subtraction is necessary because the five common elements were counted
+  once in \(\card A\) and again in \(\card B\).
+</div>
+
+\begin{align}
+n(A\cup B)&=n(A)+n(B)-n(A\cap B),\\
+n(A\cap B)&=n(A)+n(B)-n(A\cup B).
+\end{align}
+
+<h3 class="sub" id="s4-2">Difference Formulas</h3>
+\begin{align}
+n(A-B)&=n(A)-n(A\cap B),\\
+n(B-A)&=n(B)-n(A\cap B).
+\end{align}
+
+<div class="ex">
+  Let \(A=\{1,2,3,4\}\), \(B=\{3,4,5,6\}\). Then \(A\cap B=\{3,4\}\), so
+  \[
+  n(A-B)=4-2=2,\qquad n(B-A)=4-2=2.
+  \]
+  Indeed, \(A-B=\{1,2\}\), \(B-A=\{5,6\}\).
+</div>
+
+<h3 class="sub" id="s4-3">Complement</h3>
+\[
+n(A')=n(U)-n(A).
+\]
+
+<h3 class="sub" id="s4-4">Symmetric Difference</h3>
+\[
+n(A\triangle B)=n(A)+n(B)-2n(A\cap B).
+\]
+
+<h3 class="sub" id="s4-5">Disjoint Sets</h3>
+<p>If \(A\cap B=\varnothing\), then</p>
+\[
+n(A\cup B)=n(A)+n(B).
+\]
+
+<h3 class="sub" id="s4-6">Three-Set Inclusion-Exclusion</h3>
+\[
+n(A\cup B\cup C)=n(A)+n(B)+n(C)-n(A\cap B)-n(B\cap C)-n(C\cap A)+n(A\cap B\cap C).
+\]
+
+<h3 class="sub" id="s4-7">General Inclusion-Exclusion</h3>
+\[
+n(A_1\cup\cdots\cup A_n)=\sum_i n(A_i)-\sum_{i&lt;j}n(A_i\cap A_j)+\sum_{i&lt;j&lt;k}n(A_i\cap A_j\cap A_k)-\cdots+(-1)^{n-1}n(A_1\cap\cdots\cap A_n).
+\]
+
+<div class="ex">
+  In a class of \(40\) students, \(25\) play cricket, \(20\) play football, and \(10\) play both.
+  \[
+  n(C\cup F)=25+20-10=35.
+  \]
+  So \(35\) students play at least one game.
+</div>
+
+<div class="ex">
+  In a survey of \(100\) people, \(60\) read newspaper \(A\), \(50\) read newspaper \(B\), and \(30\) read both.
+  \[
+  n(A\cup B)=60+50-30=80.
+  \]
+  So \(100-80=20\) read neither.
+</div>
+</section>
+
+<!-- ============================================================
+     5. VENN DIAGRAMS
+     ============================================================ -->
+<section class="sec" id="s5">
+<h2>VENN DIAGRAMS</h2>
+
+<h3 class="sub" id="s5-1">Venn Diagram Basics</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  A Venn diagram is not merely a picture of circles. Each region represents a
+  precise logical membership condition. Shading a region is therefore a visual
+  way of representing a set expression.
+</div>
+
+<p>A <strong>Venn diagram</strong> is a closed figure whose interior points represent elements of the set under consideration.</p>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 4.2 4.4" role="img" aria-label="An oval, a circle and a rectangle">
+    <text x="0.1" y="3.55" text-anchor="start" style="font-style:normal;font-size:0.3px">A curve like oval</text>
+    <ellipse class="v-fill-light" cx="3.2" cy="3.4" rx="0.42" ry="0.72"></ellipse>
+    <ellipse class="v-outline" cx="3.2" cy="3.4" rx="0.42" ry="0.72"></ellipse>
+
+    <text x="0.1" y="1.9" text-anchor="start" style="font-style:normal;font-size:0.3px">A circle</text>
+    <circle class="v-fill-light" cx="3.2" cy="1.75" r="0.55"></circle>
+    <circle class="v-outline" cx="3.2" cy="1.75" r="0.55"></circle>
+
+    <text x="0.1" y="0.55" text-anchor="start" style="font-style:normal;font-size:0.3px">A rectangle</text>
+    <rect class="v-fill-light" x="2.7" y="0.1" width="1.0" height="0.85"></rect>
+    <rect class="v-outline" x="2.7" y="0.1" width="1.0" height="0.85"></rect>
+  </svg>
+</figure>
+
+<div class="rem">
+  <ol>
+    <li>It brings out relationships in sets.</li>
+    <li>The universal set \(\xi\) is represented by a rectangle.</li>
+    <li>Each subset is a closed bounded figure inside the rectangle.</li>
+  </ol>
+</div>
+
+<h3 class="sub" id="s5-2">Basic Venn Diagrams</h3>
+
+<h5>Complement \(A'\).</h5>
+<figure class="single">
+  <svg class="venn" viewBox="0 0 4 2.6" role="img" aria-label="Venn diagram of the complement of A">
+    <rect class="v-target" x="0" y="0" width="4" height="2.5"></rect>
+    <circle class="v-white" cx="2" cy="1.25" r="0.8"></circle>
+    <rect class="v-box" x="0" y="0" width="4" height="2.5"></rect>
+    <circle class="v-outline" cx="2" cy="1.25" r="0.8"></circle>
+    <text x="0.25" y="2.3" text-anchor="start" style="font-size:0.3px">ξ</text>
+    <text x="2" y="1.32" text-anchor="middle" style="font-size:0.3px">A</text>
+    <text x="3.3" y="2.3" text-anchor="middle" style="font-size:0.3px">A′</text>
+  </svg>
+</figure>
+
+<h5>\(A\subset B\subset\xi\).</h5>
+<figure class="single">
+  <svg class="venn" viewBox="0 0 4 3.1" role="img" aria-label="A is a proper subset of B, which is a subset of xi">
+    <rect class="v-box" x="0.05" y="0.05" width="3.9" height="3.0"></rect>
+    <circle class="v-fill-light" cx="2" cy="1.55" r="1.1"></circle>
+    <circle class="v-fill" cx="2" cy="1.55" r="0.6"></circle>
+    <circle class="v-outline" cx="2" cy="1.55" r="1.1"></circle>
+    <circle class="v-outline" cx="2" cy="1.55" r="0.6"></circle>
+    <text x="3.65" y="2.85" text-anchor="middle" style="font-size:0.3px">ξ</text>
+    <text x="2" y="1.62" text-anchor="middle" style="font-size:0.3px">A</text>
+    <text x="2" y="0.5" text-anchor="middle" style="font-size:0.3px">B</text>
+  </svg>
+</figure>
+
+<h5>Two disjoint subsets.</h5>
+<figure class="single">
+  <svg class="venn" viewBox="0 0 5 2.9" role="img" aria-label="Two disjoint subsets">
+    <rect class="v-box" x="0.05" y="0.05" width="4.9" height="2.8"></rect>
+    <circle class="v-fill" cx="1.5" cy="1.45" r="0.9"></circle>
+    <circle class="v-fill" cx="3.7" cy="1.45" r="0.7"></circle>
+    <circle class="v-outline" cx="1.5" cy="1.45" r="0.9"></circle>
+    <circle class="v-outline" cx="3.7" cy="1.45" r="0.7"></circle>
+    <text x="4.6" y="2.65" text-anchor="middle" style="font-size:0.3px">ξ</text>
+    <text x="1.5" y="0.35" text-anchor="middle" style="font-size:0.3px">A</text>
+    <text x="3.7" y="0.6" text-anchor="middle" style="font-size:0.3px">B</text>
+  </svg>
+</figure>
+
+<h5>\(A\cup B\), \(A\cap B\), \(A-B\), \(B-A\).</h5>
+<div class="figrow">
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="A union B">
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-fill" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-fill" cx="2" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">A ∪ B</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="A intersection B">
+      <defs><clipPath id="cAND"><circle cx="2" cy="1.45" r="0.7"></circle></clipPath></defs>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <g clip-path="url(#cAND)">
+        <circle class="v-target" cx="1" cy="1.45" r="0.7"></circle>
+      </g>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">A ∩ B</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="A minus B">
+      <defs><clipPath id="cA1"><circle cx="1" cy="1.45" r="0.7"></circle></clipPath></defs>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <g clip-path="url(#cA1)">
+        <rect class="v-target" x="0" y="0" width="3" height="2.5"></rect>
+      </g>
+      <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">A − B</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="B minus A">
+      <defs><clipPath id="cB1"><circle cx="2" cy="1.45" r="0.7"></circle></clipPath></defs>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <g clip-path="url(#cB1)">
+        <rect class="v-target" x="0" y="0" width="3" height="2.5"></rect>
+      </g>
+      <circle class="v-white" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">B − A</text>
+    </svg>
+  </figure>
+</div>
+
+<h5>Three intersecting subsets.</h5>
+<figure class="single">
+  <svg class="venn" viewBox="0 0 5 4.1" role="img" aria-label="Three intersecting subsets">
+    <rect class="v-box" x="0.05" y="0.05" width="4.9" height="4.0"></rect>
+    <circle class="v-fill-light" cx="1.6" cy="2.25" r="1.1"></circle>
+    <circle class="v-fill-light" cx="2.7" cy="2.65" r="1.1"></circle>
+    <circle class="v-fill-light" cx="2.2" cy="1.45" r="1.1"></circle>
+    <circle class="v-outline" cx="1.6" cy="2.25" r="1.1"></circle>
+    <circle class="v-outline" cx="2.7" cy="2.65" r="1.1"></circle>
+    <circle class="v-outline" cx="2.2" cy="1.45" r="1.1"></circle>
+    <text x="4.6" y="3.85" text-anchor="middle" style="font-size:0.3px">ξ</text>
+    <text x="0.42" y="3.35" text-anchor="middle" style="font-size:0.3px">A</text>
+    <text x="3.62" y="3.85" text-anchor="middle" style="font-size:0.3px">B</text>
+    <text x="3.42" y="0.4" text-anchor="middle" style="font-size:0.3px">C</text>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s5-3">Compound Venn Diagrams</h3>
+
+<h5>\((A\cup B)'\) and \((A\cap B)'\).</h5>
+<div class="figrow">
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="Complement of A union B">
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-white" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">(A ∪ B)′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="Complement of A intersection B">
+      <defs><clipPath id="cI2"><circle cx="1" cy="1.45" r="0.7"></circle></clipPath></defs>
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <g clip-path="url(#cI2)">
+        <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      </g>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">(A ∩ B)′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="Complement of A minus B">
+      <defs><clipPath id="cAB3"><circle cx="1" cy="1.45" r="0.7"></circle></clipPath></defs>
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <g clip-path="url(#cAB3)">
+        <rect class="v-white" x="0" y="0" width="3" height="2.5"></rect>
+        <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      </g>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">(A − B)′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="Complement of B minus A">
+      <defs><clipPath id="cBA3"><circle cx="2" cy="1.45" r="0.7"></circle></clipPath></defs>
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <g clip-path="url(#cBA3)">
+        <rect class="v-white" x="0" y="0" width="3" height="2.5"></rect>
+        <circle class="v-white" cx="1" cy="1.45" r="0.7"></circle>
+      </g>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">(B − A)′</text>
+    </svg>
+  </figure>
+</div>
+
+<h5>Three-set compound operations.</h5>
+<div class="figrow">
+  <figure>
+    <svg class="venn" viewBox="0 0 4 4.4" role="img" aria-label="Complement of A union B union C">
+      <rect class="v-target" x="0.05" y="0.05" width="3.9" height="3.9"></rect>
+      <circle class="v-white" cx="1.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-white" cx="2.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-white" cx="2" cy="2.35" r="0.9"></circle>
+      <rect class="v-box" x="0.05" y="0.05" width="3.9" height="3.9"></rect>
+      <circle class="v-outline" cx="1.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2" cy="2.35" r="0.9"></circle>
+      <text x="3.6" y="3.85" text-anchor="middle" style="font-size:0.28px">ξ</text>
+      <text x="0.5" y="0.72" text-anchor="middle" style="font-size:0.28px">A</text>
+      <text x="3.4" y="0.72" text-anchor="middle" style="font-size:0.28px">B</text>
+      <text x="2" y="3.72" text-anchor="middle" style="font-size:0.28px">C</text>
+      <text x="2" y="4.25" text-anchor="middle" style="font-size:0.3px">(A ∪ B ∪ C)′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 4 4.4" role="img" aria-label="Complement of A intersection B intersection C">
+      <defs>
+        <clipPath id="cAB4"><circle cx="1.5" cy="1.55" r="0.9"></circle></clipPath>
+        <clipPath id="cBC4"><circle cx="2.5" cy="1.55" r="0.9"></circle></clipPath>
+      </defs>
+      <rect class="v-target" x="0.05" y="0.05" width="3.9" height="3.9"></rect>
+      <g clip-path="url(#cAB4)">
+        <g clip-path="url(#cBC4)">
+          <circle class="v-white" cx="2" cy="2.35" r="0.9"></circle>
+        </g>
+      </g>
+      <rect class="v-box" x="0.05" y="0.05" width="3.9" height="3.9"></rect>
+      <circle class="v-outline" cx="1.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2" cy="2.35" r="0.9"></circle>
+      <text x="3.6" y="3.85" text-anchor="middle" style="font-size:0.28px">ξ</text>
+      <text x="0.5" y="0.72" text-anchor="middle" style="font-size:0.28px">A</text>
+      <text x="3.4" y="0.72" text-anchor="middle" style="font-size:0.28px">B</text>
+      <text x="2" y="3.72" text-anchor="middle" style="font-size:0.28px">C</text>
+      <text x="2" y="4.25" text-anchor="middle" style="font-size:0.3px">(A ∩ B ∩ C)′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 4 4.4" role="img" aria-label="A minus (B union C)">
+      <defs><clipPath id="cA5"><circle cx="1.5" cy="1.55" r="0.9"></circle></clipPath></defs>
+      <rect class="v-box" x="0.05" y="0.05" width="3.9" height="3.9"></rect>
+      <g clip-path="url(#cA5)">
+        <rect class="v-target" x="0" y="0" width="4" height="4.4"></rect>
+        <circle class="v-white" cx="2.5" cy="1.55" r="0.9"></circle>
+        <circle class="v-white" cx="2" cy="2.35" r="0.9"></circle>
+      </g>
+      <circle class="v-outline" cx="1.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2" cy="2.35" r="0.9"></circle>
+      <text x="3.6" y="3.85" text-anchor="middle" style="font-size:0.28px">ξ</text>
+      <text x="0.5" y="0.72" text-anchor="middle" style="font-size:0.28px">A</text>
+      <text x="3.4" y="0.72" text-anchor="middle" style="font-size:0.28px">B</text>
+      <text x="2" y="3.72" text-anchor="middle" style="font-size:0.28px">C</text>
+      <text x="2" y="4.25" text-anchor="middle" style="font-size:0.3px">A − (B ∪ C)</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 4 4.4" role="img" aria-label="A minus (B intersection C)">
+      <defs>
+        <clipPath id="cA6"><circle cx="1.5" cy="1.55" r="0.9"></circle></clipPath>
+        <clipPath id="cB6"><circle cx="2.5" cy="1.55" r="0.9"></circle></clipPath>
+        <clipPath id="cC6"><circle cx="2" cy="2.35" r="0.9"></circle></clipPath>
+      </defs>
+      <rect class="v-box" x="0.05" y="0.05" width="3.9" height="3.9"></rect>
+      <g clip-path="url(#cA6)">
+        <rect class="v-target" x="0" y="0" width="4" height="4.4"></rect>
+        <g clip-path="url(#cB6)">
+          <g clip-path="url(#cC6)">
+            <circle class="v-white" cx="2" cy="2.35" r="0.9"></circle>
+          </g>
+        </g>
+      </g>
+      <circle class="v-outline" cx="1.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2.5" cy="1.55" r="0.9"></circle>
+      <circle class="v-outline" cx="2" cy="2.35" r="0.9"></circle>
+      <text x="3.6" y="3.85" text-anchor="middle" style="font-size:0.28px">ξ</text>
+      <text x="0.5" y="0.72" text-anchor="middle" style="font-size:0.28px">A</text>
+      <text x="3.4" y="0.72" text-anchor="middle" style="font-size:0.28px">B</text>
+      <text x="2" y="3.72" text-anchor="middle" style="font-size:0.28px">C</text>
+      <text x="2" y="4.25" text-anchor="middle" style="font-size:0.3px">A − (B ∩ C)</text>
+    </svg>
+  </figure>
+</div>
+
+<h3 class="sub" id="s5-4">De Morgan's Laws (Venn Diagrams)</h3>
+
+<div class="figrow">
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="Complement of A union B">
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-white" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">(A ∪ B)′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="A complement intersection B complement">
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-white" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A′</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B′</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">A′ ∩ B′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="Complement of A intersection B">
+      <defs><clipPath id="cI7"><circle cx="1" cy="1.45" r="0.7"></circle></clipPath></defs>
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <g clip-path="url(#cI7)">
+        <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      </g>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">(A ∩ B)′</text>
+    </svg>
+  </figure>
+
+  <figure>
+    <svg class="venn" viewBox="0 0 3 2.5" role="img" aria-label="A complement union B complement">
+      <rect class="v-target" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-white" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-white" cx="2" cy="1.45" r="0.7"></circle>
+      <rect class="v-box" x="0.05" y="0.45" width="2.9" height="2.0"></rect>
+      <circle class="v-outline" cx="1" cy="1.45" r="0.7"></circle>
+      <circle class="v-outline" cx="2" cy="1.45" r="0.7"></circle>
+      <text x="2.72" y="2.32" text-anchor="middle" style="font-size:0.24px">ξ</text>
+      <text x="0.28" y="0.72" text-anchor="middle" style="font-size:0.24px">A′</text>
+      <text x="2.72" y="0.72" text-anchor="middle" style="font-size:0.24px">B′</text>
+      <text x="1.5" y="0.22" text-anchor="middle" style="font-size:0.26px">A′ ∪ B′</text>
+    </svg>
+  </figure>
+</div>
+
+<h3 class="sub" id="s5-5">Two-Set Applications</h3>
+<div class="ex">
+  In a group of \(50\) people, \(30\) like tea, \(25\) like coffee, \(10\) like both.
+  \[
+  n(T\cup C)=30+25-10=45,\quad 50-45=5.
+  \]
+  So \(5\) like neither.
+</div>
+
+<h3 class="sub" id="s5-6">Three-Set Applications</h3>
+<div class="ex">
+  In a survey of \(100\) students: \(40\) Mathematics, \(35\) Physics, \(30\) Chemistry, \(15\) Math &amp; Physics, \(10\) Physics &amp; Chemistry, \(12\) Math &amp; Chemistry, \(5\) all three.
+  \[
+  n(M\cup P\cup C)=40+35+30-15-10-12+5=105-37+5=73.
+  \]
+  So \(73\) study at least one subject.
+</div>
+</section>
+
+<!-- ============================================================
+     6. RELATIONS
+     ============================================================ -->
+<section class="sec" id="s6">
+<h2>RELATIONS</h2>
+
+<h3 class="sub" id="s6-1">Introduction</h3>
+<p>Relations play an important role in daily life.</p>
+
+<div class="ex">
+  <ol>
+    <li>Relation of mother and son.</li>
+    <li>Relation of wife and husband.</li>
+  </ol>
+</div>
+
+<p>In mathematics:</p>
+<ol>
+  <li>\(4\) is the square of \(2\).</li>
+  <li>\(\sin\theta=1/\csc\theta\).</li>
+</ol>
+
+<p>Every relation involves a pair of objects in a particular order.</p>
+
+<h3 class="sub" id="s6-2">Ordered Pair</h3>
+<div class="def">
+  If a pair of elements is listed in a specific order, it is called an <strong>ordered pair</strong>, written \((a,b)\), where \(a\) is the first element and \(b\) is the second element.
+</div>
+
+<div class="rem">
+  \[
+  (a,b)=(c,d)\Rightarrow a=c \text{ and } b=d,
+  \]
+  \[
+  (a,b)\neq(b,a).
+  \]
+</div>
+
+<div class="ex">
+  If
+  \[
+  \left(\frac{x}{3}+1,\ y-\frac{2}{3}\right)=\left(\frac{5}{3},\frac{1}{3}\right),
+  \]
+  then \(x=2,\ y=1\).
+</div>
+
+<h3 class="sub" id="s6-3">Cartesian Product</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  The order in an ordered pair matters. Thus \((a,b)\) and \((b,a)\) represent the
+  same ordered pair only when \(a=b\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 3.3" role="img" aria-label="Mapping from A to B showing four ordered pairs">
+    <rect class="v-box" x="0.05" y="1.35" width="1.1" height="0.55" rx="0.12"></rect>
+    <text x="0.6" y="1.74" text-anchor="middle" style="font-style:normal;font-size:0.3px">1</text>
+    <rect class="v-box" x="0.05" y="0.45" width="1.1" height="0.55" rx="0.12"></rect>
+    <text x="0.6" y="0.84" text-anchor="middle" style="font-style:normal;font-size:0.3px">2</text>
+
+    <rect class="v-box" x="4.85" y="1.35" width="1.1" height="0.55" rx="0.12"></rect>
+    <text x="5.4" y="1.74" text-anchor="middle" style="font-style:normal;font-size:0.3px">a</text>
+    <rect class="v-box" x="4.85" y="0.45" width="1.1" height="0.55" rx="0.12"></rect>
+    <text x="5.4" y="0.84" text-anchor="middle" style="font-style:normal;font-size:0.3px">b</text>
+
+    <line class="v-line" x1="1.15" y1="1.625" x2="4.85" y2="1.625" marker-end="url(#arr1)"></line>
+    <line class="v-line" x1="1.15" y1="1.625" x2="4.85" y2="0.725" marker-end="url(#arr1)"></line>
+    <line class="v-line" x1="1.15" y1="0.725" x2="4.85" y2="1.625" marker-end="url(#arr1)"></line>
+    <line class="v-line" x1="1.15" y1="0.725" x2="4.85" y2="0.725" marker-end="url(#arr1)"></line>
+
+    <defs>
+      <marker id="arr1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#3d4653"></path>
+      </marker>
+    </defs>
+
+    <text x="3" y="1.95" text-anchor="middle" style="font-size:0.28px">(1, a)</text>
+    <text x="2.9" y="1.38" text-anchor="middle" style="font-size:0.28px">(1, b)</text>
+    <text x="3.1" y="0.78" text-anchor="middle" style="font-size:0.28px">(2, a)</text>
+    <text x="3" y="0.3" text-anchor="middle" style="font-size:0.28px">(2, b)</text>
+
+    <text x="0.6" y="2.5" text-anchor="middle" style="font-size:0.32px">A</text>
+    <text x="5.4" y="2.5" text-anchor="middle" style="font-size:0.32px">B</text>
+  </svg>
+</figure>
+
+<div class="def">
+  If \(A\) and \(B\) are two non-empty sets, then
+  \[
+  A\times B=\{(a,b):a\in A,\ b\in B\}.
+  \]
+</div>
+
+<div class="ex">
+  \(A=\{1,2\}\), \(B=\{3,4\}\): \(A\times B=\{(1,3),(1,4),(2,3),(2,4)\}\).
+</div>
+
+<h4>Method of Writing \(A\times B\) in Roster Form</h4>
+<ol>
+  <li>Write \(A\) and \(B\) in roster form.</li>
+  <li>Take the first element of \(A\) and pair it with every element of \(B\).</li>
+  <li>Repeat for every element of \(A\).</li>
+  <li>Write all ordered pairs in braces.</li>
+</ol>
+
+<div class="ex">
+  \(A=\{1,2,3\}\), \(B=\{a,b\}\):
+  \[
+  A\times B=\{(1,a),(1,b),(2,a),(2,b),(3,a),(3,b)\}.
+  \]
+</div>
+
+<h3 class="sub" id="s6-4">\(B\times A\)</h3>
+\[
+B\times A=\{(b,a):b\in B,\ a\in A\}.
+\]
+<p>Generally,</p>
+\[
+A\times B\neq B\times A.
+\]
+
+<div class="ex">
+  \(A=\{1,2\}\), \(B=\{3,4\}\):
+  \[
+  B\times A=\{(3,1),(3,2),(4,1),(4,2)\}.
+  \]
+</div>
+
+<h3 class="sub" id="s6-5">Empty Cartesian Product</h3>
+<p>If \(A=\varnothing\) or \(B=\varnothing\), then</p>
+\[
+A\times B=\varnothing.
+\]
+
+<h3 class="sub" id="s6-6">Cartesian Product with Itself</h3>
+\[
+A\times A=\{(a,b):a,b\in A\}.
+\]
+<div class="ex">
+  \(A=\{1,2\}\): \(A\times A=\{(1,1),(1,2),(2,1),(2,2)\}\).
+</div>
+
+<h3 class="sub" id="s6-7">Cardinal Number of Cartesian Product</h3>
+<p>If \(n(A)=m\) and \(n(B)=n\), then</p>
+\[
+n(A\times B)=mn.
+\]
+<p>The number of subsets of \(A\times B\) is</p>
+\[
+n(P(A\times B))=2^{n(A\times B)}=2^{mn}.
+\]
+
+<div class="ex">
+  \(A=\{1,2,3,4,5\}\), \(B=\{2,3,4,5,6,7\}\):
+  \[
+  n(A\times B)=5\times 6=30.
+  \]
+</div>
+
+<h3 class="sub" id="s6-8">Graphical / Lattice Representation</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  A Cartesian product can be viewed as a collection of points in a coordinate
+  grid. The first coordinate comes from the first set and the second coordinate
+  comes from the second set.
+</div>
+
+<p>Let \(A=\{1,2\}\), \(B=\{2,3\}\). Then</p>
+\[
+A\times B=\{(1,2),(1,3),(2,2),(2,3)\},
+\]
+\[
+B\times A=\{(2,1),(2,2),(3,1),(3,2)\}.
+\]
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 11 3.6" role="img" aria-label="Lattice representations of A times B and B times A">
+    <!-- A x B -->
+    <g transform="translate(0.4,0.3)">
+      <line class="v-line" x1="0" y1="0" x2="3.3" y2="0" marker-end="url(#arrL)"></line>
+      <line class="v-line" x1="0" y1="0" x2="0" y2="3.3" marker-end="url(#arrL)"></line>
+      <text x="3.4" y="0.12" style="font-style:normal;font-size:0.28px">X</text>
+      <text x="-0.12" y="3.5" text-anchor="middle" style="font-style:normal;font-size:0.28px">Y</text>
+      <text x="0.25" y="-0.22" style="font-style:normal;font-size:0.26px">0</text>
+      <text x="1" y="-0.22" text-anchor="middle" style="font-style:normal;font-size:0.26px">1</text>
+      <text x="2" y="-0.22" text-anchor="middle" style="font-style:normal;font-size:0.26px">2</text>
+      <text x="-0.22" y="1.08" text-anchor="middle" style="font-style:normal;font-size:0.26px">2</text>
+      <text x="-0.22" y="2.08" text-anchor="middle" style="font-style:normal;font-size:0.26px">3</text>
+      <line class="v-line" x1="1" y1="0" x2="1" y2="2.6" stroke-width="0.7"></line>
+      <line class="v-line" x1="2" y1="0" x2="2" y2="2.6" stroke-width="0.7"></line>
+      <line class="v-line" x1="0" y1="1" x2="2.6" y2="1" stroke-width="0.7"></line>
+      <line class="v-line" x1="0" y1="2" x2="2.6" y2="2" stroke-width="0.7"></line>
+      <circle class="v-dot" cx="1" cy="1" r="0.055"></circle>
+      <circle class="v-dot" cx="1" cy="2" r="0.055"></circle>
+      <circle class="v-dot" cx="2" cy="1" r="0.055"></circle>
+      <circle class="v-dot" cx="2" cy="2" r="0.055"></circle>
+      <text x="1.12" y="0.92" style="font-style:normal;font-size:0.24px">(1, 2)</text>
+      <text x="1.12" y="1.92" style="font-style:normal;font-size:0.24px">(1, 3)</text>
+      <text x="2.12" y="0.92" style="font-style:normal;font-size:0.24px">(2, 2)</text>
+      <text x="2.12" y="1.92" style="font-style:normal;font-size:0.24px">(2, 3)</text>
+      <text x="1.4" y="-0.55" text-anchor="middle" style="font-size:0.3px">A × B</text>
+    </g>
+    <!-- B x A -->
+    <g transform="translate(6.4,0.3)">
+      <line class="v-line" x1="0" y1="0" x2="3.3" y2="0" marker-end="url(#arrL)"></line>
+      <line class="v-line" x1="0" y1="0" x2="0" y2="3.3" marker-end="url(#arrL)"></line>
+      <text x="3.4" y="0.12" style="font-style:normal;font-size:0.28px">X</text>
+      <text x="-0.12" y="3.5" text-anchor="middle" style="font-style:normal;font-size:0.28px">Y</text>
+      <text x="0.25" y="-0.22" style="font-style:normal;font-size:0.26px">0</text>
+      <text x="1" y="-0.22" text-anchor="middle" style="font-style:normal;font-size:0.26px">2</text>
+      <text x="2" y="-0.22" text-anchor="middle" style="font-style:normal;font-size:0.26px">3</text>
+      <text x="-0.22" y="1.08" text-anchor="middle" style="font-style:normal;font-size:0.26px">1</text>
+      <text x="-0.22" y="2.08" text-anchor="middle" style="font-style:normal;font-size:0.26px">2</text>
+      <line class="v-line" x1="1" y1="0" x2="1" y2="2.6" stroke-width="0.7"></line>
+      <line class="v-line" x1="2" y1="0" x2="2" y2="2.6" stroke-width="0.7"></line>
+      <line class="v-line" x1="0" y1="1" x2="2.6" y2="1" stroke-width="0.7"></line>
+      <line class="v-line" x1="0" y1="2" x2="2.6" y2="2" stroke-width="0.7"></line>
+      <circle class="v-dot" cx="1" cy="1" r="0.055"></circle>
+      <circle class="v-dot" cx="1" cy="2" r="0.055"></circle>
+      <circle class="v-dot" cx="2" cy="1" r="0.055"></circle>
+      <circle class="v-dot" cx="2" cy="2" r="0.055"></circle>
+      <text x="1.12" y="0.92" style="font-style:normal;font-size:0.24px">(2, 1)</text>
+      <text x="1.12" y="1.92" style="font-style:normal;font-size:0.24px">(2, 2)</text>
+      <text x="2.12" y="0.92" style="font-style:normal;font-size:0.24px">(3, 1)</text>
+      <text x="2.12" y="1.92" style="font-style:normal;font-size:0.24px">(3, 2)</text>
+      <text x="1.4" y="-0.55" text-anchor="middle" style="font-size:0.3px">B × A</text>
+    </g>
+    <defs>
+      <marker id="arrL" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#3d4653"></path>
+      </marker>
+    </defs>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s6-9">Ordered Triplet</h3>
+<p>If \(A,B,C\) are non-empty sets, then \((a,b,c)\) is an <strong>ordered triplet</strong> (3-tuple).</p>
+
+<h3 class="sub" id="s6-10">Cartesian Product of Three Sets</h3>
+\[
+A\times B\times C=\{(a,b,c):a\in A,\ b\in B,\ c\in C\}.
+\]
+
+<div class="ex">
+  \(A=\{-1,1\}\):
+  \begin{align*}
+  A\times A\times A&=\{(-1,-1,-1),(-1,-1,1),(-1,1,-1),(-1,1,1),\\
+  &\qquad (1,-1,-1),(1,-1,1),(1,1,-1),(1,1,1)\}.
+  \end{align*}
+</div>
+
+<h3 class="sub" id="s6-11">\(n\)-Tuple</h3>
+<p>For \(n\) non-empty sets \(A_1,\ldots,A_n\):</p>
+\[
+A_1\times\cdots\times A_n=\{(a_1,\ldots,a_n):a_i\in A_i,\ 1\le i\le n\}.
+\]
+
+<h3 class="sub" id="s6-12">Describing a Relation</h3>
+<h5>Roster Form.</h5>
+<p>\(E=\{(1,1),(2,2),(3,3)\}\) on \(A=\{1,2,3\}\).</p>
+
+<h5>Set-Builder Form.</h5>
+<p>\(E=\{(x,y):(x,y)\in A\times A,\ x=y\}\).</p>
+
+<h3 class="sub" id="s6-13">Inverse Relation</h3>
+
+<div class="wex">
+  <span class="tag">Worked Example.</span>
+  If
+  \[
+  R=\{(1,2),(2,3),(3,1)\},
+  \]
+  then every ordered pair is reversed:
+  \[
+  R^{-1}=\{(2,1),(3,2),(1,3)\}.
+  \]
+  Thus taking an inverse changes the direction of every arrow in a mapping
+  diagram.
+</div>
+
+<p>If \((x,y)\in R\), then \((y,x)\in R^{-1}\).</p>
+
+<div class="ex">
+  \(R=\{(2,3),(2,4),(3,4),(4,3),(3,2),(4,2)\}\):
+  \[
+  R^{-1}=\{(3,2),(4,2),(4,3),(3,4),(2,3),(2,4)\}.
+  \]
+  Note \(R=R^{-1}\).
+</div>
+
+<div class="rem">
+  If \(n(A)=m\), \(n(B)=n\), then the number of relations from \(A\) to \(B\) is \(2^{mn}\).
+</div>
+</section>
+
+<!-- ============================================================
+     7. TYPES OF RELATIONS
+     ============================================================ -->
+<section class="sec" id="s7">
+<h2>TYPES OF RELATIONS</h2>
+
+<h3 class="sub" id="s7-1">One-One Relation</h3>
+<div class="def">
+  \(R:A\to B\) is <strong>one-one</strong> if no two elements of \(A\) have the same image in \(B\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 5" role="img" aria-label="One-one relation">
+    <ellipse class="v-outline" cx="1.2" cy="2.5" rx="0.95" ry="1.9"></ellipse>
+    <ellipse class="v-outline" cx="4.8" cy="2.5" rx="0.95" ry="1.9"></ellipse>
+    <text x="1.2" y="4.85" text-anchor="middle" style="font-size:0.34px">A</text>
+    <text x="4.8" y="4.85" text-anchor="middle" style="font-size:0.34px">B</text>
+    <text x="1.2" y="3.72" text-anchor="middle" style="font-style:normal;font-size:0.3px">1</text>
+    <text x="1.2" y="2.92" text-anchor="middle" style="font-style:normal;font-size:0.3px">2</text>
+    <text x="1.2" y="2.12" text-anchor="middle" style="font-style:normal;font-size:0.3px">3</text>
+    <text x="1.2" y="1.32" text-anchor="middle" style="font-style:normal;font-size:0.3px">4</text>
+    <text x="4.8" y="3.72" text-anchor="middle" style="font-style:normal;font-size:0.3px">5</text>
+    <text x="4.8" y="2.92" text-anchor="middle" style="font-style:normal;font-size:0.3px">6</text>
+    <text x="4.8" y="2.12" text-anchor="middle" style="font-style:normal;font-size:0.3px">7</text>
+    <text x="4.8" y="1.32" text-anchor="middle" style="font-style:normal;font-size:0.3px">8</text>
+    <line class="v-line" x1="1.3" y1="3.62" x2="4.7" y2="3.62" marker-end="url(#arrR)"></line>
+    <line class="v-line" x1="1.3" y1="2.82" x2="4.7" y2="2.82" marker-end="url(#arrR)"></line>
+    <line class="v-line" x1="1.3" y1="2.02" x2="4.7" y2="2.02" marker-end="url(#arrR)"></line>
+    <line class="v-line" x1="1.3" y1="1.22" x2="4.7" y2="1.22" marker-end="url(#arrR)"></line>
+    <text x="3" y="2.6" text-anchor="middle" style="font-size:0.32px">R</text>
+    <defs>
+      <marker id="arrR" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#3d4653"></path>
+      </marker>
+    </defs>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s7-2">One-to-Many Relation</h3>
+<div class="def">
+  \(R:A\to B\) is <strong>one-to-many</strong> if at least one element of \(A\) is related to two or more elements of \(B\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 5" role="img" aria-label="One-to-many relation">
+    <ellipse class="v-outline" cx="1.2" cy="2.5" rx="0.95" ry="1.9"></ellipse>
+    <ellipse class="v-outline" cx="4.8" cy="2.5" rx="0.95" ry="1.9"></ellipse>
+    <text x="1.2" y="4.85" text-anchor="middle" style="font-size:0.34px">A</text>
+    <text x="4.8" y="4.85" text-anchor="middle" style="font-size:0.34px">B</text>
+    <text x="1.2" y="3.72" text-anchor="middle" style="font-style:normal;font-size:0.3px">1</text>
+    <text x="1.2" y="2.5" text-anchor="middle" style="font-style:normal;font-size:0.3px">2</text>
+    <text x="1.2" y="1.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">3</text>
+    <text x="4.8" y="3.72" text-anchor="middle" style="font-style:normal;font-size:0.3px">4</text>
+    <text x="4.8" y="2.92" text-anchor="middle" style="font-style:normal;font-size:0.3px">5</text>
+    <text x="4.8" y="2.12" text-anchor="middle" style="font-style:normal;font-size:0.3px">6</text>
+    <text x="4.8" y="1.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">7</text>
+    <line class="v-line" x1="1.3" y1="3.62" x2="4.7" y2="3.62" marker-end="url(#arrR2)"></line>
+    <line class="v-line" x1="1.3" y1="2.5" x2="4.7" y2="2.82" marker-end="url(#arrR2)"></line>
+    <line class="v-line" x1="1.3" y1="2.5" x2="4.7" y2="2.02" marker-end="url(#arrR2)"></line>
+    <line class="v-line" x1="1.3" y1="1.28" x2="4.7" y2="1.28" marker-end="url(#arrR2)"></line>
+    <text x="3" y="1.9" text-anchor="middle" style="font-size:0.32px">R</text>
+    <defs>
+      <marker id="arrR2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#3d4653"></path>
+      </marker>
+    </defs>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s7-3">Many-One Relation</h3>
+<div class="def">
+  \(R:A\to B\) is <strong>many-one</strong> if two or more elements of \(A\) are related to an element of \(B\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 5.6" role="img" aria-label="Many-one relation">
+    <ellipse class="v-outline" cx="1.2" cy="2.6" rx="0.95" ry="2.35"></ellipse>
+    <ellipse class="v-outline" cx="4.8" cy="2.6" rx="0.95" ry="1.2"></ellipse>
+    <text x="1.2" y="5.4" text-anchor="middle" style="font-size:0.34px">A</text>
+    <text x="4.8" y="4.5" text-anchor="middle" style="font-size:0.34px">B</text>
+    <text x="1.2" y="4.05" text-anchor="middle" style="font-style:normal;font-size:0.3px">1</text>
+    <text x="1.2" y="3.25" text-anchor="middle" style="font-style:normal;font-size:0.3px">2</text>
+    <text x="1.2" y="2.45" text-anchor="middle" style="font-style:normal;font-size:0.3px">3</text>
+    <text x="1.2" y="1.65" text-anchor="middle" style="font-style:normal;font-size:0.3px">4</text>
+    <text x="1.2" y="0.85" text-anchor="middle" style="font-style:normal;font-size:0.3px">5</text>
+    <text x="4.8" y="3.25" text-anchor="middle" style="font-style:normal;font-size:0.3px">a</text>
+    <text x="4.8" y="1.95" text-anchor="middle" style="font-style:normal;font-size:0.3px">b</text>
+    <line class="v-line" x1="1.3" y1="3.95" x2="4.7" y2="3.15" marker-end="url(#arrR3)"></line>
+    <line class="v-line" x1="1.3" y1="3.15" x2="4.7" y2="3.15" marker-end="url(#arrR3)"></line>
+    <line class="v-line" x1="1.3" y1="2.35" x2="4.7" y2="1.85" marker-end="url(#arrR3)"></line>
+    <line class="v-line" x1="1.3" y1="1.55" x2="4.7" y2="1.85" marker-end="url(#arrR3)"></line>
+    <line class="v-line" x1="1.3" y1="0.75" x2="4.7" y2="1.85" marker-end="url(#arrR3)"></line>
+    <text x="3" y="2.6" text-anchor="middle" style="font-size:0.32px">R</text>
+    <defs>
+      <marker id="arrR3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#3d4653"></path>
+      </marker>
+    </defs>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s7-4">Many-Many Relation</h3>
+<div class="def">
+  \(R:A\to B\) is <strong>many-many</strong> if two or more elements of \(A\) are related to two or more elements of \(B\).
+</div>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6 5" role="img" aria-label="Many-many relation">
+    <ellipse class="v-outline" cx="1.2" cy="2.5" rx="0.95" ry="1.9"></ellipse>
+    <ellipse class="v-outline" cx="4.8" cy="2.5" rx="0.95" ry="1.9"></ellipse>
+    <text x="1.2" y="4.85" text-anchor="middle" style="font-size:0.34px">A</text>
+    <text x="4.8" y="4.85" text-anchor="middle" style="font-size:0.34px">B</text>
+    <text x="1.2" y="3.72" text-anchor="middle" style="font-style:normal;font-size:0.3px">1</text>
+    <text x="1.2" y="2.5" text-anchor="middle" style="font-style:normal;font-size:0.3px">2</text>
+    <text x="1.2" y="1.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">3</text>
+    <text x="4.8" y="3.72" text-anchor="middle" style="font-style:normal;font-size:0.3px">4</text>
+    <text x="4.8" y="2.5" text-anchor="middle" style="font-style:normal;font-size:0.3px">5</text>
+    <text x="4.8" y="1.28" text-anchor="middle" style="font-style:normal;font-size:0.3px">6</text>
+    <line class="v-line" x1="1.3" y1="3.62" x2="4.7" y2="3.62" marker-end="url(#arrR4)"></line>
+    <line class="v-line" x1="1.3" y1="3.62" x2="4.7" y2="2.6" marker-end="url(#arrR4)"></line>
+    <line class="v-line" x1="1.3" y1="2.5" x2="4.7" y2="3.62" marker-end="url(#arrR4)"></line>
+    <line class="v-line" x1="1.3" y1="2.5" x2="4.7" y2="2.6" marker-end="url(#arrR4)"></line>
+    <line class="v-line" x1="1.3" y1="2.5" x2="4.7" y2="1.38" marker-end="url(#arrR4)"></line>
+    <line class="v-line" x1="1.3" y1="1.28" x2="4.7" y2="2.6" marker-end="url(#arrR4)"></line>
+    <line class="v-line" x1="1.3" y1="1.28" x2="4.7" y2="1.38" marker-end="url(#arrR4)"></line>
+    <text x="3" y="0.7" text-anchor="middle" style="font-size:0.32px">R</text>
+    <defs>
+      <marker id="arrR4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#3d4653"></path>
+      </marker>
+    </defs>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s7-5">Reflexive Relation</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  For a relation on \(A\), reflexivity requires a self-loop \((a,a)\) at every
+  element of \(A\). Missing even one such pair makes the relation non-reflexive.
+</div>
+
+<div class="def">
+  \(R\) in \(A\) is <strong>reflexive</strong> if \((a,a)\in R\) for every \(a\in A\).
+</div>
+
+<div class="ex">“is equal to” on \(\mathbb{R}\) is reflexive.</div>
+<div class="ex">“is a subset of” on a set of sets is reflexive.</div>
+<div class="ex">\(R=\{(a,a),(b,b),(c,c),(d,d)\}\) in \(A=\{a,b,c,d\}\) is reflexive.</div>
+<div class="ex">“is parallel to” on a set of lines is reflexive.</div>
+
+<h3 class="sub" id="s7-6">Symmetric Relation</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  Symmetry means that every arrow can be reversed. If \(aRb\), then \(bRa\) must
+  also hold.
+</div>
+
+<div class="def">
+  \(R\) is <strong>symmetric</strong> if \((a,b)\in R\Rightarrow (b,a)\in R\).
+</div>
+
+<div class="ex">“is equal to” on \(\mathbb{R}\) is symmetric.</div>
+<div class="ex">“is parallel to” on a set of lines is symmetric.</div>
+<div class="ex">“\(x\) is a factor of \(y\)” on \(\mathbb{N}\) is not symmetric: \((2,6)\in R\) but \((6,2)\notin R\).</div>
+
+<h3 class="sub" id="s7-7">Anti-Symmetric Relation</h3>
+
+<div class="cmistake">
+  <span class="tag">Common mistake.</span>
+  Anti-symmetric does not mean “not symmetric”. A relation may be both
+  symmetric and anti-symmetric; for example, equality on a set is both.
+</div>
+
+<div class="def">
+  \(R\) is <strong>anti-symmetric</strong> if \((a,b)\in R\) and \((b,a)\in R\Rightarrow a=b\).
+</div>
+
+<div class="ex">“\(x\) divides \(y\)” on \(\mathbb{N}\) is anti-symmetric.</div>
+<div class="ex">\(X\subseteq Y\) on a set of sets is anti-symmetric.</div>
+<div class="ex">“\(\ge\)” on \(\mathbb{R}\) is anti-symmetric.</div>
+<div class="ex">\(R=\{(1,1),(2,2),(2,3)\}\) on \(\{1,2,3\}\) is anti-symmetric, not reflexive.</div>
+
+<div class="rem">
+  Anti-symmetric does not mean “not symmetric”.
+</div>
+
+<h3 class="sub" id="s7-8">Transitive Relation</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  Transitivity concerns chains of length two. Whenever \(aRb\) and \(bRc\) are
+  both true, transitivity requires \(aRc\).
+</div>
+
+<div class="def">
+  \(R\) is <strong>transitive</strong> if \((a,b)\in R\) and \((b,c)\in R\Rightarrow (a,c)\in R\).
+</div>
+
+<div class="ex">“is equal to” on \(\mathbb{R}\) is transitive.</div>
+<div class="ex">“is perpendicular to” on a set of lines is not transitive.</div>
+<div class="ex">“is similar to” on a set of triangles is transitive.</div>
+
+<h3 class="sub" id="s7-9">Equivalence Relation</h3>
+
+<div class="keyidea">
+  <span class="tag">Key idea.</span>
+  An equivalence relation behaves like a generalized notion of equality:
+  elements are grouped into classes in which every pair is related.
+</div>
+
+<div class="def">
+  \(R\) in \(A\) is an <strong>equivalence relation</strong> if it is reflexive, symmetric, and transitive.
+</div>
+
+<div class="ex">“is congruent to” on triangles is an equivalence relation.</div>
+<div class="ex">“is equal to” on \(\mathbb{R}\) is an equivalence relation.</div>
+</section>
+
+<!-- ============================================================
+     8. COUNTING RELATIONS
+     ============================================================ -->
+<section class="sec" id="s8">
+<h2>COUNTING RELATIONS</h2>
+
+<p>For a set \(A\) with \(n(A)=n\):</p>
+
+<table class="center">
+  <thead>
+    <tr><th>Nature of relation</th><th>Number of relations</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Total relations</td><td>\(2^{n^2}\)</td></tr>
+    <tr><td>Reflexive relations</td><td>\(2^{n(n-1)}\)</td></tr>
+    <tr><td>Symmetric relations</td><td>\(2^{n(n+1)/2}\)</td></tr>
+    <tr><td>Anti-symmetric relations</td><td>\(2^n\cdot 3^{n(n-1)/2}\)</td></tr>
+    <tr><td>Symmetric and anti-symmetric</td><td>\(2^n\)</td></tr>
+    <tr><td>Reflexive and symmetric</td><td>\(2^{n(n-1)/2}\)</td></tr>
+    <tr><td>Equivalence relations</td><td>Bell number \(B_n\)</td></tr>
+  </tbody>
+</table>
+
+<p>Bell numbers:</p>
+\[
+B_0=1,\ B_1=1,\ B_2=2,\ B_3=5,\ B_4=15,\ B_5=52,\ \ldots
+\]
+</section>
+
+<!-- ============================================================
+     9. CONCEPTUAL CONSOLIDATION
+     ============================================================ -->
+<section class="sec" id="s9">
+<h2>CONCEPTUAL CONSOLIDATION</h2>
+
+<p>This section brings the chapter's ideas together in a systematic sequence.
+It does not replace the preceding material; it provides a second, textbook-style
+view of the same concepts so that definitions, symbols, diagrams, and
+applications can be connected.</p>
+
+<h3 class="sub" id="s9-1">A systematic way to read a set expression</h3>
+
+<p>When an expression contains several operations, read it from the inside out.
+For example,</p>
+\[
+(A\cup B')\cap C
+\]
+<p>can be interpreted in three stages:</p>
+<ol>
+  <li>determine \(B'\) relative to the universal set;</li>
+  <li>form \(A\cup B'\);</li>
+  <li>intersect the result with \(C\).</li>
+</ol>
+<p>This procedure prevents confusion between the operations \(\cup\), \(\cap\), and
+complement.</p>
+
+<h3 class="sub" id="s9-2">Membership translation table</h3>
+
+<table class="center">
+  <thead>
+    <tr><th>Set expression</th><th>Membership statement</th><th>Logical meaning</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>\(x\in A\cup B\)</td><td>\(x\in A\) or \(x\in B\)</td><td>at least one</td></tr>
+    <tr><td>\(x\in A\cap B\)</td><td>\(x\in A\) and \(x\in B\)</td><td>both</td></tr>
+    <tr><td>\(x\in A-B\)</td><td>\(x\in A\) and \(x\notin B\)</td><td>\(A\) only</td></tr>
+    <tr><td>\(x\in A'\)</td><td>\(x\notin A\)</td><td>outside \(A\)</td></tr>
+    <tr><td>\(x\in A\triangle B\)</td><td>exactly one of \(A,B\)</td><td>one but not both</td></tr>
+  </tbody>
+</table>
+
+<h3 class="sub" id="s9-3">Worked Venn-diagram method</h3>
+
+<p>Suppose a universal set contains \(40\) students. Let \(A\) be the students who
+like Mathematics and \(B\) the students who like Physics, with</p>
+\[
+\card A=25,\qquad \card B=20,\qquad \card{A\cap B}=10.
+\]
+<p>The four fundamental Venn regions are:</p>
+\[
+\begin{aligned}
+\text{Both} &=10,\\
+\text{Only }A &=25-10=15,\\
+\text{Only }B &=20-10=10,\\
+\text{Neither} &=40-(15+10+10)=5.
+\end{aligned}
+\]
+<p>Therefore the diagram may be labelled as follows.</p>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 7 4.2" role="img" aria-label="Venn diagram with 40 students, Mathematics and Physics">
+    <rect class="v-box" x="0.05" y="0.05" width="6.9" height="4.1"></rect>
+    <circle class="v-outline" cx="2.7" cy="2.1" r="1.35"></circle>
+    <circle class="v-outline" cx="4.3" cy="2.1" r="1.35"></circle>
+    <text x="1.0" y="3.85" text-anchor="middle" style="font-size:0.34px">U</text>
+    <text x="2.15" y="3.3" text-anchor="middle" style="font-size:0.32px">A</text>
+    <text x="4.85" y="3.3" text-anchor="middle" style="font-size:0.32px">B</text>
+    <text x="2.55" y="2.2" text-anchor="middle" style="font-style:normal;font-size:0.32px">15</text>
+    <text x="3.5" y="2.2" text-anchor="middle" style="font-style:normal;font-size:0.32px">10</text>
+    <text x="4.45" y="2.2" text-anchor="middle" style="font-style:normal;font-size:0.32px">10</text>
+    <text x="6.15" y="1.1" text-anchor="middle" style="font-style:normal;font-size:0.32px">5</text>
+    <text x="3.5" y="0.35" text-anchor="middle" style="font-style:normal;font-size:0.28px">Neither</text>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s9-4">A reliable procedure for inclusion-exclusion</h3>
+
+<p>For two finite sets:</p>
+\[
+\card{A\cup B}=\card A+\card B-\card{A\cap B}.
+\]
+<p>For three finite sets:</p>
+\[
+\card{A\cup B\cup C}
+=\card A+\card B+\card C
+-\card{A\cap B}-\card{B\cap C}-\card{C\cap A}
++\card{A\cap B\cap C}.
+\]
+<p>The signs follow the pattern</p>
+\[
++\quad-\quad+,
+\]
+<p>because pairwise overlaps are initially counted twice and the common
+three-way region is then corrected once more.</p>
+
+<h3 class="sub" id="s9-5">Equality, equivalence, and subset: a comparison</h3>
+
+<table>
+  <thead>
+    <tr><th>Concept</th><th>Requirement</th><th>Example</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Equal sets</td><td>exactly the same elements</td><td>\(\{1,2\}=\{2,1\}\)</td></tr>
+    <tr><td>Equivalent sets</td><td>same number of distinct elements</td><td>\(\{1,2\}\sim\{a,b\}\)</td></tr>
+    <tr><td>Subset</td><td>every element of the first lies in the second</td><td>\(\{1,2\}\subseteq\{1,2,3\}\)</td></tr>
+    <tr><td>Proper subset</td><td>subset but not equal</td><td>\(\{1,2\}\subset\{1,2,3\}\)</td></tr>
+  </tbody>
+</table>
+
+<h3 class="sub" id="s9-6">Cartesian product: a coordinate interpretation</h3>
+
+<p>If</p>
+\[
+A=\{1,2,3\},\qquad B=\{a,b\},
+\]
+<p>then every choice of one element from \(A\) and one element from \(B\) produces
+one ordered pair. Hence</p>
+\[
+\card{A\times B}=\card A\card B=3\cdot2=6.
+\]
+<p>This multiplication principle is the fundamental reason behind the
+cardinality formula for Cartesian products.</p>
+
+<h3 class="sub" id="s9-7">Relation as a subset of a Cartesian product</h3>
+
+<p>A relation from \(A\) to \(B\) is naturally understood as a subset of
+\(A\times B\). Thus</p>
+\[
+R\subseteq A\times B.
+\]
+<p>For example, if</p>
+\[
+A=\{1,2,3\},\qquad B=\{a,b\},
+\]
+<p>then</p>
+\[
+R=\{(1,a),(2,b),(3,b)\}
+\]
+<p>is a relation from \(A\) to \(B\). It selects some ordered pairs from the complete
+Cartesian product.</p>
+
+<figure class="single">
+  <svg class="venn" viewBox="0 0 6.5 4.8" role="img" aria-label="Relation R as a subset of A times B">
+    <rect class="v-box" x="0.4" y="3.25" width="1.2" height="0.58" rx="0.12" fill="#5b9bd5" fill-opacity="0.12"></rect>
+    <text x="1.0" y="3.68" text-anchor="middle" style="font-style:normal;font-size:0.3px">1</text>
+    <rect class="v-box" x="0.4" y="2.1" width="1.2" height="0.58" rx="0.12" fill="#5b9bd5" fill-opacity="0.12"></rect>
+    <text x="1.0" y="2.53" text-anchor="middle" style="font-style:normal;font-size:0.3px">2</text>
+    <rect class="v-box" x="0.4" y="0.95" width="1.2" height="0.58" rx="0.12" fill="#5b9bd5" fill-opacity="0.12"></rect>
+    <text x="1.0" y="1.38" text-anchor="middle" style="font-style:normal;font-size:0.3px">3</text>
+
+    <rect class="v-box" x="4.9" y="3.25" width="1.2" height="0.58" rx="0.12" fill="#5b9bd5" fill-opacity="0.16"></rect>
+    <text x="5.5" y="3.68" text-anchor="middle" style="font-style:normal;font-size:0.3px">a</text>
+    <rect class="v-box" x="4.9" y="1.8" width="1.2" height="0.58" rx="0.12" fill="#5b9bd5" fill-opacity="0.16"></rect>
+    <text x="5.5" y="2.23" text-anchor="middle" style="font-style:normal;font-size:0.3px">b</text>
+
+    <line class="v-line" x1="1.6" y1="3.54" x2="4.9" y2="3.54" marker-end="url(#arrQ)"></line>
+    <line class="v-line" x1="1.6" y1="2.39" x2="4.9" y2="2.09" marker-end="url(#arrQ)"></line>
+    <line class="v-line" x1="1.6" y1="1.24" x2="4.9" y2="2.09" marker-end="url(#arrQ)"></line>
+
+    <defs>
+      <marker id="arrQ" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 z" fill="#19487d"></path>
+      </marker>
+    </defs>
+
+    <text x="1.0" y="4.15" text-anchor="middle" style="font-size:0.32px;font-weight:bold">A</text>
+    <text x="5.5" y="4.15" text-anchor="middle" style="font-size:0.32px;font-weight:bold">B</text>
+
+    <rect x="1.7" y="0.05" width="3.1" height="0.62" rx="0.12"
+          fill="#eaf1fa" stroke="#19487d" stroke-width="1.2"></rect>
+    <text x="3.25" y="0.47" text-anchor="middle" style="font-style:normal;font-size:0.28px">R = {(1, a), (2, b), (3, b)}</text>
+  </svg>
+</figure>
+
+<h3 class="sub" id="s9-8">Property-checking checklist for relations</h3>
+
+<p>For a relation \(R\) on \(A\), use the following order:</p>
+<ol>
+  <li><strong>Reflexive:</strong> check every \((a,a)\).</li>
+  <li><strong>Symmetric:</strong> whenever \((a,b)\) occurs, check \((b,a)\).</li>
+  <li><strong>Anti-symmetric:</strong> if both \((a,b)\) and \((b,a)\) occur, verify \(a=b\).</li>
+  <li><strong>Transitive:</strong> whenever \((a,b)\) and \((b,c)\) occur, check \((a,c)\).</li>
+</ol>
+
+<div class="wex">
+  <span class="tag">Worked Example.</span>
+  Let
+  \[
+  A=\{1,2,3\},\qquad
+  R=\{(1,1),(2,2),(3,3),(1,2),(2,1)\}.
+  \]
+  Then \(R\) is reflexive because all three diagonal pairs occur. It is symmetric
+  because \((1,2)\) and \((2,1)\) occur together. It is anti-symmetric only if
+  mutual pairs force equality; here \((1,2)\) and \((2,1)\) occur with \(1\ne2\), so
+  it is <em>not</em> anti-symmetric. Finally, the transitivity requirement can be
+  checked directly from the pair chains.
+</div>
+
+<h3 class="sub" id="s9-9">End-of-chapter summary</h3>
+
+<div class="summary">
+  <span class="tag">Section summary.</span>
+  <ul>
+    <li>A set is a well-defined collection of distinct objects.</li>
+    <li>Roster form lists elements; set-builder form states a defining rule.</li>
+    <li>Equality means identical elements; equivalence means equal cardinality.</li>
+    <li>\(A\subseteq B\) means every element of \(A\) is also an element of \(B\).</li>
+    <li>The power set contains all subsets and has \(2^{\card A}\) elements for finite \(A\).</li>
+    <li>Union corresponds to “or” and intersection corresponds to “and”.</li>
+    <li>Difference is directional, while symmetric difference is not directional.</li>
+    <li>Complement is always taken relative to a specified universal set.</li>
+    <li>De Morgan's laws convert complements of unions and intersections.</li>
+    <li>Inclusion-exclusion corrects repeated counting of overlapping sets.</li>
+    <li>A Cartesian product consists of ordered tuples.</li>
+    <li>A relation from \(A\) to \(B\) is a subset of \(A\times B\).</li>
+    <li>Reflexive, symmetric, anti-symmetric, and transitive are distinct properties.</li>
+    <li>An equivalence relation is reflexive, symmetric, and transitive.</li>
+  </ul>
+</div>
+</section>
+
+<!-- ============================================================
+     10. ORIGINAL SOURCE WORKSHEET / CUQ
+     ============================================================ -->
+<section class="sec" id="s10">
+<h2>ORIGINAL SOURCE WORKSHEET / CUQ</h2>
+
+<p class="note">Note: The original scanned PDF (pages 7, 9, 11, 13) contained corrupted OCR text with no readable worksheet problems. The following are reconstructed in the spirit of the source, based on the practice sections and CUQ format of the original Olympiad textbook.</p>
+
+<ol>
+  <li>Write \(A=\{x:x \text{ is a prime number less than }15\}\) in roster form.</li>
+  <li>Write \(B=\{1,4,9,16,25\}\) in set-builder form.</li>
+  <li>If \(A=\{1,2,3,4\}\), find \(P(A)\).</li>
+  <li>If \(U=\{1,2,\ldots,10\}\), \(A=\{2,4,6,8,10\}\), find \(A'\).</li>
+  <li>Verify \((A\cup B)'=A'\cap B'\) for \(A=\{1,2,3\}\), \(B=\{3,4,5\}\), \(U=\{1,\ldots,6\}\).</li>
+  <li>If \(n(A)=10\), \(n(B)=15\), \(n(A\cap B)=5\), find \(n(A\cup B)\).</li>
+  <li>If \(A=\{1,2\}\), \(B=\{3,4,5\}\), find \(A\times B\) and \(B\times A\).</li>
+  <li>If \(n(A)=4\), \(n(B)=3\), find \(n(A\times B)\).</li>
+  <li>Find the inverse of \(R=\{(1,2),(2,3),(3,1)\}\).</li>
+  <li>On \(\mathbb{N}\), define \(R\) by \(xRy\iff x\le y\). Is \(R\) reflexive? Symmetric? Anti-symmetric? Transitive?</li>
+</ol>
+</section>
+
+<!-- ============================================================
+     11. ADDITIONAL PRACTICE
+     ============================================================ -->
+<section class="sec" id="s11">
+<h2>ADDITIONAL PRACTICE</h2>
+
+<h3 class="sub" id="s11-1">Venn Diagram Problems</h3>
+<ol>
+  <li>In a class of \(50\) students, \(30\) like Mathematics, \(25\) like Physics, \(10\) like both. How many like neither?</li>
+  <li>In a survey of \(80\) people, \(45\) read \(A\), \(35\) read \(B\), \(20\) read both. How many read only \(A\)?</li>
+  <li>In a group of \(100\) people, \(60\) speak Hindi, \(40\) speak English, \(20\) speak both. How many speak at least one?</li>
+  <li>In a class of \(60\) students, \(35\) play cricket, \(30\) play football, \(15\) play both. How many play only cricket?</li>
+</ol>
+
+<h3 class="sub" id="s11-2">Cartesian Product Problems</h3>
+<ol>
+  <li>\(A=\{1,2\}\), \(B=\{3,4,5\}\): find \(A\times B\), \(B\times A\).</li>
+  <li>\(A=\{a,b\}\): find \(A\times A\).</li>
+  <li>\(n(A)=4\), \(n(B)=3\): find \(n(A\times B)\).</li>
+  <li>\(A=\{1,2\}\), \(B=\{3\}\), \(C=\{4,5\}\): find \(A\times B\times C\).</li>
+</ol>
+
+<h3 class="sub" id="s11-3">Relation Problems</h3>
+<ol>
+  <li>\(A=\{1,2,3\}\), \(R=\{(1,1),(2,2),(3,3),(1,2)\}\). Is \(R\) reflexive? Symmetric? Transitive?</li>
+  <li>\(A=\{1,2,3,4\}\), \(R=\{(1,2),(2,1),(3,4),(4,3)\}\). Is \(R\) symmetric? Transitive?</li>
+  <li>On \(\mathbb{N}\), \(xRy\iff x\le y\). Is \(R\) reflexive? Symmetric? Anti-symmetric? Transitive?</li>
+  <li>Find \(R^{-1}\) for \(R=\{(1,2),(2,3),(3,1)\}\).</li>
+</ol>
+
+<h3 class="sub" id="s11-4">Mixed Problems</h3>
+<ol>
+  <li>\(U=\{1,\ldots,10\}\), \(A=\{2,4,6,8,10\}\), \(B=\{1,3,5,7,9\}\). Find \(A'\), \(B'\), \(A\cup B\), \(A\cap B\).</li>
+  <li>Verify De Morgan's law for \(A=\{1,2,3\}\), \(B=\{3,4,5\}\), \(U=\{1,\ldots,6\}\).</li>
+  <li>\(n(A)=10\), \(n(B)=15\), \(n(A\cap B)=5\). Find \(n(A\cup B)\).</li>
+  <li>\(n(U)=50\), \(n(A)=20\). Find \(n(A')\).</li>
+</ol>
+
+<h3 class="sub" id="s11-5">Answer Key</h3>
+
+<h4>Venn Diagram Problems:</h4>
+<ol>
+  <li>\(30+25-10=45\), so neither \(=50-45=5\).</li>
+  <li>Only \(A=45-20=25\).</li>
+  <li>\(60+40-20=80\).</li>
+  <li>Only cricket \(=35-15=20\).</li>
+</ol>
+
+<h4>Cartesian Product Problems:</h4>
+<ol>
+  <li>\(A\times B=\{(1,3),(1,4),(1,5),(2,3),(2,4),(2,5)\}\);
+      \(B\times A=\{(3,1),(3,2),(4,1),(4,2),(5,1),(5,2)\}\).</li>
+  <li>\(A\times A=\{(a,a),(a,b),(b,a),(b,b)\}\).</li>
+  <li>\(n(A\times B)=12\).</li>
+  <li>\(A\times B\times C=\{(1,3,4),(1,3,5),(2,3,4),(2,3,5)\}\).</li>
+</ol>
+
+<h4>Relation Problems:</h4>
+<ol>
+  <li>Reflexive, transitive, not symmetric.</li>
+  <li>Symmetric, not transitive.</li>
+  <li>Reflexive, anti-symmetric, transitive, not symmetric.</li>
+  <li>\(R^{-1}=\{(2,1),(3,2),(1,3)\}\).</li>
+</ol>
+
+<h4>Mixed Problems:</h4>
+<ol>
+  <li>\(A'=B\), \(B'=A\), \(A\cup B=U\), \(A\cap B=\varnothing\).</li>
+  <li>\((A\cup B)'=\{6\}\), \(A'\cap B'=\{4,5,6\}\cap\{1,2,6\}=\{6\}\). Verified.</li>
+  <li>\(n(A\cup B)=10+15-5=20\).</li>
+  <li>\(n(A')=50-20=30\).</li>
+</ol>
+</section>
+
+</div>
+</body>
+</html>
