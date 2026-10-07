@@ -1,1 +1,2487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>GANITH 3D — Explicit &amp; Implicit Surface Visualization</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjs@14.0.1/lib/browser/math.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f7f9fc;--panel:#ffffff;--panel2:#f3f6fa;--border:#d5ddea;
+  --text:#182235;--muted:#72809a;--accent:#2f6fed;--accent2:#4f46e5;
+  --grid:#dce4ef;--axis:#6b7890;--danger:#dc3545;
+  --shadow:0 2px 10px rgba(24,34,53,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:var(--bg);-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{height:100vh;height:100dvh;display:grid;grid-template-rows:54px 1fr 48px}
 
+/* ---------- Top bar ---------- */
+.topbar{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--panel);border-bottom:1px solid var(--border);z-index:10}
+.brand{display:flex;align-items:center;gap:10px;margin-right:4px}
+.logo{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
+.brand-title{font-size:18px;font-weight:850;letter-spacing:.5px;line-height:1}
+.brand-sub{font-size:9px;color:var(--muted);margin-top:4px;letter-spacing:.25px}
+.topbtn{height:38px;padding:0 13px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-weight:600;white-space:nowrap}
+.topbtn:hover{background:var(--panel2)}
+.top-spacer{flex:1}
+
+/* ---------- Layout ---------- */
+.main{min-height:0;display:grid;grid-template-columns:360px 1fr;transition:grid-template-columns .3s ease}
+.main.collapsed{grid-template-columns:0 1fr}
+.main.collapsed .sidebar{overflow:hidden;opacity:0;pointer-events:none}
+.sidebar{min-width:0;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--border);overflow:hidden}
+.section-head{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;border-bottom:1px solid var(--border);font-weight:800;font-size:12px;letter-spacing:.6px}
+.section-head-right{display:flex;align-items:center;gap:8px}
+.sidebar-close{background:transparent;border:0;color:var(--muted);font-size:22px;padding:0 5px;line-height:1;border-radius:5px}
+.sidebar-close:hover{background:var(--panel2);color:var(--danger)}
+.expr-list{overflow:auto;flex:1;padding:8px 8px 0}
+.expr-card{border:1px solid var(--border);border-radius:10px;padding:9px;margin-bottom:8px;background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.expr-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px rgba(47,111,237,.12)}
+.expr-card.error{border-color:#f0b4bb;background:#fff7f8}
+.expr-row{display:flex;align-items:center;gap:7px}
+.color-dot{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--border);flex:none}
+.expr-input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-family:"Cambria Math",Georgia,serif;font-size:15px}
+.icon-btn{border:0;background:transparent;color:var(--muted);padding:4px;border-radius:5px;font-size:14px}
+.icon-btn:hover{background:var(--panel2);color:var(--text)}
+.kind-badge{
+  font-size:9px;font-weight:800;letter-spacing:.4px;
+  padding:2px 5px;border-radius:5px;flex:none;
+  background:#e5ecfb;color:#2f6fed;border:1px solid #c8d7f7;
+}
+.kind-badge.implicit{background:#f6e5fb;color:#8e44ad;border-color:#e0c4ec}
+.kind-badge.empty{background:#f0f2f6;color:#9aa4b8;border-color:#e1e5ec}
+.expr-tools{display:flex;gap:5px;margin:7px 0 0 27px;align-items:center;flex-wrap:wrap}
+.mini{border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:6px;padding:4px 8px;font-size:11px}
+.mini:hover{border-color:var(--accent);color:var(--accent)}
+.mini-select{border:1px solid var(--border);background:var(--panel2);color:var(--text);border-radius:6px;padding:3px 4px;font-size:11px;max-width:96px}
+.mini-range{width:60px;accent-color:var(--accent);height:16px}
+.add-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:8px;border-top:1px solid var(--border)}
+.add-row button{height:42px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-weight:600;font-size:12px}
+.add-row button.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-size:13px}
+.add-row button.primary:hover{background:#2558c8}
+.add-row button.implicit{background:#8e44ad;color:#fff;border-color:#8e44ad;font-size:13px}
+.add-row button.implicit:hover{background:#733a8d}
+
+/* ---------- Function library ---------- */
+.function-library{border-top:1px solid var(--border);background:var(--panel);max-height:330px;overflow-y:auto;flex:none;transition:max-height .2s ease}
+.function-library.collapsed{max-height:38px;overflow:hidden}
+.function-library-header{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 9px;border-bottom:1px solid var(--border);font-size:10px;font-weight:900;letter-spacing:1px;position:sticky;top:0;background:var(--panel);z-index:2}
+.small-btn{border:1px solid var(--border);background:var(--panel2);border-radius:6px;padding:4px 9px;font-size:12px;color:var(--text)}
+.function-group{border-bottom:1px solid var(--border)}
+.function-group-title{width:100%;border:0;background:transparent;color:var(--text);display:flex;align-items:center;justify-content:space-between;padding:8px 9px;font-size:11px;font-weight:700;text-align:left}
+.function-group-title:hover{background:var(--panel2)}
+.function-group-title small{color:var(--muted);font-size:9px;font-weight:400}
+.function-buttons{display:none;grid-template-columns:repeat(4,1fr);gap:4px;padding:0 7px 7px}
+.function-group.open .function-buttons{display:grid}
+.function-group.open .function-group-title span{color:var(--accent)}
+.function-buttons button{min-height:29px;padding:4px 3px;border:1px solid var(--border);border-radius:6px;background:var(--panel2);color:var(--text);font-family:"Cambria Math",Georgia,serif;font-size:12px}
+.function-buttons button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ---------- Canvas ---------- */
+.canvas-wrap{position:relative;min-width:0;min-height:0;background:#fbfcfe;overflow:hidden}
+#glcanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.legend{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.93);border:1px solid var(--border);border-radius:9px;padding:10px 14px;box-shadow:var(--shadow);pointer-events:none;font-size:13px;display:flex;flex-direction:column;gap:6px;max-height:80%;overflow-y:auto;z-index:5}
+.legend-item{display:flex;align-items:center;gap:8px;font-weight:500}
+.legend-color{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.1);flex-shrink:0}
+.legend-tag{font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:#eef2fa;color:#5a6a85;margin-left:2px}
+.legend-tag.implicit{background:#f6e5fb;color:#8e44ad}
+.coords{position:absolute;top:14px;right:14px;padding:8px 11px;border:1px solid var(--border);background:rgba(255,255,255,.93);border-radius:9px;box-shadow:var(--shadow);font-size:12px;color:var(--muted);pointer-events:none;font-variant-numeric:tabular-nums}
+.status{position:absolute;left:14px;bottom:14px;padding:7px 10px;background:rgba(255,255,255,.94);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--muted);pointer-events:none;max-width:60%}
+.viewcube{position:absolute;right:14px;bottom:14px;display:flex;gap:6px;z-index:6}
+
+/* ---------- 3D Graph Controls (now rendered inside Settings dialog) ---------- */
+.cp-section{padding:12px 0;border-bottom:1px solid var(--border)}
+.cp-section:first-child{padding-top:0}
+.cp-section:last-child{border-bottom:0;padding-bottom:0}
+.cp-row{display:flex;align-items:center;gap:8px;min-height:28px}
+.cp-row + .cp-row{margin-top:8px}
+.cp-chevron{width:18px;border:0;background:transparent;color:var(--muted);font-size:16px;padding:0}
+.cp-title{font-size:12px;font-weight:750;flex:1;color:var(--text)}
+.cp-muted{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cp-range{width:100%;accent-color:var(--accent);margin:7px 0 0}
+.cp-options{display:none;padding-top:8px}
+.cp-section.open .cp-options{display:block}
+.cp-checks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cp-check{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);user-select:none}
+.cp-check input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.cp-toggle{width:42px;height:24px;border:1px solid var(--border);border-radius:999px;background:#e8edf4;position:relative;padding:0;flex:none}
+.cp-toggle::after{content:"";position:absolute;width:18px;height:18px;left:2px;top:2px;border-radius:50%;background:#8a95a6;transition:transform .16s,background .16s}
+.cp-toggle.active{background:#e8f0ff;border-color:#b9cffb}
+.cp-toggle.active::after{transform:translateX(18px);background:var(--accent)}
+.cp-segment{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.cp-segment button{height:34px;border:0;background:var(--panel);color:var(--text);font-size:12px}
+.cp-segment button+button{border-left:1px solid var(--border)}
+.cp-segment button.active{background:#596273;color:#fff}
+.cp-note{font-size:10px;color:var(--muted);line-height:1.45;margin-top:7px}
+.settings-divider{border:0;border-top:1px solid var(--border);margin:16px 0}
+.settings-section-title{font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+.vbtn{width:40px;height:34px;border:1px solid var(--border);background:rgba(255,255,255,.94);border-radius:8px;font-size:11px;font-weight:700;color:var(--muted);box-shadow:var(--shadow)}
+.vbtn:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ---------- Bottom bar ---------- */
+.bottom{display:flex;align-items:center;gap:7px;padding:6px 8px;background:var(--panel);border-top:1px solid var(--border);z-index:10;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+.bottom::-webkit-scrollbar{display:none}
+.toolbtn{height:34px;padding:0 11px;border:1px solid var(--border);background:var(--panel);border-radius:8px;color:var(--text);font-size:12px;flex-shrink:0}
+.toolbtn:hover,.toolbtn.active{background:var(--panel2);border-color:var(--accent);color:var(--accent)}
+.bottom-spacer{flex:1}
+.precision{font-size:11px;color:var(--muted);flex-shrink:0}
+.bottom-select{height:34px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-size:12px;padding:0 6px;flex-shrink:0}
+
+/* ---------- Dialog ---------- */
+.dialog-backdrop{display:none;position:fixed;inset:0;background:rgba(10,18,32,.35);z-index:50;align-items:center;justify-content:center}
+.dialog-backdrop.show{display:flex}
+.dialog{width:min(560px,92vw);max-height:82vh;overflow:auto;background:var(--panel);border-radius:14px;box-shadow:0 20px 70px rgba(0,0,0,.25);border:1px solid var(--border);padding:18px}
+.dialog h2{margin:0 0 12px;font-size:18px}
+.dialog pre{white-space:pre-wrap;background:var(--panel2);padding:12px;border-radius:8px}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.dialog input,.dialog select{width:100%;padding:9px;border:1px solid var(--border);border-radius:7px}
+.field{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--muted);margin-bottom:10px}
+
+/* ---------- Mobile ---------- */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:19;opacity:0;transition:opacity .2s}
+.sidebar-overlay.show{display:block;opacity:1}
+.fab{display:none;position:absolute;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;font-size:28px;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(47,111,237,.4);border:none;z-index:10;padding:0;line-height:1}
+
+@media(max-width:900px){
+  .main{grid-template-columns:1fr;grid-template-rows:1fr}
+  .main.collapsed{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(340px,88vw);z-index:20;transform:translateX(-102%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:12px 0 30px rgba(0,0,0,.15);opacity:1;pointer-events:auto}
+  .sidebar.open{transform:translateX(0)}
+  .main.collapsed .sidebar{opacity:1;pointer-events:auto}
+  .brand-sub{display:none}
+  .topbtn.hide-mobile{display:none}
+  .fab{display:flex}
+  .legend{top:10px;left:10px;font-size:11px;padding:6px 10px;max-height:50%}
+  .coords{top:10px;right:10px;font-size:10px;padding:4px 6px}
+  .status{bottom:10px;left:10px;font-size:10px;max-width:60%}
+  .viewcube{right:10px;bottom:86px;flex-direction:column}
+  .vbtn{width:40px;height:36px}
+  .topbar{gap:5px;padding:4px 6px}
+  .brand{margin-right:0}
+  .logo{width:36px;height:36px;font-size:19px}
+  .brand-title{font-size:16px}
+  .topbtn{height:34px;padding:0 8px;font-size:12px}
+  .function-buttons{grid-template-columns:repeat(5,1fr)}
+}
+@media(max-width:400px){
+  .topbtn{padding:0 6px;font-size:11px}
+  .brand-title{font-size:14px}
+  .logo{width:32px;height:32px;font-size:17px}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">Σ</div>
+    <div>
+      <div class="brand-title">GANITH 3D</div>
+      <div class="brand-sub">EXPLICIT &amp; IMPLICIT SURFACE VISUALIZATION</div>
+    </div>
+  </div>
+  <button class="topbtn" id="newBtn">New</button>
+  <button class="topbtn hide-mobile" id="undoBtn">↶ Undo</button>
+  <button class="topbtn hide-mobile" id="redoBtn">↷ Redo</button>
+  <button class="topbtn" id="exportBtn">Export</button>
+  <div class="top-spacer"></div>
+  <button class="topbtn hide-mobile" id="settingsBtn">⚙</button>
+  <button class="topbtn" id="sidebarBtn">☰</button>
+</header>
+
+<main class="main">
+<aside class="sidebar" id="sidebar">
+  <div class="section-head">
+    <span>SURFACES&nbsp;&nbsp;<small style="color:var(--muted);font-weight:500">z = f(x,y) · F(x,y,z) = 0</small></span>
+    <div class="section-head-right">
+      <span id="exprCount">0</span>
+      <button class="sidebar-close" id="sidebarClose" title="Hide Sidebar">×</button>
+    </div>
+  </div>
+  <div class="expr-list" id="expressionList"></div>
+
+  <div class="function-library" id="functionLibrary">
+    <div class="function-library-header">
+      <span>MATHEMATICAL FUNCTIONS</span>
+      <button class="small-btn" id="toggleLibraryBtn">−</button>
+    </div>
+    <div class="function-library-body">
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Trigonometric</span><small>sin cos tan</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('sin(')">sin</button>
+          <button onclick="FunctionLibrary.insert('cos(')">cos</button>
+          <button onclick="FunctionLibrary.insert('tan(')">tan</button>
+          <button onclick="FunctionLibrary.insert('sec(')">sec</button>
+          <button onclick="FunctionLibrary.insert('csc(')">csc</button>
+          <button onclick="FunctionLibrary.insert('cot(')">cot</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Inverse Trigonometric</span><small>asin acos atan</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('asin(')">sin⁻¹</button>
+          <button onclick="FunctionLibrary.insert('acos(')">cos⁻¹</button>
+          <button onclick="FunctionLibrary.insert('atan(')">tan⁻¹</button>
+          <button onclick="FunctionLibrary.insert('atan2(')">atan2</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Hyperbolic</span><small>sinh cosh tanh</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('sinh(')">sinh</button>
+          <button onclick="FunctionLibrary.insert('cosh(')">cosh</button>
+          <button onclick="FunctionLibrary.insert('tanh(')">tanh</button>
+          <button onclick="FunctionLibrary.insert('sech(')">sech</button>
+          <button onclick="FunctionLibrary.insert('csch(')">csch</button>
+          <button onclick="FunctionLibrary.insert('coth(')">coth</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Logarithmic &amp; Exponential</span><small>ln log eˣ</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('ln(')">ln</button>
+          <button onclick="FunctionLibrary.insert('log10(')">log₁₀</button>
+          <button onclick="FunctionLibrary.insert('log2(')">log₂</button>
+          <button onclick="FunctionLibrary.insert('logb(')">logb</button>
+          <button onclick="FunctionLibrary.insert('exp(')">eˣ</button>
+          <button onclick="FunctionLibrary.insert('10^(')">10ˣ</button>
+          <button onclick="FunctionLibrary.insert('2^(')">2ˣ</button>
+          <button onclick="FunctionLibrary.insert('pow(')">aˣ</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Powers &amp; Roots</span><small>sqrt cbrt abs</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('sqrt(')">√</button>
+          <button onclick="FunctionLibrary.insert('cbrt(')">∛</button>
+          <button onclick="FunctionLibrary.insert('abs(')">|x|</button>
+          <button onclick="FunctionLibrary.insert('sign(')">sgn</button>
+          <button onclick="FunctionLibrary.insert('^2')">x²</button>
+          <button onclick="FunctionLibrary.insert('^3')">x³</button>
+          <button onclick="FunctionLibrary.insert('^(1/')">ⁿ√</button>
+          <button onclick="FunctionLibrary.insert('hypot(')">hypot</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Rounding &amp; Pieces</span><small>floor ceil mod</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('floor(')">⌊x⌋</button>
+          <button onclick="FunctionLibrary.insert('ceil(')">⌈x⌉</button>
+          <button onclick="FunctionLibrary.insert('round(')">round</button>
+          <button onclick="FunctionLibrary.insert('trunc(')">trunc</button>
+          <button onclick="FunctionLibrary.insert('frac(')">frac</button>
+          <button onclick="FunctionLibrary.insert('mod(')">mod</button>
+          <button onclick="FunctionLibrary.insert('min(')">min</button>
+          <button onclick="FunctionLibrary.insert('max(')">max</button>
+          <button onclick="FunctionLibrary.insert('clamp(')">clamp</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Special</span><small>gamma erf sinc</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('gamma(')">Γ</button>
+          <button onclick="FunctionLibrary.insert('erf(')">erf</button>
+          <button onclick="FunctionLibrary.insert('erfc(')">erfc</button>
+          <button onclick="FunctionLibrary.insert('sinc(')">sinc</button>
+          <button onclick="FunctionLibrary.insert('factorial(')">n!</button>
+          <button onclick="FunctionLibrary.insert('gcd(')">gcd</button>
+          <button onclick="FunctionLibrary.insert('lcm(')">lcm</button>
+          <button onclick="FunctionLibrary.insert('nCr(')">nCr</button>
+        </div>
+      </div>
+      <div class="function-group">
+        <button class="function-group-title" onclick="FunctionLibrary.toggle(this)"><span>▸ Constants &amp; Variables</span><small>π e x y z</small></button>
+        <div class="function-buttons">
+          <button onclick="FunctionLibrary.insert('pi')">π</button>
+          <button onclick="FunctionLibrary.insert('e')">e</button>
+          <button onclick="FunctionLibrary.insert('phi')">φ</button>
+          <button onclick="FunctionLibrary.insert('tau')">τ</button>
+          <button onclick="FunctionLibrary.insert('x')">x</button>
+          <button onclick="FunctionLibrary.insert('y')">y</button>
+          <button onclick="FunctionLibrary.insert('z')">z</button>
+          <button onclick="FunctionLibrary.insert('sqrt(x^2+y^2+z^2)')">r</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="add-row">
+    <button class="primary" id="addExpressionBtn">＋ Equation</button>
+  </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<section class="canvas-wrap" id="canvasWrap">
+  <canvas id="glcanvas"></canvas>
+  <div class="legend" id="legend"></div>
+  <div class="coords" id="coords">x: —  y: —  z: —</div>
+  <div class="status" id="status">Ready</div>
+
+  <div class="viewcube">
+    <button class="vbtn" id="viewIso" title="Isometric view">ISO</button>
+    <button class="vbtn" id="viewTop" title="Top view">TOP</button>
+    <button class="vbtn" id="viewFront" title="Front view">FRT</button>
+    <button class="vbtn" id="viewSide" title="Side view">SIDE</button>
+  </div>
+
+  <button class="fab" id="fabAdd" title="Add Surface">＋</button>
+</section>
+</main>
+
+<footer class="bottom">
+  <button class="toolbtn" id="resetBtn">Reset View</button>
+  <button class="toolbtn" id="fitBtn">Fit All</button>
+  <button class="toolbtn active" id="gridBtn">Grid</button>
+  <button class="toolbtn active" id="axesBtn">Axes</button>
+  <button class="toolbtn" id="rotateBtn">⟳ Auto-Rotate</button>
+  <select class="bottom-select" id="displaySelect">
+    <option value="surface">Surface</option>
+    <option value="both">Surface + Wire</option>
+    <option value="wire">Wireframe</option>
+  </select>
+  <select class="bottom-select" id="resSelect">
+    <option value="30">Res 30</option>
+    <option value="50">Res 50</option>
+    <option value="70" selected>Res 70</option>
+    <option value="100">Res 100</option>
+    <option value="140">Res 140</option>
+  </select>
+  <div class="bottom-spacer"></div>
+  <span class="precision">Angle: <b id="angleMode">Radians</b></span>
+  <button class="toolbtn" id="angleBtn">Deg/Rad</button>
+</footer>
+</div>
+
+<div class="dialog-backdrop" id="dialogBackdrop">
+  <div class="dialog">
+    <h2 id="dialogTitle">GANITH 3D</h2>
+    <div id="dialogBody"></div>
+    <div class="dialog-actions">
+      <button class="topbtn" id="dialogClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   Utilities
+   ========================================================= */
+function uid(){
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    try { return crypto.randomUUID(); } catch(e){}
+  }
+  return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10);
+}
+function clampNum(v,a,b){ return Math.min(b, Math.max(a, v)); }
+function safeFileName(v){ return String(v).replace(/[^0-9a-zA-Z._-]/g, ""); }
+
+function hasStandaloneVar(text, v){
+  const re = new RegExp("(^|[^A-Za-z0-9_])" + v + "([^A-Za-z0-9_]|$)");
+  return re.test(text);
+}
+
+function normalizeEquationText(text){
+  return String(text || "")
+    .replace(/²/g, "^2")
+    .replace(/³/g, "^3")
+    .replace(/⁴/g, "^4")
+    .replace(/⁵/g, "^5")
+    .replace(/⁶/g, "^6")
+    .replace(/⁷/g, "^7")
+    .replace(/⁸/g, "^8")
+    .replace(/⁹/g, "^9")
+    .replace(/⁰/g, "^0")
+    .replace(/−/g, "-")
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/");
+}
+
+function classifyExpression(text){
+  const s = normalizeEquationText(text).trim();
+  if(!s) return { type: "empty" };
+
+  const eq = s.indexOf("=");
+  if(eq >= 0){
+    const lhs = s.slice(0, eq).trim();
+    const rhs = s.slice(eq + 1).trim();
+    if(!lhs || !rhs) return { type: "invalid" };
+
+    if(/^z$/i.test(lhs) && !hasStandaloneVar(rhs, "z"))
+      return { type: "explicitZ", axis: "z", body: rhs };
+    if(/^x$/i.test(lhs) && !hasStandaloneVar(rhs, "x"))
+      return { type: "explicitX", axis: "x", body: rhs };
+    if(/^y$/i.test(lhs) && !hasStandaloneVar(rhs, "y"))
+      return { type: "explicitY", axis: "y", body: rhs };
+
+    if(/^z$/i.test(rhs) && !hasStandaloneVar(lhs, "z"))
+      return { type: "explicitZ", axis: "z", body: lhs };
+    if(/^x$/i.test(rhs) && !hasStandaloneVar(lhs, "x"))
+      return { type: "explicitX", axis: "x", body: lhs };
+    if(/^y$/i.test(rhs) && !hasStandaloneVar(lhs, "y"))
+      return { type: "explicitY", axis: "y", body: lhs };
+
+    return { type: "implicit", lhs, rhs };
+  }
+
+  if(hasStandaloneVar(s, "z")){
+    return { type: "implicit", lhs: s, rhs: "0" };
+  }
+  return { type: "explicitZ", axis: "z", body: s };
+}
+
+const COLORS = ["#315bd6","#e53935","#169c6b","#8e44ad","#e67e22","#0097a7","#c2185b","#5d6d7e"];
+
+/* =========================================================
+   Colormaps
+   ========================================================= */
+const COLORMAPS = {
+  viridis : [[0,"#440154"],[0.25,"#3b528b"],[0.5,"#21918c"],[0.75,"#5ec962"],[1,"#fde725"]],
+  plasma  : [[0,"#0d0887"],[0.25,"#7e03a8"],[0.5,"#cc4778"],[0.75,"#f89540"],[1,"#f0f921"]],
+  inferno : [[0,"#000004"],[0.25,"#56106e"],[0.5,"#bb3754"],[0.75,"#f98c0a"],[1,"#fcffa4"]],
+  coolwarm: [[0,"#3b4cc0"],[0.5,"#dddddd"],[1,"#b40426"]],
+  terrain : [[0,"#0d3b66"],[0.2,"#1d7874"],[0.4,"#76b041"],[0.6,"#e8d33a"],[0.8,"#c1663a"],[1,"#ffffff"]],
+  rainbow : [[0,"#6a00ff"],[0.25,"#0066ff"],[0.5,"#00c853"],[0.75,"#ffd600"],[1,"#ff1744"]]
+};
+const _hexCache = new Map();
+function hexToColor(hex){
+  let c = _hexCache.get(hex);
+  if(!c){ c = new THREE.Color(hex); _hexCache.set(hex, c); }
+  return c;
+}
+function applyColormap(outColor, t, name){
+  const stops = COLORMAPS[name] || COLORMAPS.viridis;
+  t = clampNum(t, 0, 1);
+  let i = 0;
+  while(i < stops.length - 2 && t > stops[i+1][0]) i++;
+  const a = stops[i], b = stops[i+1];
+  const span = (b[0] - a[0]) || 1;
+  const f = clampNum((t - a[0]) / span, 0, 1);
+  const ca = hexToColor(a[1]), cb = hexToColor(b[1]);
+  outColor.setRGB(
+    ca.r + (cb.r - ca.r) * f,
+    ca.g + (cb.g - ca.g) * f,
+    ca.b + (cb.b - ca.b) * f
+  );
+}
+
+/* =========================================================
+   Function tokens (for smart backspace)
+   ========================================================= */
+const FUNCTION_TOKENS = [
+  "sinh","cosh","tanh","sech","csch","coth",
+  "asin","acos","atan","atan2","asec","acsc","acot",
+  "asinh","acosh","atanh",
+  "log10","log2","logb","log","ln",
+  "exp","sqrt","cbrt","pow","abs","sign",
+  "floor","ceil","round","trunc","frac",
+  "min","max","clamp","hypot",
+  "factorial","gcd","lcm","mod","nCr","nPr",
+  "gamma","erf","erfc","sinc"
+];
+FUNCTION_TOKENS.sort((a,b)=>b.length-a.length);
+
+/* =========================================================
+   Marching Tetrahedra — implicit surface extractor
+   ========================================================= */
+const MarchingTets = {
+  corners: [
+    [0,0,0],[1,0,0],[1,1,0],[0,1,0],
+    [0,0,1],[1,0,1],[1,1,1],[0,1,1]
+  ],
+  tets: [
+    [0,5,1,6],[0,1,2,6],[0,2,3,6],
+    [0,3,7,6],[0,7,4,6],[0,4,5,6]
+  ],
+  edgeVert: [[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]],
+  triTable: [
+    [],
+    [[2,4,5]],
+    [[1,3,5]],
+    [[1,2,4],[1,4,3]],
+    [[0,3,4]],
+    [[0,2,5],[0,5,3]],
+    [[0,1,5],[0,5,4]],
+    [[0,1,2]],
+    [[0,1,2]],
+    [[0,1,5],[0,5,4]],
+    [[0,2,5],[0,5,3]],
+    [[0,3,4]],
+    [[1,2,4],[1,4,3]],
+    [[1,3,5]],
+    [[2,4,5]],
+    []
+  ],
+
+  compute(F, x0, y0, z0, L, N){
+    const W = N + 1;
+    const d = L / N;
+
+    const field = new Float32Array(W * W * W);
+    for(let k = 0; k < W; k++){
+      const z = z0 + k * d;
+      for(let j = 0; j < W; j++){
+        const y = y0 + j * d;
+        const off = W * (j + W * k);
+        for(let i = 0; i < W; i++){
+          const x = x0 + i * d;
+          let v;
+          try { v = F(x, y, z); } catch(e) { v = NaN; }
+          field[off + i] = Number.isFinite(v) ? v : NaN;
+        }
+      }
+    }
+
+    const positions = [];
+    const indices = [];
+    const vmap = new Map();
+
+    const corners = this.corners;
+    const tets = this.tets;
+    const ev = this.edgeVert;
+    const triTable = this.triTable;
+
+    const getVert = (ga, gb, P) => {
+      let a = ga, b = gb;
+      const cmp = (a[0]-b[0]) || (a[1]-b[1]) || (a[2]-b[2]);
+      if(cmp > 0){ const t = a; a = b; b = t; }
+      const key = a[0] + "," + a[1] + "," + a[2] + "|" + b[0] + "," + b[1] + "," + b[2];
+      let idx = vmap.get(key);
+      if(idx !== undefined) return idx;
+      idx = positions.length / 3;
+      positions.push(P[0], P[1], P[2]);
+      vmap.set(key, idx);
+      return idx;
+    };
+
+    for(let k = 0; k < N; k++){
+      for(let j = 0; j < N; j++){
+        for(let i = 0; i < N; i++){
+          const base = i + W * (j + W * k);
+          const sv = [
+            field[base],
+            field[base + 1],
+            field[base + 1 + W],
+            field[base + W],
+            field[base + W * W],
+            field[base + 1 + W * W],
+            field[base + 1 + W + W * W],
+            field[base + W + W * W]
+          ];
+          let hasNaN = false;
+          for(let c = 0; c < 8; c++){ if(!Number.isFinite(sv[c])){ hasNaN = true; break; } }
+          if(hasNaN) continue;
+
+          const px0 = x0 + i * d, py0 = y0 + j * d, pz0 = z0 + k * d;
+
+          for(let ti = 0; ti < 6; ti++){
+            const tet = tets[ti];
+            const vals = [sv[tet[0]], sv[tet[1]], sv[tet[2]], sv[tet[3]]];
+
+            const ba = vals[0] >= 0 ? 1 : 0;
+            const bb = vals[1] >= 0 ? 1 : 0;
+            const bc = vals[2] >= 0 ? 1 : 0;
+            const bd = vals[3] >= 0 ? 1 : 0;
+            const config = (ba << 3) | (bb << 2) | (bc << 1) | bd;
+            if(config === 0 || config === 15) continue;
+
+            const tris = triTable[config];
+            if(!tris.length) continue;
+
+            const tpos = [null, null, null, null];
+            const tg   = [null, null, null, null];
+            for(let v = 0; v < 4; v++){
+              const c = corners[tet[v]];
+              tpos[v] = [px0 + c[0] * d, py0 + c[1] * d, pz0 + c[2] * d];
+              tg[v]   = [i + c[0],      j + c[1],      k + c[2]];
+            }
+
+            const used = new Set();
+            for(const tri of tris){ used.add(tri[0]); used.add(tri[1]); used.add(tri[2]); }
+
+            const edgeIdx = new Array(6).fill(-1);
+            for(const e of used){
+              const [a, b] = ev[e];
+              const va = vals[a], vb = vals[b];
+              const denom = va - vb;
+              const t = Math.abs(denom) < 1e-15 ? 0.5 : va / denom;
+              const tt = clampNum(t, 0, 1);
+              const Pa = tpos[a], Pb = tpos[b];
+              const P = [
+                Pa[0] + (Pb[0] - Pa[0]) * tt,
+                Pa[1] + (Pb[1] - Pa[1]) * tt,
+                Pa[2] + (Pb[2] - Pa[2]) * tt
+              ];
+              edgeIdx[e] = getVert(tg[a], tg[b], P);
+            }
+
+            for(const tri of tris){
+              indices.push(edgeIdx[tri[0]], edgeIdx[tri[1]], edgeIdx[tri[2]]);
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      positions: new Float32Array(positions),
+      indices: indices.length > 65535 ? new Uint32Array(indices) : new Uint16Array(indices)
+    };
+  }
+};
+
+/* =========================================================
+   App
+   ========================================================= */
+const App = {
+  state: {
+    expressions: [],
+    selected: null,
+    angleMode: "rad",
+    resolution: 70,
+    displayMode: "surface",
+    showGrid: true,
+    showAxes: true,
+    autoRotate: false,
+    showPlane: true,
+    showNumbers: true,
+    showLabels: true,
+    showBox: true,
+    complexMode: false,
+    brailleMode: false,
+    parameters: { a: 1, b: 1 },
+    labData: []
+  },
+  history: [],
+  future: [],
+  suppressHistory: false,
+
+  init(){
+    this.registerMathFunctions();
+    this.loadDemo();
+    UI.bind();
+    const display = document.getElementById("displaySelect");
+    if(display){
+      display.value = "surface";
+      this.state.displayMode = "surface";
+    }
+    try{
+      Scene3D.init();
+    }catch(err){
+      console.error(err);
+      UI.status("WebGL unavailable — 3D view disabled");
+      return;
+    }
+    this.render();
+    const gridBtn = document.getElementById("gridBtn");
+    const axesBtn = document.getElementById("axesBtn");
+    const rotateBtn = document.getElementById("rotateBtn");
+    if(gridBtn) gridBtn.classList.toggle("active", this.state.showGrid);
+    if(axesBtn) axesBtn.classList.toggle("active", this.state.showAxes);
+    if(rotateBtn) rotateBtn.classList.toggle("active", this.state.autoRotate);
+    Scene3D.autoRotate = this.state.autoRotate;
+    this.rebuild(true);
+  },
+
+  registerMathFunctions(){
+    const f = {};
+    const isDeg = () => App.state.angleMode === "deg";
+    const d2r = x => x * Math.PI / 180;
+    const r2d = x => x * 180 / Math.PI;
+
+    f.sin = x => Math.sin(isDeg() ? d2r(x) : x);
+    f.cos = x => Math.cos(isDeg() ? d2r(x) : x);
+    f.tan = x => Math.tan(isDeg() ? d2r(x) : x);
+    f.sec = x => 1 / f.cos(x);
+    f.csc = x => 1 / f.sin(x);
+    f.cot = x => 1 / f.tan(x);
+
+    f.asin = x => { const r = Math.asin(x); return isDeg() ? r2d(r) : r; };
+    f.acos = x => { const r = Math.acos(x); return isDeg() ? r2d(r) : r; };
+    f.atan = x => { const r = Math.atan(x); return isDeg() ? r2d(r) : r; };
+    f.atan2 = (y,x) => { const r = Math.atan2(y,x); return isDeg() ? r2d(r) : r; };
+
+    f.sinh = x => Math.sinh(x);
+    f.cosh = x => Math.cosh(x);
+    f.tanh = x => Math.tanh(x);
+    f.sech = x => 1 / Math.cosh(x);
+    f.csch = x => 1 / Math.sinh(x);
+    f.coth = x => 1 / Math.tanh(x);
+
+    f.log10 = x => Math.log10(x);
+    f.log2  = x => Math.log2(x);
+    f.logb  = (x,b) => Math.log(x) / Math.log(b);
+    f.exp   = x => Math.exp(x);
+    f.cbrt  = x => Math.cbrt(x);
+
+    f.positivePart = x => Math.max(x, 0);
+    f.negativePart = x => Math.min(x, 0);
+    f.clamp = (x,a,b) => Math.min(Math.max(x,a),b);
+    f.frac  = x => x - Math.floor(x);
+    f.factorial = n => { n = Math.trunc(n); if(n < 0 || n > 170) return NaN; let r = 1; for(let i=2;i<=n;i++) r *= i; return r; };
+    f.gcd = (a,b) => { a = Math.abs(Math.trunc(a)); b = Math.abs(Math.trunc(b)); while(b){ const t = b; b = a % b; a = t; } return a; };
+    f.lcm = (a,b) => { a = Math.trunc(a); b = Math.trunc(b); if(!a || !b) return 0; return Math.abs(a*b/f.gcd(a,b)); };
+    f.nCr = (n,r) => { n = Math.trunc(n); r = Math.trunc(r); if(r < 0 || n < 0 || r > n) return NaN; r = Math.min(r, n-r); let z = 1; for(let i=1;i<=r;i++) z = z*(n-r+i)/i; return z; };
+    f.nPr = (n,r) => { n = Math.trunc(n); r = Math.trunc(r); if(r < 0 || n < 0 || r > n) return NaN; let z = 1; for(let i=0;i<r;i++) z *= n-i; return z; };
+    f.sinc = x => Math.abs(x) < 1e-12 ? 1 : Math.sin(x)/x;
+    f.erf  = x => erfApprox(x);
+    f.erfc = x => 1 - erfApprox(x);
+    f.gamma = x => gammaApprox(x);
+
+    math.import(f, { override: true });
+    math.import({ phi: (1+Math.sqrt(5))/2, tau: 2*Math.PI }, { override: true });
+  },
+
+  loadDemo(){
+    this.state.expressions = [
+      { id: uid(), text: "z = sin(x) * cos(y)", visible: true, color: COLORS[0],
+        label: "wave", colormap: "viridis", opacity: 1 },
+      { id: uid(), text: "x^2 + y^2 + z^2 = 4", visible: true, color: COLORS[3],
+        label: "sphere", colormap: "coolwarm", opacity: 0.9 }
+    ];
+    this.state.selected = this.state.expressions[0].id;
+    this.pushHistory();
+  },
+
+  addExpression(text = ""){
+    const item = {
+      id: uid(),
+      text,
+      visible: true,
+      color: COLORS[this.state.expressions.length % COLORS.length],
+      label: text.trim() ? "f" + (this.state.expressions.length + 1) : "f" + (this.state.expressions.length + 1),
+      colormap: "solid",
+      opacity: 1
+    };
+    this.state.expressions.push(item);
+    this.state.selected = item.id;
+    this.pushHistory();
+    this.render();
+    this.rebuild();
+    setTimeout(() => {
+      const el = document.querySelector('input[data-id="' + item.id + '"]');
+      if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    }, 30);
+  },
+
+  updateExpression(id, text){
+    const e = this.state.expressions.find(x => x.id === id);
+    if(!e) return;
+    e.text = text;
+    const card = document.querySelector('.expr-card[data-id="' + id + '"]');
+    if(card){
+      const cls = classifyExpression(text);
+      const badge = card.querySelector(".kind-badge");
+      if(badge){
+        const is3D = cls.type === "implicit" || cls.type === "explicitX" || cls.type === "explicitY" || cls.type === "explicitZ";
+        badge.textContent = is3D ? "3D" : "—";
+        badge.className = "kind-badge" + (is3D ? " implicit" : (cls.type === "empty" || cls.type === "invalid" ? " empty" : ""));
+      }
+    }
+    this.pushHistoryDebounced();
+    this.rebuildDebounced();
+  },
+
+  deleteExpression(id){
+    this.state.expressions = this.state.expressions.filter(e => e.id !== id);
+    if(this.state.selected === id) this.state.selected = this.state.expressions[0] ? this.state.expressions[0].id : null;
+    this.pushHistory();
+    this.render();
+    this.rebuild();
+  },
+
+  duplicateExpression(id){
+    const e = this.state.expressions.find(x => x.id === id);
+    if(!e) return;
+    const copy = Object.assign({}, e, { id: uid(), label: e.label + "′" });
+    this.state.expressions.push(copy);
+    this.state.selected = copy.id;
+    this.pushHistory();
+    this.render();
+    this.rebuild();
+  },
+
+  toggleExpression(id){
+    const e = this.state.expressions.find(x => x.id === id);
+    if(!e) return;
+    e.visible = !e.visible;
+    this.pushHistory();
+    this.render();
+    this.rebuild();
+  },
+
+  newProject(){
+    this.state.expressions = [
+      { id: uid(), text: "", visible: true, color: COLORS[0], label: "f₁", colormap: "solid", opacity: 1 }
+    ];
+    this.state.selected = this.state.expressions[0].id;
+    this.pushHistory();
+    this.render();
+    this.rebuild();
+    UI.status("New project created");
+  },
+
+  rebuild(firstTime){
+    if(!Scene3D.renderer) return;
+    const errors = Scene3D.buildSurfaces();
+    Scene3D.buildHelpers();
+    Scene3D.dirty = true;
+    if(firstTime) Scene3D.fitView();
+
+    if(errors.length){
+      UI.status("Could not evaluate: " + errors.join(", "));
+    }else{
+      const n = this.state.expressions.filter(e => e.visible && e.text.trim()).length;
+      UI.status(n + (n === 1 ? " surface" : " surfaces") + " plotted");
+    }
+  },
+
+  rebuildDebounced(){
+    clearTimeout(this._rbTimer);
+    this._rbTimer = setTimeout(() => this.rebuild(false), 260);
+  },
+
+  render(){
+    UI.renderExpressions();
+    UI.renderLegend();
+    document.getElementById("exprCount").textContent = this.state.expressions.length;
+    document.getElementById("angleMode").textContent = this.state.angleMode === "rad" ? "Radians" : "Degrees";
+    Scene3D.dirty = true;
+  },
+
+  pushHistory(){
+    if(this.suppressHistory) return;
+    this.history.push(JSON.stringify(this.state));
+    if(this.history.length > 60) this.history.shift();
+    this.future = [];
+  },
+  pushHistoryDebounced(){
+    clearTimeout(this._histTimer);
+    this._histTimer = setTimeout(() => this.pushHistory(), 400);
+  },
+  undo(){
+    if(this.history.length < 2) return;
+    const current = this.history.pop();
+    this.future.push(current);
+    this.suppressHistory = true;
+    this.state = JSON.parse(this.history[this.history.length - 1]);
+    this.suppressHistory = false;
+    this.render();
+    this.rebuild();
+  },
+  redo(){
+    if(!this.future.length) return;
+    const next = this.future.pop();
+    this.history.push(next);
+    this.suppressHistory = true;
+    this.state = JSON.parse(next);
+    this.suppressHistory = false;
+    this.render();
+    this.rebuild();
+  },
+
+  showExportDialog(){
+    const w = Scene3D.width || 1000, h = Scene3D.height || 700;
+    const items = this.state.expressions
+      .filter(e => e.visible && e.text.trim())
+      .map(e => {
+        const cls = classifyExpression(e.text);
+        const tag = cls.type === "implicit" ? " [3D]" : " [2D]";
+        return '<li style="margin:3px 0"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' +
+                e.color + ';margin-right:6px"></span>' + escapeHtml(e.label) + tag +
+                ' — <code>' + escapeHtml(e.text) + '</code></li>';
+      }).join("");
+
+    UI.dialog("Export PNG", `
+      <p style="margin:0 0 6px;color:var(--muted);font-size:13px">
+        Exports the current 3D view at high resolution with a legend overlay.
+      </p>
+      <div class="field">IMAGE WIDTH (px)
+        <input id="expW" type="number" min="480" max="4096" step="10" value="${Math.round(w*2)}">
+      </div>
+      <div class="field">IMAGE HEIGHT (px)
+        <input id="expH" type="number" min="320" max="4096" step="10" value="${Math.round(h*2)}">
+      </div>
+      <div style="font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--muted);margin-bottom:4px">SURFACES IN EXPORT</div>
+      <ul style="margin:0 0 6px;padding-left:18px;font-size:12px">${items || '<li style="color:var(--muted)">No visible surfaces</li>'}</ul>
+      <div class="dialog-actions">
+        <button class="topbtn" style="background:var(--accent);color:#fff;border-color:var(--accent)"
+                onclick="App.exportPNG()">Download PNG</button>
+      </div>
+    `);
+  },
+
+  exportPNG(){
+    const wEl = document.getElementById("expW");
+    const hEl = document.getElementById("expH");
+    let W = Math.round(parseFloat(wEl ? wEl.value : 1600));
+    let H = Math.round(parseFloat(hEl ? hEl.value : 1000));
+    if(!Number.isFinite(W) || W < 200) W = 1600;
+    if(!Number.isFinite(H) || H < 200) H = 1000;
+
+    const gl = Scene3D.renderer.domElement;
+    const savedW = Scene3D.width;
+    const savedH = Scene3D.height;
+    const savedAspect = Scene3D.camera.aspect;
+    const savedPixelRatio = Scene3D.renderer.getPixelRatio();
+
+    Scene3D.camera.aspect = W / H;
+    Scene3D.camera.updateProjectionMatrix();
+    Scene3D.renderer.setPixelRatio(1);
+    Scene3D.renderer.setSize(W, H, false);
+    Scene3D.renderer.render(Scene3D.scene, Scene3D.camera);
+
+    const out = document.createElement("canvas");
+    out.width = gl.width;
+    out.height = gl.height;
+    const octx = out.getContext("2d");
+    octx.drawImage(gl, 0, 0);
+
+    const items = this.state.expressions
+      .filter(e => e.visible && e.text.trim())
+      .map(e => ({ color: e.color, label: e.label, text: e.text.trim() }));
+
+    App.drawExportLegend(octx, out.width, out.height, items, gl.width / W);
+
+    Scene3D.camera.aspect = savedAspect;
+    Scene3D.camera.updateProjectionMatrix();
+    Scene3D.renderer.setPixelRatio(savedPixelRatio);
+    Scene3D.renderer.setSize(savedW, savedH, false);
+    Scene3D.dirty = true;
+
+    const name = "ganith3d_" + Date.now() + ".png";
+    const download = url => {
+      const a = document.createElement("a");
+      a.download = name;
+      a.href = url;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+
+    if(out.toBlob){
+      out.toBlob(blob => {
+        if(!blob){ download(out.toDataURL("image/png")); return; }
+        const url = URL.createObjectURL(blob);
+        download(url);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      }, "image/png");
+    }else{
+      download(out.toDataURL("image/png"));
+    }
+
+    document.getElementById("dialogBackdrop").classList.remove("show");
+    UI.status("PNG exported (" + W + "×" + H + ")");
+  },
+
+  drawExportLegend(ctx, W, H, items, scale){
+    if(!items.length) return;
+    scale = scale || 1;
+    const padX = 16 * scale, padY = 13 * scale, rowH = 26 * scale;
+    const swatch = 12 * scale, gap = 10 * scale;
+    const fontSize = Math.round(14 * scale);
+
+    ctx.save();
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.font = "600 " + fontSize + 'px Inter, "Segoe UI", Arial, sans-serif';
+
+    let contentW = 0;
+    items.forEach(it => {
+      const lw = ctx.measureText(it.label).width;
+      contentW = Math.max(contentW, swatch + gap + lw + 12 * scale);
+    });
+
+    const boxW = Math.min(contentW + padX * 2, W - 40 * scale);
+    const boxH = items.length * rowH + padY * 2;
+    const bx = 16 * scale, by = 16 * scale;
+
+    ctx.fillStyle = "rgba(255,255,255,0.93)";
+    ctx.strokeStyle = "#d5ddea";
+    ctx.lineWidth = Math.max(1, scale);
+    roundRectPath(ctx, bx, by, boxW, boxH, 10 * scale);
+    ctx.fill();
+    ctx.stroke();
+
+    items.forEach((it, i) => {
+      const cy = by + padY + i * rowH + rowH / 2;
+      ctx.fillStyle = it.color;
+      ctx.beginPath();
+      ctx.arc(bx + padX + swatch / 2, cy, swatch / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = "600 " + fontSize + 'px Inter, "Segoe UI", Arial, sans-serif';
+      ctx.fillStyle = "#182235";
+      ctx.fillText(it.label, bx + padX + swatch + gap, cy);
+    });
+    ctx.restore();
+  }
+};
+
+/* =========================================================
+   Function library
+   ========================================================= */
+const FunctionLibrary = {
+  toggle(button){
+    const group = button.closest(".function-group");
+    if(!group) return;
+    group.classList.toggle("open");
+    const span = group.querySelector("span");
+    if(span){
+      const label = span.textContent.replace(/^▸|^▾/, "").trim();
+      span.textContent = (group.classList.contains("open") ? "▾ " : "▸ ") + label;
+    }
+  },
+  insert(value){
+    let input = document.querySelector(".expr-input:focus");
+    if(!input && App.state.selected){
+      input = document.querySelector('.expr-input[data-id="' + App.state.selected + '"]');
+    }
+    if(!input){
+      const inputs = document.querySelectorAll(".expr-input");
+      input = inputs[inputs.length - 1];
+    }
+    if(!input){
+      App.addExpression(value);
+      return;
+    }
+    const start = input.selectionStart != null ? input.selectionStart : input.value.length;
+    const end = input.selectionEnd != null ? input.selectionEnd : input.value.length;
+    const before = input.value.slice(0, start);
+    const after = input.value.slice(end);
+    let insertion = value;
+    if(/^[a-zA-Z(]/.test(value) && /[0-9A-Za-z_)πφτ]$/.test(before) && /^(pi|e|phi|tau|x|y|z|sqrt|ln|exp)/.test(value)){
+      insertion = "*" + value;
+    }
+    input.value = before + insertion + after;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
+    const pos = start + insertion.length;
+    input.setSelectionRange(pos, pos);
+    App.state.selected = input.dataset.id;
+    Scene3D.dirty = true;
+  }
+};
+
+/* =========================================================
+   UI
+   ========================================================= */
+const UI = {
+  renderExpressions(){
+    const list = document.getElementById("expressionList");
+    list.innerHTML = "";
+    App.state.expressions.forEach(e => {
+      const cls = classifyExpression(e.text);
+      const is3D = cls.type === "implicit" || cls.type === "explicitX" || cls.type === "explicitY" || cls.type === "explicitZ";
+      const kindText = is3D ? "3D" : (cls.type === "empty" || cls.type === "invalid" ? "—" : "3D");
+      const kindClass = "kind-badge" + (cls.type === "implicit" ? " implicit" : (cls.type === "empty" || cls.type === "invalid" ? " empty" : ""));
+
+      const card = document.createElement("div");
+      card.className = "expr-card" + (e.id === App.state.selected ? " selected" : "") + (e._error ? " error" : "");
+      card.dataset.id = e.id;
+
+      const cmapOptions = ["solid","viridis","plasma","inferno","coolwarm","terrain","rainbow"]
+        .map(k => '<option value="' + k + '"' + (e.colormap === k ? " selected" : "") + '>' +
+                  (k === "solid" ? "Solid" : k.charAt(0).toUpperCase() + k.slice(1)) + '</option>').join("");
+
+      card.innerHTML =
+        '<div class="expr-row">' +
+          '<button class="icon-btn visibility" title="Show / hide">' + (e.visible ? "●" : "○") + '</button>' +
+          '<span class="color-dot" style="background:' + e.color + '"></span>' +
+          '<input class="expr-input" data-id="' + e.id + '" spellcheck="false" autocomplete="off" placeholder="z = f(x,y)  ·  F(x,y,z) = 0">' +
+          '<span class="' + kindClass + '">' + kindText + '</span>' +
+          '<button class="icon-btn duplicate" title="Duplicate">⧉</button>' +
+          '<button class="icon-btn delete" title="Delete">×</button>' +
+        '</div>' +
+        '<div class="expr-tools">' +
+          '<button class="mini label-btn">' + escapeHtml(e.label) + '</button>' +
+          '<select class="mini-select colormap-sel">' + cmapOptions + '</select>' +
+          '<input class="mini-range opacity-sel" type="range" min="0.15" max="1" step="0.05" value="' + e.opacity + '" title="Opacity">' +
+        '</div>';
+
+      const input = card.querySelector(".expr-input");
+      input.value = e.text;
+
+      input.addEventListener("focus", () => {
+        App.state.selected = e.id;
+        document.querySelectorAll(".expr-card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+      });
+      input.addEventListener("input", ev => App.updateExpression(e.id, ev.target.value));
+
+      input.addEventListener("keydown", ev => {
+        if(ev.key !== "Backspace") return;
+        const s = input.selectionStart, en = input.selectionEnd;
+        if(s !== en || s === 0) return;
+        const val = input.value;
+        const before = val.slice(0, s);
+        for(const fn of FUNCTION_TOKENS){
+          const token = fn + "(";
+          if(before.endsWith(token)){
+            ev.preventDefault();
+            const nv = val.slice(0, s - token.length) + val.slice(s);
+            input.value = nv;
+            const pos = s - token.length;
+            input.setSelectionRange(pos, pos);
+            App.updateExpression(e.id, nv);
+            return;
+          }
+        }
+        if(before.endsWith("(")){
+          const m = before.slice(0, -1).match(/[A-Za-z_]\w*$/);
+          if(!m){
+            ev.preventDefault();
+            const nv = val.slice(0, s - 1) + val.slice(s);
+            input.value = nv;
+            const pos = s - 1;
+            input.setSelectionRange(pos, pos);
+            App.updateExpression(e.id, nv);
+          }
+        }
+      });
+
+      card.querySelector(".visibility").onclick = () => App.toggleExpression(e.id);
+      card.querySelector(".delete").onclick = () => App.deleteExpression(e.id);
+      card.querySelector(".duplicate").onclick = () => App.duplicateExpression(e.id);
+
+      card.querySelector(".label-btn").onclick = () => {
+        const label = prompt("Function label:", e.label);
+        if(label !== null){ e.label = label; App.pushHistory(); App.render(); Scene3D.dirty = true; }
+      };
+      card.querySelector(".colormap-sel").onchange = ev => {
+        e.colormap = ev.target.value;
+        App.pushHistory();
+        App.rebuild();
+        App.render();
+      };
+      card.querySelector(".opacity-sel").oninput = ev => {
+        e.opacity = parseFloat(ev.target.value);
+        App.rebuildDebounced();
+      };
+
+      card.addEventListener("click", ev => {
+        if(ev.target.closest("button") || ev.target.closest("select") || ev.target.closest("input") || ev.target === input) return;
+        App.state.selected = e.id;
+        document.querySelectorAll(".expr-card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        input.focus();
+      });
+
+      list.appendChild(card);
+    });
+  },
+
+  renderLegend(){
+    const el = document.getElementById("legend");
+    if(!el) return;
+    el.innerHTML = "";
+    const visible = App.state.expressions.filter(e => e.visible && e.text.trim());
+    if(!visible.length){ el.style.display = "none"; return; }
+    el.style.display = "flex";
+    visible.forEach(e => {
+      const cls = classifyExpression(e.text);
+      const is3D = cls.type === "implicit" || cls.type === "explicitX" || cls.type === "explicitY" || cls.type === "explicitZ";
+      const tag = is3D ? "3D" : "—";
+      const tagCls = is3D ? "legend-tag implicit" : "legend-tag";
+      const item = document.createElement("div");
+      item.className = "legend-item";
+      item.innerHTML = '<span class="legend-color" style="background:' + e.color + '"></span>' +
+                       '<span>' + escapeHtml(e.label) + '</span>' +
+                       '<span class="' + tagCls + '">' + tag + '</span>';
+      el.appendChild(item);
+    });
+  },
+
+  dialog(title, body){
+    document.getElementById("dialogTitle").textContent = title;
+    document.getElementById("dialogBody").innerHTML = body;
+    document.getElementById("dialogBackdrop").classList.add("show");
+  },
+
+  status(msg){
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    clearTimeout(this._statusTimer);
+    this._statusTimer = setTimeout(() => { el.textContent = "Ready"; }, 2600);
+  },
+
+  /* ---------- Settings dialog: Graph Controls HTML ---------- */
+  graphControlsHTML(){
+    const masterOn = App.state.showGrid || App.state.showAxes;
+    const rangeVal = (() => {
+      const value = Math.log2(Math.max(Scene3D.radius, 1e-12) / 20);
+      return clampNum(value, -6, 6);
+    })();
+    return `
+      <div class="settings-section-title">3D Graph Controls</div>
+
+      <div class="cp-section" id="boundsSection">
+        <div class="cp-row">
+          <button class="cp-chevron" id="boundsChevron" title="Toggle bounds">▾</button>
+          <span class="cp-title">All Bounds:</span>
+          <span class="cp-muted" id="boundsText">−${formatTick(Scene3D.domainRange)} to ${formatTick(Scene3D.domainRange)}</span>
+        </div>
+        <input class="cp-range" id="boundsRange" type="range" min="-6" max="6" step="0.01" value="${rangeVal}" aria-label="Zoom bounds">
+      </div>
+
+      <div class="cp-section" id="moreOptionsSection">
+        <div class="cp-row">
+          <button class="cp-chevron" id="moreOptionsChevron" title="Toggle more options">▸</button>
+          <span class="cp-title">More Options</span>
+        </div>
+        <div class="cp-options">
+          <div class="cp-row">
+            <span class="cp-title">Reference Box</span>
+            <button class="cp-toggle ${App.state.showBox?'active':''}" id="boxToggle" aria-label="Toggle reference box"></button>
+          </div>
+          <div class="cp-row">
+            <span class="cp-title">Complex Mode</span>
+            <button class="cp-toggle ${App.state.complexMode?'active':''}" id="complexToggle" aria-label="Toggle complex mode"></button>
+          </div>
+          <div class="cp-note">Complex Mode maps a complex-valued result to its magnitude so it can be visualized as a real 3D surface.</div>
+          <div class="cp-row">
+            <span class="cp-title">Braille Mode</span>
+            <button class="cp-toggle ${App.state.brailleMode?'active':''}" id="brailleToggle" aria-label="Toggle braille labels"></button>
+          </div>
+          <div class="cp-note">Braille Mode converts axis and numeric labels to Unicode Braille characters for tactile-friendly notation.</div>
+        </div>
+      </div>
+
+      <div class="cp-section open" id="axesGridSection">
+        <div class="cp-row">
+          <span class="cp-title">Axes &amp; Grid</span>
+          <button class="cp-toggle ${masterOn?'active':''}" id="axesGridToggle" aria-label="Toggle axes and grid"></button>
+        </div>
+        <div class="cp-options" style="display:block">
+          <div class="cp-checks">
+            <label class="cp-check"><input type="checkbox" id="planeToggle" ${App.state.showPlane?'checked':''}> XY plane</label>
+            <label class="cp-check"><input type="checkbox" id="numbersToggle" ${App.state.showNumbers?'checked':''}> Numbers</label>
+            <label class="cp-check"><input type="checkbox" id="labelsToggle" ${App.state.showLabels?'checked':''}> Labels</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="cp-section">
+        <div class="cp-row"><span class="cp-title">Angle Mode</span></div>
+        <div class="cp-segment">
+          <button id="cpRadians" class="${App.state.angleMode==='rad'?'active':''}">Radians</button>
+          <button id="cpDegrees" class="${App.state.angleMode==='deg'?'active':''}">Degrees</button>
+        </div>
+      </div>
+    `;
+  },
+
+  /* ---------- Settings dialog: bind Graph Controls events ---------- */
+  bindGraphControls(){
+    const $ = id => document.getElementById(id);
+
+    const boundsChevron = $("boundsChevron");
+    if(boundsChevron){
+      boundsChevron.onclick = () => {
+        const section = $("boundsSection");
+        section.classList.toggle("open");
+        boundsChevron.textContent = section.classList.contains("open") ? "▾" : "▸";
+        const range = $("boundsRange");
+        range.style.display = section.classList.contains("open") ? "block" : "none";
+      };
+    }
+
+    const moreOpt = $("moreOptionsChevron");
+    if(moreOpt){
+      moreOpt.onclick = () => {
+        const section = $("moreOptionsSection");
+        section.classList.toggle("open");
+        moreOpt.textContent = section.classList.contains("open") ? "▾" : "▸";
+      };
+    }
+
+    const boundsRange = $("boundsRange");
+    if(boundsRange){
+      boundsRange.oninput = ev => {
+        const log = parseFloat(ev.target.value);
+        if(Number.isFinite(log)){
+          Scene3D.radius = clampNum(20 * Math.pow(2, log), 1e-5, 1e9);
+          Scene3D.dirty = true;
+        }
+      };
+    }
+
+    const agToggle = $("axesGridToggle");
+    if(agToggle){
+      agToggle.onclick = function(){
+        const on = !(App.state.showGrid || App.state.showAxes);
+        App.state.showGrid = on; App.state.showAxes = on;
+        this.classList.toggle("active", on);
+        const gb = $("gridBtn"), ab = $("axesBtn");
+        if(gb) gb.classList.toggle("active", on);
+        if(ab) ab.classList.toggle("active", on);
+        Scene3D.buildHelpers();
+        Scene3D.dirty = true;
+      };
+    }
+    const planeToggle = $("planeToggle");
+    if(planeToggle) planeToggle.onchange = function(){ App.state.showPlane = this.checked; Scene3D.buildHelpers(); Scene3D.dirty = true; };
+
+    const numbersToggle = $("numbersToggle");
+    if(numbersToggle) numbersToggle.onchange = function(){ App.state.showNumbers = this.checked; Scene3D.buildHelpers(); Scene3D.dirty = true; };
+
+    const labelsToggle = $("labelsToggle");
+    if(labelsToggle) labelsToggle.onchange = function(){ App.state.showLabels = this.checked; Scene3D.buildHelpers(); Scene3D.dirty = true; };
+
+    const boxToggle = $("boxToggle");
+    if(boxToggle) boxToggle.onclick = function(){ App.state.showBox = !App.state.showBox; this.classList.toggle("active", App.state.showBox); Scene3D.buildHelpers(); Scene3D.dirty = true; };
+
+    const complexToggle = $("complexToggle");
+    if(complexToggle) complexToggle.onclick = function(){ App.state.complexMode = !App.state.complexMode; this.classList.toggle("active", App.state.complexMode); App.rebuild(); };
+
+    const brailleToggle = $("brailleToggle");
+    if(brailleToggle) brailleToggle.onclick = function(){ App.state.brailleMode = !App.state.brailleMode; this.classList.toggle("active", App.state.brailleMode); Scene3D.buildHelpers(); Scene3D.dirty = true; };
+
+    const cpRadians = $("cpRadians");
+    if(cpRadians) cpRadians.onclick = () => {
+      App.state.angleMode = "rad";
+      cpRadians.classList.add("active");
+      const d = $("cpDegrees"); if(d) d.classList.remove("active");
+      App.render();
+      App.rebuild();
+    };
+
+    const cpDegrees = $("cpDegrees");
+    if(cpDegrees) cpDegrees.onclick = () => {
+      App.state.angleMode = "deg";
+      cpDegrees.classList.add("active");
+      const r = $("cpRadians"); if(r) r.classList.remove("active");
+      App.render();
+      App.rebuild();
+    };
+  },
+
+  /* ---------- Settings dialog: open ---------- */
+  openSettings(){
+    UI.dialog("GANITH 3D Settings", `
+      <div class="field">INITIAL HALF-EXTENT (world units)
+        <input id="setRange" type="number" min="0.001" max="1000000" step="any" value="${Scene3D.domainRange}">
+      </div>
+      <div class="field">SURFACE RESOLUTION (segments)
+        <input id="setRes" type="number" min="10" max="200" step="5" value="${App.state.resolution}">
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 6px">
+        <b>Explicit surfaces:</b> enter <code>z = f(x, y)</code><br>
+        <b>Implicit surfaces:</b> enter <code>F(x, y, z) = 0</code> or just an expression containing <code>z</code><br>
+        <b>Render engine:</b> WebGL (Three.js) · marching tetrahedra for implicit<br>
+        <b>Drag:</b> full 360° orbit · <b>Wheel / pinch:</b> zoom only · <b>Right-drag:</b> pan
+      </p>
+      <hr class="settings-divider">
+      ${UI.graphControlsHTML()}
+      <div class="dialog-actions">
+        <button class="topbtn" id="setApplyBtn" style="background:var(--accent);color:#fff;border-color:var(--accent)">Apply</button>
+      </div>
+    `);
+
+    /* Wire up the graph controls inside the dialog */
+    UI.bindGraphControls();
+
+    /* Wire up the Apply button for the settings fields */
+    const applyBtn = document.getElementById("setApplyBtn");
+    if(applyBtn) applyBtn.onclick = () => UI.applySettings();
+  },
+
+  applySettings(){
+    const rEl = document.getElementById("setRange");
+    const resEl = document.getElementById("setRes");
+    const r = rEl ? parseFloat(rEl.value) : NaN;
+    const res = resEl ? parseInt(resEl.value, 10) : NaN;
+
+    if(Number.isFinite(res) && res >= 10 && res <= 200){
+      App.state.resolution = res;
+      const sel = document.getElementById("resSelect");
+      if(sel) sel.value = String(res);
+    }
+    if(Number.isFinite(r) && r >= 1e-3 && r <= 1e6){
+      Scene3D.radius = clampNum(r / Scene3D._domainK, 1e-4, 1e8);
+      Scene3D.domainRange = Scene3D.computeDomainRange();
+    }
+    document.getElementById("dialogBackdrop").classList.remove("show");
+    App.pushHistory();
+    Scene3D.buildSurfaces();
+    Scene3D.buildHelpers();
+    Scene3D.dirty = true;
+    UI.status("Settings applied");
+  },
+
+  bind(){
+    document.getElementById("addExpressionBtn").onclick = () => App.addExpression();
+    document.getElementById("newBtn").onclick = () => App.newProject();
+    document.getElementById("undoBtn").onclick = () => App.undo();
+    document.getElementById("redoBtn").onclick = () => App.redo();
+    document.getElementById("exportBtn").onclick = () => App.showExportDialog();
+
+    document.getElementById("resetBtn").onclick = () => Scene3D.resetView();
+    document.getElementById("fitBtn").onclick = () => Scene3D.fitView();
+
+    document.getElementById("gridBtn").onclick = function(){
+      App.state.showGrid = !App.state.showGrid;
+      this.classList.toggle("active", App.state.showGrid);
+      Scene3D.buildHelpers();
+      Scene3D.dirty = true;
+    };
+    document.getElementById("axesBtn").onclick = function(){
+      App.state.showAxes = !App.state.showAxes;
+      this.classList.toggle("active", App.state.showAxes);
+      Scene3D.buildHelpers();
+      Scene3D.dirty = true;
+    };
+
+    document.getElementById("rotateBtn").onclick = function(){
+      App.state.autoRotate = !App.state.autoRotate;
+      Scene3D.autoRotate = App.state.autoRotate;
+      this.classList.toggle("active", App.state.autoRotate);
+    };
+
+    document.getElementById("displaySelect").onchange = ev => {
+      App.state.displayMode = ev.target.value;
+      App.rebuild();
+    };
+    document.getElementById("resSelect").onchange = ev => {
+      App.state.resolution = parseInt(ev.target.value, 10);
+      App.rebuild();
+    };
+
+    document.getElementById("angleBtn").onclick = () => {
+      App.state.angleMode = App.state.angleMode === "rad" ? "deg" : "rad";
+      App.render();
+      App.rebuild();
+    };
+
+    document.getElementById("viewIso").onclick   = () => Scene3D.setView("iso");
+    document.getElementById("viewTop").onclick   = () => Scene3D.setView("top");
+    document.getElementById("viewFront").onclick = () => Scene3D.setView("front");
+    document.getElementById("viewSide").onclick  = () => Scene3D.setView("side");
+
+    /* Function library */
+    document.getElementById("toggleLibraryBtn").onclick = (ev) => {
+      const lib = document.getElementById("functionLibrary");
+      lib.classList.toggle("collapsed");
+      ev.target.textContent = lib.classList.contains("collapsed") ? "+" : "−";
+    };
+    document.querySelectorAll(".function-buttons button").forEach(btn => {
+      btn.addEventListener("mousedown", e => e.preventDefault());
+    });
+
+    /* Sidebar */
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+
+    const closeSidebar = () => {
+      if(window.innerWidth <= 900){
+        sidebar.classList.remove("open");
+        overlay.classList.remove("show");
+      }else{
+        document.querySelector(".main").classList.add("collapsed");
+        setTimeout(() => Scene3D.resize(), 320);
+      }
+    };
+    const toggleSidebar = () => {
+      if(window.innerWidth <= 900){
+        sidebar.classList.toggle("open");
+        overlay.classList.toggle("show");
+      }else{
+        document.querySelector(".main").classList.toggle("collapsed");
+        setTimeout(() => Scene3D.resize(), 320);
+      }
+    };
+
+    document.getElementById("sidebarBtn").onclick = toggleSidebar;
+    document.getElementById("sidebarClose").onclick = closeSidebar;
+    overlay.onclick = closeSidebar;
+
+    document.getElementById("fabAdd").onclick = () => {
+      App.addExpression();
+      if(window.innerWidth <= 900){
+        sidebar.classList.add("open");
+        overlay.classList.add("show");
+      }
+    };
+
+    /* Dialog */
+    document.getElementById("dialogClose").onclick = () =>
+      document.getElementById("dialogBackdrop").classList.remove("show");
+    document.getElementById("dialogBackdrop").onclick = e => {
+      if(e.target.id === "dialogBackdrop") e.currentTarget.classList.remove("show");
+    };
+
+    /* Settings — now contains both settings fields and 3D Graph Controls */
+    document.getElementById("settingsBtn").onclick = () => UI.openSettings();
+  }
+};
+
+
+/* =========================================================
+   Scene3D — the 3D engine
+   ========================================================= */
+const Scene3D = {
+  renderer: null,
+  scene: null,
+  camera: null,
+  surfaceGroup: null,
+  helperGroup: null,
+  width: 0,
+  height: 0,
+
+  theta: Math.PI * 0.25,
+  phi: Math.PI * 0.33,
+  radius: 20,
+  target: null,
+  autoRotate: false,
+  dirty: true,
+
+  domainRange: 5,
+  _domainK: 0.30,
+
+  pointers: new Map(),
+  mode: null,
+  last: { x: 0, y: 0 },
+  pinchDist: 0,
+  pinchMid: { x: 0, y: 0 },
+
+  // Arcball state: rotation is driven by the actual drag direction on a
+  // virtual trackball, so dragging from any corner remains continuous and
+  // does not hit the pole/gimbal problems of spherical theta/phi dragging.
+  viewQuat: new THREE.Quaternion(),
+  arcballStart: new THREE.Vector3(),
+  arcballLast: new THREE.Vector3(),
+
+  _labelCache: new Map(),
+
+  axisBox: null,
+
+  init(){
+    const canvas = document.getElementById("glcanvas");
+
+    try{
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        preserveDrawingBuffer: true,
+        alpha: false,
+        powerPreference: "high-performance"
+      });
+    }catch(err){
+      console.error("GANITH 3D WebGL initialization failed:", err);
+      this.renderer = null;
+      throw err;
+    }
+    this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    this.renderer.setClearColor(0xfbfcfe, 1);
+
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0xfbfcfe);
+
+    this.camera = new THREE.PerspectiveCamera(45, 1, 0.05, 5000);
+    this.target = new THREE.Vector3(0, 0, 0);
+
+    this.domainRange = this.computeDomainRange();
+
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x5a6b8c, 0.85);
+    this.scene.add(hemi);
+
+    const d1 = new THREE.DirectionalLight(0xffffff, 0.72);
+    d1.position.set(12, 22, 14);
+    this.scene.add(d1);
+
+    const d2 = new THREE.DirectionalLight(0xffffff, 0.30);
+    d2.position.set(-16, -10, -14);
+    this.scene.add(d2);
+
+    const d3 = new THREE.DirectionalLight(0xffffff, 0.18);
+    d3.position.set(-8, 16, -12);
+    this.scene.add(d3);
+
+    this.surfaceGroup = new THREE.Group();
+    this.helperGroup = new THREE.Group();
+    this.scene.add(this.surfaceGroup);
+    this.scene.add(this.helperGroup);
+
+    this.resize();
+    window.addEventListener("resize", () => this.resize());
+
+    this.bindControls();
+    this.loop();
+  },
+
+  resize(){
+    const wrap = document.getElementById("canvasWrap");
+    const rect = wrap.getBoundingClientRect();
+    if(rect.width < 10 || rect.height < 10) return;
+    this.width = rect.width;
+    this.height = rect.height;
+    this.renderer.setSize(rect.width, rect.height, false);
+    this.renderer.domElement.style.width = rect.width + "px";
+    this.renderer.domElement.style.height = rect.height + "px";
+    this.camera.aspect = rect.width / rect.height;
+    this.camera.updateProjectionMatrix();
+    this.dirty = true;
+  },
+
+  computeDomainRange(){
+    const target = this.radius * this._domainK;
+    if(!(target > 0)) return this.domainRange || 5;
+    const q = Math.pow(2, Math.round(Math.log2(target) * 2) / 2);
+    return Math.max(q, 1e-9);
+  },
+
+  updateCamera(){
+    // The camera offset and its up vector are both derived from one quaternion.
+    // This gives true arcball behaviour: horizontal/vertical drags remain
+    // intuitive even after passing over the top/bottom of the model.
+    const offset = new THREE.Vector3(0, 0, 1).applyQuaternion(this.viewQuat).normalize();
+    this.camera.position.copy(this.target).addScaledVector(offset, this.radius);
+
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.viewQuat).normalize();
+    this.camera.up.copy(up);
+
+    const near = Math.max(this.radius * 0.002, 1e-10);
+    const far  = Math.max(this.radius * 200, near * 10000);
+    if(this.camera.near !== near || this.camera.far !== far){
+      this.camera.near = near;
+      this.camera.far = far;
+      this.camera.updateProjectionMatrix();
+    }
+    this.camera.lookAt(this.target);
+  },
+
+  setSphericalView(theta, phi){
+    // Convert the existing view presets to the arcball orientation.
+    const dir = new THREE.Vector3(
+      Math.sin(phi) * Math.sin(theta),
+      Math.cos(phi),
+      Math.sin(phi) * Math.cos(theta)
+    ).normalize();
+
+    // Start from +Z and rotate it to the requested camera direction.
+    this.viewQuat.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+
+    // Reconstruct the up orientation so the standard views stay upright.
+    const tmpCam = new THREE.PerspectiveCamera();
+    tmpCam.position.copy(dir);
+    tmpCam.up.set(0, 1, 0);
+    tmpCam.lookAt(0, 0, 0);
+    this.viewQuat.copy(tmpCam.quaternion);
+  },
+
+  arcballVector(clientX, clientY){
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const sx = Math.max(rect.width, 1);
+    const sy = Math.max(rect.height, 1);
+    // Use the smaller canvas dimension so the virtual sphere is circular.
+    const radius = Math.min(sx, sy) * 0.5;
+    let x = (clientX - (rect.left + sx * 0.5)) / radius;
+    let y = ((rect.top + sy * 0.5) - clientY) / radius;
+    const d2 = x * x + y * y;
+    let z;
+    if(d2 <= 1){
+      z = Math.sqrt(1 - d2);
+    }else{
+      // Hyperbolic/edge projection keeps rotation usable from every corner.
+      const d = Math.sqrt(d2);
+      x /= d; y /= d; z = 0;
+    }
+    return new THREE.Vector3(x, y, z).normalize();
+  },
+
+  resetView(){
+    this.target.set(0, 0, 0);
+    this.setSphericalView(Math.PI * 0.25, Math.PI * 0.33);
+    this.radius = 20;
+    this.domainRange = this.computeDomainRange();
+    this.buildSurfaces();
+    this.buildHelpers();
+    this.dirty = true;
+  },
+
+  setView(kind){
+    if(kind === "iso") this.setSphericalView(Math.PI * 0.25, Math.PI * 0.33);
+    if(kind === "top") this.setSphericalView(0, 0.02);
+    if(kind === "front") this.setSphericalView(0, Math.PI / 2);
+    if(kind === "side") this.setSphericalView(Math.PI / 2, Math.PI / 2);
+    this.dirty = true;
+  },
+
+  fitView(){
+    this.radius = clampNum(this.domainRange / this._domainK, 1e-4, 1e8);
+
+    const box = new THREE.Box3();
+    let ok = false;
+    if(this.surfaceGroup.children.length){
+      try{ box.setFromObject(this.surfaceGroup); ok = !box.isEmpty(); }catch(e){}
+    }
+    if(ok){
+      const c = box.getCenter(new THREE.Vector3());
+      const lim = this.domainRange * 4;
+      this.target.set(
+        clampNum(c.x, -lim, lim),
+        clampNum(c.y, -lim, lim),
+        clampNum(c.z, -lim, lim)
+      );
+      const sphere = box.getBoundingSphere(new THREE.Sphere());
+      if(Number.isFinite(sphere.radius) && sphere.radius > 0){
+        const fov = THREE.MathUtils.degToRad(this.camera.fov);
+        const aspect = Math.max(this.camera.aspect, 1e-6);
+        const vfov = fov;
+        const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect);
+        const limitingFov = Math.min(vfov, hfov);
+        const fitDistance = sphere.radius / Math.tan(limitingFov / 2);
+        // Keep a generous margin so no surface touches/crosses the frame.
+        this.radius = clampNum(fitDistance * 1.45, 1e-4, 1e8);
+      }
+    }else{
+      this.target.set(0, 0, 0);
+    }
+    this.dirty = true;
+  },
+
+  bindControls(){
+    const dom = this.renderer.domElement;
+    dom.addEventListener("contextmenu", e => e.preventDefault());
+
+    dom.addEventListener("pointerdown", e => {
+      dom.setPointerCapture && dom.setPointerCapture(e.pointerId);
+      this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if(this.pointers.size === 1){
+        this.mode = (e.button === 2 || e.shiftKey) ? "pan" : "rotate";
+        this.last.x = e.clientX;
+        this.last.y = e.clientY;
+        if(this.mode === "rotate") this.arcballLast.copy(this.arcballVector(e.clientX, e.clientY));
+      }else if(this.pointers.size === 2){
+        this.mode = "pinch";
+        const p = Array.from(this.pointers.values());
+        this.pinchDist = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+        this.pinchMid.x = (p[0].x + p[1].x) / 2;
+        this.pinchMid.y = (p[0].y + p[1].y) / 2;
+      }
+    });
+
+    window.addEventListener("pointermove", e => {
+      if(this.pointers.has(e.pointerId)){
+        this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+      this.updateCoords(e);
+
+      if(this.pointers.size === 2){
+        const p = Array.from(this.pointers.values());
+        const dist = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+        const midX = (p[0].x + p[1].x) / 2;
+        const midY = (p[0].y + p[1].y) / 2;
+
+        if(this.pinchDist > 0){
+          const factor = this.pinchDist / dist;
+          if(Math.abs(factor - 1) > 0.002){
+            this.radius = clampNum(this.radius * factor, 1e-4, 1e8);
+          }
+        }
+        this.pinchDist = dist;
+        this.pinchMid.x = midX;
+        this.pinchMid.y = midY;
+        this.dirty = true;
+        return;
+      }
+
+      if(!this.mode) return;
+      const dx = e.clientX - this.last.x;
+      const dy = e.clientY - this.last.y;
+      this.last.x = e.clientX;
+      this.last.y = e.clientY;
+
+      if(this.mode === "rotate"){
+        const current = this.arcballVector(e.clientX, e.clientY);
+        // Arcball vectors live in camera/screen space. Convert the inverse
+        // trackball rotation into world space because we are rotating the
+        // camera around the graph rather than rotating the graph itself.
+        const axis = new THREE.Vector3().crossVectors(current, this.arcballLast);
+        const dot = clampNum(this.arcballLast.dot(current), -1, 1);
+        const axisLen = axis.length();
+
+        if(axisLen > 1e-8){
+          const angle = Math.atan2(axisLen, dot) * 1.35;
+          axis.normalize();
+          axis.applyQuaternion(this.camera.quaternion).normalize();
+          const q = new THREE.Quaternion().setFromAxisAngle(axis, angle);
+          this.viewQuat.premultiply(q).normalize();
+        }
+        this.arcballLast.copy(current);
+      }else if(this.mode === "pan"){
+        this.pan(dx, dy);
+      }
+      this.dirty = true;
+    });
+
+    const endPointer = e => {
+      this.pointers.delete(e.pointerId);
+      if(this.pointers.size < 2) this.pinchDist = 0;
+      if(this.pointers.size === 0) this.mode = null;
+      else if(this.pointers.size === 1){
+        const entry = Array.from(this.pointers.entries())[0];
+        const p = entry[1];
+        this.last.x = p.x; this.last.y = p.y;
+        this.arcballLast.copy(this.arcballVector(p.x, p.y));
+        this.mode = "rotate";
+      }
+    };
+    window.addEventListener("pointerup", endPointer);
+    window.addEventListener("pointercancel", endPointer);
+
+    dom.addEventListener("wheel", e => {
+      e.preventDefault();
+      const factor = Math.exp(e.deltaY * 0.0010);
+      this.radius = clampNum(this.radius * factor, 1e-5, 1e9);
+      this.dirty = true;
+    }, { passive: false });
+
+    dom.addEventListener("pointerleave", () => {
+      document.getElementById("coords").textContent = "x: —  y: —  z: —";
+    });
+  },
+
+  pan(dx, dy){
+    const cam = this.camera;
+    const right = new THREE.Vector3().setFromMatrixColumn(cam.matrix, 0);
+    const up = new THREE.Vector3().setFromMatrixColumn(cam.matrix, 1);
+    const k = this.radius * 0.0016;
+    this.target.addScaledVector(right, -dx * k);
+    this.target.addScaledVector(up, dy * k);
+    this.dirty = true;
+  },
+
+  updateCoords(e){
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    if(e.clientX < rect.left || e.clientX > rect.right ||
+       e.clientY < rect.top || e.clientY > rect.bottom) return;
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(nx, ny), this.camera);
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const hit = new THREE.Vector3();
+    const ok = raycaster.ray.intersectPlane(plane, hit);
+    if(ok){
+      document.getElementById("coords").textContent =
+        "x: " + hit.x.toFixed(3) + "  y: " + hit.z.toFixed(3) + "  z: 0.000";
+    }else{
+      document.getElementById("coords").textContent = "x: —  y: —  z: —";
+    }
+  },
+
+  clearGroup(g){
+    while(g.children.length){
+      const c = g.children.pop();
+      if(c.geometry) c.geometry.dispose();
+      if(c.material){
+        if(Array.isArray(c.material)) c.material.forEach(m => m.dispose());
+        else c.material.dispose();
+      }
+      g.remove(c);
+    }
+  },
+
+  buildSurfaces(){
+    this.clearGroup(this.surfaceGroup);
+    const N = App.state.resolution;
+    const half = this.domainRange;
+    const errors = [];
+
+    App.state.expressions.forEach(e => {
+      e._error = false;
+      if(!e.visible) return;
+      const raw = normalizeEquationText(e.text || "").trim();
+      if(!raw) return;
+
+      const cls = classifyExpression(raw);
+      if(cls.type === "empty" || cls.type === "invalid") return;
+
+      let data;
+      if(cls.type === "explicitZ" || cls.type === "explicitX" || cls.type === "explicitY"){
+        data = this.generateExplicitAxisMesh(cls.axis, cls.body, N, half, e);
+      }else{
+        data = this.generateImplicitMesh(cls.lhs, cls.rhs, N, half, e);
+      }
+
+      if(!data || !data.ok){
+        e._error = true;
+        errors.push(e.label);
+        return;
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(data.positions, 3));
+      geo.setAttribute("color", new THREE.BufferAttribute(data.colors, 3));
+      geo.setIndex(new THREE.BufferAttribute(data.indices, 1));
+      // Build normals only from the actual emitted triangles.  The explicit
+      // mesher emits no invalid/placeholder vertices, so normals cannot be
+      // contaminated by clipped samples.
+      geo.computeVertexNormals();
+      geo.computeBoundingSphere();
+      geo.computeBoundingBox();
+
+      const wireMode = App.state.displayMode === "wire";
+
+      const mat = new THREE.MeshPhongMaterial({
+        vertexColors: true,
+        side: THREE.DoubleSide,
+        shininess: 18,
+        specular: 0x111111,
+        flatShading: false,
+        wireframe: wireMode,
+        transparent: e.opacity < 0.999 || wireMode,
+        opacity: e.opacity,
+        depthWrite: e.opacity > 0.95
+      });
+
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.userData.kind = cls.type;
+      this.surfaceGroup.add(mesh);
+
+      if(App.state.displayMode === "both"){
+        const wmat = new THREE.MeshBasicMaterial({
+          color: 0x1b2437,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.08,
+          depthTest: true,
+          depthWrite: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -1,
+          polygonOffsetUnits: -1
+        });
+        this.surfaceGroup.add(new THREE.Mesh(geo, wmat));
+      }
+    });
+
+    UI.renderLegend();
+    return errors;
+  },
+
+  generateExplicitAxisMesh(axis, exprBody, N, half, e){
+    /*
+     * Robust explicit-surface renderer.
+     *
+     * Important: do NOT simply discard a quad when one of its four output
+     * values lies outside [-half, half].  That creates a staircase/jagged
+     * boundary on steep surfaces such as z = x^2 + y^2 and can make the
+     * boundary look like spikes.  Instead, triangulate the quad and clip
+     * each triangle against the 3-D plotting box.  This produces the real
+     * intersection of the surface with the box.
+     */
+    let compiled = null;
+    try{ compiled = math.compile(exprBody); }catch(err){ return { ok:false }; }
+
+    N = Math.max(24, Math.min(220, Math.round(N)));
+    const W = N + 1;
+    const step = (2 * half) / N;
+    const values = new Float64Array(W * W);
+    values.fill(NaN);
+    const scope = Object.assign({}, App.state.parameters || {});
+
+    let p1 = "x", p2 = "y";
+    if(axis === "x"){ p1 = "y"; p2 = "z"; }
+    if(axis === "y"){ p1 = "x"; p2 = "z"; }
+
+    const evalAt = (u,v) => {
+      scope.x = 0; scope.y = 0; scope.z = 0;
+      scope[p1] = u;
+      scope[p2] = v;
+      try{
+        const r = compiled.evaluate(scope);
+        const q = coerceGraphValue(r);
+        return Number.isFinite(q) ? q : NaN;
+      }catch(err){ return NaN; }
+    };
+
+    let vmin = Infinity, vmax = -Infinity;
+    for(let i=0;i<W;i++){
+      const v = -half + i*step;
+      for(let j=0;j<W;j++){
+        const u = -half + j*step;
+        const q = evalAt(u,v);
+        values[i*W+j] = q;
+        if(Number.isFinite(q)){
+          vmin = Math.min(vmin,q);
+          vmax = Math.max(vmax,q);
+        }
+      }
+    }
+    if(!Number.isFinite(vmin)) return {ok:false};
+    if(Math.abs(vmax-vmin)<1e-12) vmax=vmin+1;
+
+    const baseColor = new THREE.Color(e.color);
+    const cmap = e.colormap || "solid";
+    const tmp = new THREE.Color();
+    const positions = [], colors = [], indices = [];
+    const vertexMap = new Map();
+
+    const toXYZ = (u,v,out) => {
+      if(axis === "z") return [u,out,v];
+      if(axis === "x") return [out,v,u];
+      return [u,v,out];
+    };
+
+    const colorFor = out => {
+      if(cmap === "solid") tmp.copy(baseColor);
+      else applyColormap(tmp,clampNum((out-vmin)/(vmax-vmin),0,1),cmap);
+      return [tmp.r,tmp.g,tmp.b];
+    };
+
+    const keyOf = p => p[0].toFixed(10)+","+p[1].toFixed(10)+","+p[2].toFixed(10);
+    const addVertex = (u,v,out) => {
+      const xyz = toXYZ(u,v,out);
+      const key = keyOf(xyz);
+      const old = vertexMap.get(key);
+      if(old !== undefined) return old;
+      const idx = positions.length/3;
+      positions.push(xyz[0],xyz[1],xyz[2]);
+      const c = colorFor(out);
+      colors.push(c[0],c[1],c[2]);
+      vertexMap.set(key,idx);
+      return idx;
+    };
+
+    // Clip a triangle against output range [-half, half].  u/v are already
+    // inside the x/y/z plotting box; only the dependent coordinate needs
+    // clipping here.  Sutherland-Hodgman preserves the exact surface/box
+    // intersection along each linear triangle edge.
+    const clipTriangle = tri => {
+      let poly = tri.slice();
+      for(const bound of [-half,half]){
+        const keepGreater = bound === -half;
+        const out=[];
+        for(let i=0;i<poly.length;i++){
+          const A=poly[i], B=poly[(i+1)%poly.length];
+          const aIn = keepGreater ? A.out >= bound : A.out <= bound;
+          const bIn = keepGreater ? B.out >= bound : B.out <= bound;
+          if(aIn) out.push(A);
+          if(aIn !== bIn){
+            const den=B.out-A.out;
+            const t=Math.abs(den)<1e-14 ? 0 : (bound-A.out)/den;
+            out.push({u:A.u+(B.u-A.u)*t,v:A.v+(B.v-A.v)*t,out:bound});
+          }
+        }
+        poly=out;
+        if(poly.length<3) break;
+      }
+      return poly;
+    };
+
+    const emitPoly = poly => {
+      if(poly.length<3) return;
+      const ids=poly.map(P=>addVertex(P.u,P.v,P.out));
+      for(let k=1;k<ids.length-1;k++){
+        // Consistent orientation for the displayed coordinate convention.
+        if(axis === "x") indices.push(ids[0],ids[k+1],ids[k]);
+        else indices.push(ids[0],ids[k],ids[k+1]);
+      }
+    };
+
+    for(let i=0;i<N;i++){
+      const v0=-half+i*step, v1=v0+step;
+      for(let j=0;j<N;j++){
+        const u0=-half+j*step, u1=u0+step;
+        const h00=values[i*W+j], h01=values[i*W+j+1];
+        const h10=values[(i+1)*W+j], h11=values[(i+1)*W+j+1];
+        if(!Number.isFinite(h00)||!Number.isFinite(h01)||
+           !Number.isFinite(h10)||!Number.isFinite(h11)) continue;
+
+        const p00={u:u0,v:v0,out:h00};
+        const p01={u:u1,v:v0,out:h01};
+        const p10={u:u0,v:v1,out:h10};
+        const p11={u:u1,v:v1,out:h11};
+
+        // Choose the diagonal that gives the smaller change in dependent
+        // coordinate, reducing visible diagonal artifacts on steep graphs.
+        if(Math.abs(h00-h11) <= Math.abs(h01-h10)){
+          emitPoly(clipTriangle([p00,p01,p11]));
+          emitPoly(clipTriangle([p00,p11,p10]));
+        }else{
+          emitPoly(clipTriangle([p00,p01,p10]));
+          emitPoly(clipTriangle([p01,p11,p10]));
+        }
+      }
+    }
+
+    if(indices.length<3) return {ok:false};
+    const pos=new Float32Array(positions);
+    const col=new Float32Array(colors);
+    const IdxType=(pos.length/3)>65535?Uint32Array:Uint16Array;
+    return {ok:true,positions:pos,colors:col,indices:new IdxType(indices)};
+  },
+
+  generateExplicitMesh(exprBody, N, half, e){
+    return this.generateExplicitAxisMesh("z", exprBody, N, half, e);
+  },
+
+  generateImplicitMesh(lhs, rhs, N, half, e){
+    let compiled = null;
+    try{
+      compiled = math.compile("(" + lhs + ") - (" + rhs + ")");
+    }catch(err){ return { ok: false }; }
+
+    const F = (x, y, z) => {
+      try{
+        const r = compiled.evaluate({
+          x, y, z,
+          ...(App.state.parameters || {}),
+          pi: Math.PI, e: Math.E,
+          phi: (1 + Math.sqrt(5)) / 2, tau: 2 * Math.PI
+        });
+        return coerceGraphValue(r);
+      }catch(err){ return NaN; }
+    };
+
+    // FIXED: Increased the resolution for implicit surfaces to match the explicit ones.
+    // Previously it was Math.round(N * 0.72), which caused blocky artifacts.
+    const M = Math.max(24, Math.min(140, Math.round(N)));
+
+    let res;
+    try{
+      res = MarchingTets.compute(F, -half, -half, -half, 2 * half, M);
+    }catch(err){
+      console.error(err);
+      return { ok: false };
+    }
+
+    if(!res.indices || res.indices.length === 0) return { ok: false };
+
+    const positions = res.positions;
+    for(let i = 0; i < positions.length; i += 3){
+      const t = positions[i + 1];
+      positions[i + 1] = positions[i + 2];
+      positions[i + 2] = t;
+    }
+
+    const count = positions.length / 3;
+    const colors = new Float32Array(count * 3);
+
+    let ymin = Infinity, ymax = -Infinity;
+    for(let i = 0; i < count; i++){
+      const y = positions[i * 3 + 1];
+      if(y < ymin) ymin = y;
+      if(y > ymax) ymax = y;
+    }
+    if(!Number.isFinite(ymin)){ ymin = 0; ymax = 1; }
+    if(ymax - ymin < 1e-9) ymax = ymin + 1e-9;
+
+    const baseColor = new THREE.Color(e.color);
+    const cmap = e.colormap || "solid";
+    const tmp = new THREE.Color();
+
+    for(let i = 0; i < count; i++){
+      const y = positions[i * 3 + 1];
+      if(cmap === "solid") tmp.copy(baseColor);
+      else applyColormap(tmp, (y - ymin) / (ymax - ymin), cmap);
+      colors[i * 3]     = tmp.r;
+      colors[i * 3 + 1] = tmp.g;
+      colors[i * 3 + 2] = tmp.b;
+    }
+
+    return {
+      ok: true,
+      positions,
+      colors,
+      indices: res.indices
+    };
+  },
+
+  buildHelpers(){
+    this.clearGroup(this.helperGroup);
+    this.axisBox = null;
+    const master = App.state.showGrid || App.state.showAxes;
+    if(master && App.state.showGrid && App.state.showPlane) this.buildGrid();
+    if(master && App.state.showAxes) this.buildAxes();
+    if(App.state.showBox) this.buildAxisBox(this.domainRange);
+  },
+
+  buildAxisBox(half){
+    const h = (Number.isFinite(half) && half > 0) ? half : this.domainRange;
+    const v = [
+      -h,-h,-h,   h,-h,-h,
+       h,-h,-h,   h,-h, h,
+       h,-h, h,  -h,-h, h,
+      -h,-h, h,  -h,-h,-h,
+
+      -h, h,-h,   h, h,-h,
+       h, h,-h,   h, h, h,
+       h, h, h,  -h, h, h,
+      -h, h, h,  -h, h,-h,
+
+      -h,-h,-h,  -h, h,-h,
+       h,-h,-h,   h, h,-h,
+       h,-h, h,   h, h, h,
+      -h,-h, h,  -h, h, h
+    ];
+
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+
+    const m = new THREE.LineBasicMaterial({
+      color: 0xb7bec9,
+      transparent: true,
+      opacity: 0.62,
+      depthTest: false,
+      depthWrite: false
+    });
+
+    this.axisBox = new THREE.LineSegments(g, m);
+    this.axisBox.renderOrder = -5;
+    this.axisBox.position.set(0, 0, 0);
+    this.helperGroup.add(this.axisBox);
+  },
+
+  buildGrid(){
+    const L = this.domainRange;
+    const divs = 10;
+    const step = (2 * L) / divs;
+    const pts = [];
+    for(let i = 0; i <= divs; i++){
+      const v = -L + i * step;
+      pts.push(-L, 0, v, L, 0, v);
+      pts.push(v, 0, -L, v, 0, L);
+    }
+
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    const mat = new THREE.LineBasicMaterial({ color: 0xd7dfea, transparent: true, opacity: 0.95 });
+    const grid = new THREE.LineSegments(g, mat);
+    grid.renderOrder = -1;
+    this.helperGroup.add(grid);
+
+    const pts2 = [];
+    const divs2 = divs * 2;
+    const step2 = (2 * L) / divs2;
+    for(let i = 0; i <= divs2; i++){
+      const v = -L + i * step2;
+      pts2.push(-L, 0, v, L, 0, v);
+      pts2.push(v, 0, -L, v, 0, L);
+    }
+    const g2 = new THREE.BufferGeometry();
+    g2.setAttribute("position", new THREE.Float32BufferAttribute(pts2, 3));
+    const mat2 = new THREE.LineBasicMaterial({ color: 0xeaeff6, transparent: true, opacity: 0.8 });
+    const grid2 = new THREE.LineSegments(g2, mat2);
+    grid2.renderOrder = -2;
+    this.helperGroup.add(grid2);
+  },
+
+  buildAxes(){
+    const L = this.domainRange;
+    const group = this.helperGroup;
+
+    const mkLine = (x1,y1,z1,x2,y2,z2,color) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute([x1,y1,z1,x2,y2,z2], 3));
+      const m = new THREE.LineBasicMaterial({ color: color });
+      return new THREE.Line(g, m);
+    };
+
+    group.add(mkLine(-L, 0, 0, L, 0, 0, 0xc0392b));
+    group.add(mkLine(0, 0, -L, 0, 0, L, 0x27ae60));
+    group.add(mkLine(0, -L, 0, 0, L, 0, 0x2f6fed));
+
+    if(App.state.showLabels){
+      group.add(this.makeLabel(this.displayLabel("x"), L + L * 0.12, 0, 0, "#c0392b"));
+      group.add(this.makeLabel(this.displayLabel("y"), 0, 0, L + L * 0.12, "#27ae60"));
+      group.add(this.makeLabel(this.displayLabel("z"), 0, L + L * 0.12, 0, "#2f6fed"));
+    }
+
+    const divs = 10;
+    const step = (2 * L) / divs;
+    const tickSize = L * 0.035;
+
+    for(let i = 0; i <= divs; i++){
+      const v = -L + i * step;
+      if(Math.abs(v) < Math.max(1e-12, L * 1e-9)) continue;
+      const s = formatTick(v);
+
+      group.add(mkLine(v, -tickSize, 0, v, tickSize, 0, 0xb08b86));
+      if(App.state.showNumbers) group.add(this.makeLabel(this.displayLabel(s), v, -L * 0.075, 0, "#8a8f9c", 0.55, true));
+
+      group.add(mkLine(-tickSize, 0, v, tickSize, 0, v, 0x86b39a));
+      if(App.state.showNumbers) group.add(this.makeLabel(this.displayLabel(s), 0, -L * 0.075, v, "#8a8f9c", 0.55, true));
+
+      group.add(mkLine(-tickSize, v, 0, tickSize, v, 0, 0x8fa9dd));
+      if(App.state.showNumbers) group.add(this.makeLabel(this.displayLabel(s), -L * 0.075, v, 0, "#8a8f9c", 0.55, true));
+    }
+  },
+
+  displayLabel(text){
+    if(!App.state.brailleMode) return String(text);
+    const map = {
+      "0":"⠚","1":"⠁","2":"⠃","3":"⠉","4":"⠙","5":"⠑","6":"⠋","7":"⠛","8":"⠓","9":"⠊",
+      "-":"⠤",".":"⠨","x":"⠭","y":"⠽","z":"⠵"
+    };
+    return String(text).split("").map(ch => map[ch] || ch).join("");
+  },
+
+  makeLabel(text, x, y, z, color, scale, isTick){
+    const key = text + "|" + color + "|" + (isTick ? "t" : "a");
+    let template = this._labelCache.get(key);
+
+    if(!template){
+      const canvas = document.createElement("canvas");
+      const W = 512, H = 256;
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, W, H);
+      ctx.font = (isTick ? "600 108px" : "800 148px") + ' Inter, "Segoe UI", Arial, sans-serif';
+      ctx.fillStyle = color || "#5a6a85";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, W / 2, H / 2);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.needsUpdate = true;
+
+      template = new THREE.SpriteMaterial({
+        map: tex,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false
+      });
+      this._labelCache.set(key, template);
+    }
+
+    const sprite = new THREE.Sprite(template);
+    const domScale = this.domainRange / 5;
+    const base = (isTick ? 0.95 : 1.7) * (scale || 1) * domScale;
+    sprite.scale.set(base, base * 0.5, 1);
+    sprite.position.set(x, y, z);
+    sprite.renderOrder = 999;
+    return sprite;
+  },
+
+  updateControlPanel(){
+    /* Only runs when the Settings dialog is open. Null-safe. */
+    const bounds = document.getElementById("boundsText");
+    const range = document.getElementById("boundsRange");
+    if(bounds) bounds.textContent = "−" + formatTick(this.domainRange) + " to " + formatTick(this.domainRange);
+    if(range){
+      const value = Math.log2(Math.max(this.radius,1e-12) / 20);
+      range.value = String(clampNum(value, -6, 6));
+    }
+  },
+
+  requestRender(){ this.dirty = true; },
+
+  loop(){
+    requestAnimationFrame(() => this.loop());
+    if(this.autoRotate){
+      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.0045);
+      this.viewQuat.premultiply(q).normalize();
+      this.dirty = true;
+    }
+
+    const want = this.computeDomainRange();
+    if(want !== this.domainRange &&
+       Math.abs(want / this.domainRange - 1) > 0.005){
+      this.domainRange = want;
+      this.buildSurfaces();
+      this.buildHelpers();
+      this.dirty = true;
+    }
+
+    if(this.dirty){
+      this.dirty = false;
+      this.updateCamera();
+      this.updateControlPanel();
+      this.renderer.render(this.scene, this.camera);
+    }
+  }
+};
+
+/* =========================================================
+   Small helpers
+   ========================================================= */
+function coerceGraphValue(r){
+  if(typeof r === "number") return r;
+  if(r && typeof r.re === "number" && typeof r.im === "number"){
+    return App.state.complexMode ? Math.hypot(r.re, r.im) : NaN;
+  }
+  const n = Number(r);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function formatTick(v){
+  if(Math.abs(v) >= 1e6 || (Math.abs(v) < 1e-3 && v !== 0)) return v.toExponential(1);
+  return Number(v.toFixed(4)).toString();
+}
+function roundRectPath(ctx, x, y, w, h, r){
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+function erfApprox(x){
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x);
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741,
+        a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const t = 1 / (1 + p * x);
+  const y = 1 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * Math.exp(-x * x);
+  return sign * y;
+}
+function gammaApprox(z){
+  const p = [676.5203681218851, -1259.1392167224028, 771.32342877765313,
+             -176.61502916214059, 12.507343278686905, -0.13857109526572012,
+             9.9843695780195716e-6, 1.5056327351493116e-7];
+  if(z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gammaApprox(1 - z));
+  z -= 1;
+  let x = 0.99999999999980993;
+  for(let i = 0; i < p.length; i++) x += p[i] / (z + i + 1);
+  const t = z + p.length - 0.5;
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+}
+
+/* =========================================================
+   Global keyboard
+   ========================================================= */
+document.addEventListener("keydown", e => {
+  const inInput = e.target && e.target.classList && e.target.classList.contains("expr-input");
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
+    if(inInput) return;
+    e.preventDefault();
+    e.shiftKey ? App.redo() : App.undo();
+  }
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y"){
+    if(inInput) return;
+    e.preventDefault();
+    App.redo();
+  }
+  if(e.key === "Escape"){
+    document.getElementById("dialogBackdrop").classList.remove("show");
+  }
+  if(e.key === "r" && !inInput){ Scene3D.resetView(); }
+  if(e.key === "f" && !inInput){ Scene3D.fitView(); }
+});
+
+window.addEventListener("load", () => App.init());
+</script>
+</body>
+</html>
