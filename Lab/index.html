@@ -3,9 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2D-Graphs — Ganith Lab</title>
+
+<title>Lab — Ganith Interactive Tools</title>
+
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
   body {
     font-family: Arial, Helvetica, sans-serif;
@@ -15,6 +21,7 @@
   }
 
   /* ---------- HEADER ---------- */
+
   header {
     height: 72px;
     display: flex;
@@ -36,7 +43,12 @@
     text-decoration: none;
   }
 
+  .logo:hover {
+    opacity: 0.8;
+  }
+
   /* ---------- HERO ---------- */
+
   .hero {
     text-align: center;
     padding: 68px 20px 30px;
@@ -47,20 +59,24 @@
   .hero::before {
     content: "";
     position: absolute;
-    width: 280px; height: 280px;
+    width: 280px;
+    height: 280px;
     background: #dce9ff;
     border-radius: 50%;
-    left: -130px; top: -80px;
+    left: -130px;
+    top: -80px;
     z-index: -1;
   }
 
   .hero::after {
     content: "";
     position: absolute;
-    width: 220px; height: 220px;
+    width: 220px;
+    height: 220px;
     background: #e5ddff;
     border-radius: 50%;
-    right: -100px; top: 30px;
+    right: -100px;
+    top: 30px;
     z-index: -1;
   }
 
@@ -87,38 +103,51 @@
     font-size: 15px;
   }
 
-  /* ---------- CARDS ---------- */
+  /* ---------- CARDS CONTAINER ---------- */
+
   .cards-container {
     max-width: 1120px;
     margin: 32px auto 0;
     padding: 0 20px 60px;
   }
 
+  /* ---------- CARDS ---------- */
+
   .cards {
     background: white;
     padding: 30px;
     border-radius: 20px;
+
     display: grid;
-    grid-template-columns: minmax(280px, 350px);
+    grid-template-columns: repeat(2, minmax(280px, 350px));
     justify-content: center;
     gap: 16px;
+
     box-shadow: 0 12px 35px rgba(45, 72, 120, 0.09);
     border: 1px solid #edf1f8;
-    max-width: 450px;
+
+    max-width: 800px;
     margin: 0 auto;
   }
+
+  /* ---------- INDIVIDUAL CARD ---------- */
 
   .card {
     min-height: 185px;
     border-radius: 15px;
     padding: 28px 16px;
+
     text-align: center;
+
     background: #fbfcff;
     border: 1px solid #edf1f8;
+
     cursor: pointer;
-    transition: .25s ease;
+    transition: 0.25s ease;
+
     text-decoration: none;
     color: inherit;
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -129,28 +158,43 @@
     transform: translateY(-6px);
     box-shadow: 0 12px 25px rgba(36, 72, 130, 0.12);
     border-color: #cddcff;
+    background: #ffffff;
   }
 
+  /* ---------- ICON ---------- */
+
   .icon {
-    width: 60px; height: 60px;
+    width: 60px;
+    height: 60px;
+
     margin: 0 auto 14px;
+
     border-radius: 14px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 28px;
     font-weight: 700;
-    background: #e0f7fa; 
-    color: #00838f; 
+
+    background: #e0f7fa;
+    color: #00838f;
   }
+
+  /* ---------- CARD TITLE ---------- */
 
   .card h3 {
     font-size: 19px;
     margin-bottom: 8px;
+
     color: #172b57;
+
     font-weight: 700;
     line-height: 1.3;
   }
+
+  /* ---------- CARD DESCRIPTION ---------- */
 
   .card p {
     font-size: 13px;
@@ -159,66 +203,197 @@
   }
 
   /* ---------- FOOTER ---------- */
+
   footer {
     text-align: center;
     padding: 28px 20px;
+
     color: #8995aa;
     font-size: 13px;
+
     border-top: 1px solid #e8edf7;
-    background: rgba(255,255,255,.6);
+
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  /* ---------- TABLET ---------- */
+
+  @media (max-width: 800px) {
+
+    header {
+      padding: 0 20px;
+    }
+
+    .hero {
+      padding-top: 50px;
+    }
+
+    .cards {
+      padding: 20px;
+      grid-template-columns: repeat(2, minmax(240px, 1fr));
+    }
   }
 
   /* ---------- MOBILE ---------- */
-  @media (max-width: 800px) {
-    header { padding: 0 20px; }
-    .hero { padding-top: 50px; }
-    .cards { padding: 20px; }
+
+  @media (max-width: 600px) {
+
+    .cards {
+      grid-template-columns: 1fr;
+      padding: 18px;
+      gap: 12px;
+      max-width: 450px;
+    }
+
+    .card {
+      min-height: 165px;
+      padding: 24px 12px;
+    }
   }
 
+  /* ---------- SMALL MOBILE ---------- */
+
   @media (max-width: 480px) {
-    .logo { font-size: 22px; }
-    .cards { grid-template-columns: 1fr; padding: 14px; gap: 10px; max-width: 100%; }
-    .card { min-height: 160px; padding: 22px 10px; }
-    .icon { width: 50px; height: 50px; font-size: 24px; margin-bottom: 11px; }
-    .card h3 { font-size: 16px; }
-    .card p { font-size: 11.5px; }
-    .hero h1 { font-size: 45px; }
+
+    .logo {
+      font-size: 22px;
+    }
+
+    .cards {
+      grid-template-columns: 1fr;
+      padding: 14px;
+      gap: 10px;
+      max-width: 100%;
+    }
+
+    .card {
+      min-height: 160px;
+      padding: 22px 10px;
+    }
+
+    .icon {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      margin-bottom: 11px;
+    }
+
+    .card h3 {
+      font-size: 16px;
+    }
+
+    .card p {
+      font-size: 11.5px;
+    }
+
+    .hero h1 {
+      font-size: 45px;
+    }
   }
+
 </style>
 </head>
 
 <body>
 
+<!-- ================= HEADER ================= -->
+
 <header>
-  <a class="logo" href="../index.html">Ganith</a>
+
+  <a class="logo" href="../index.html">
+    Ganith
+  </a>
+
 </header>
+
+
+<!-- ================= MAIN CONTENT ================= -->
 
 <main>
 
+  <!-- HERO -->
+
   <section class="hero">
+
     <h1>Lab</h1>
+
     <h2>Interactive Tools</h2>
+
     <p>
       Explore mathematical concepts visually and interactively.
     </p>
+
   </section>
 
+
+  <!-- ================= GRAPH CARDS ================= -->
+
   <section class="cards-container">
+
     <div class="cards">
 
-      <!-- UPDATED LINK HERE: Redirects to Lab/graph/Index.html -->
-      <a class="card" href="graph/index.html">
-        <div class="icon">📈</div>
-        <h3>2D-Graphs</h3>
-        <p>Visualize functions and equations</p>
+
+      <!-- ================= 2D GRAPHS ================= -->
+
+      <a
+        class="card"
+        href="graph/index.html"
+        aria-label="Open 2D Graphs"
+      >
+
+        <div class="icon">
+          📈
+        </div>
+
+        <h3>
+          2D-Graphs
+        </h3>
+
+        <p>
+          Visualize functions and equations
+        </p>
+
       </a>
 
+
+      <!-- ================= 3D GRAPHS ================= -->
+
+      <a
+        class="card"
+        href="3dgraph/index.htm"
+        aria-label="Open 3D Graphs"
+      >
+
+        <div class="icon">
+          🧊
+        </div>
+
+        <h3>
+          3D-Graphs
+        </h3>
+
+        <p>
+          Explore three-dimensional surfaces and equations
+        </p>
+
+      </a>
+
+
     </div>
+
   </section>
 
 </main>
 
-<footer>© 2026 Ganith. Learn • Practice • Excel</footer>
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+  © 2026 Ganith. Learn • Practice • Excel
+
+</footer>
+
 
 </body>
 </html>
