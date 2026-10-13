@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Statistics Calculator</title>
+<style>canvas{max-width:100%;width:100%;height:auto;border:1px solid #ccc;display:block;margin-bottom:16px;box-sizing:border-box}html,body{max-width:100%;overflow-x:hidden}#charts,.graph-panel{min-width:0;max-width:100%;box-sizing:border-box}.graph-panel canvas{display:block;width:100%;max-width:100%;height:340px;box-sizing:border-box}#charts h4{margin-bottom:6px}.graph-panel[hidden]{display:none}.graph-options-dialog{border:1px solid #777;border-radius:8px;padding:1rem;max-width:32rem;width:calc(100% - 2rem);box-sizing:border-box}.graph-options-dialog::backdrop{background:rgba(0,0,0,.45)}.graph-options-list{display:grid;gap:.65rem;margin:1rem 0}.graph-options-list label{display:flex;align-items:center;gap:.6rem;padding:.35rem 0}.graph-options-actions{display:flex;flex-wrap:wrap;gap:.5rem}#dataType{display:none}#openDataTypeOptions{max-width:100%;text-align:left;white-space:normal}#selectedDataType{display:block;margin-top:.4rem;font-size:.95em;color:#555}</style>
+
+<style>
+.graph-options-dialog{max-height:88dvh;overflow:auto;overscroll-behavior:contain}
+#graphOptionsDialog>h3{position:sticky;top:-1rem;z-index:5;background:#fff;margin:-1rem -1rem .75rem;padding:1rem;border-bottom:1px solid #ddd}
+#graphOptionsDialog .graph-options-actions{position:sticky;bottom:-1rem;z-index:5;background:#fff;margin:0 -1rem -1rem;padding:.75rem 1rem;border-top:1px solid #ddd}
+.graph-select-toolbar{position:relative;z-index:1;background:#fff;padding:.65rem 0 .8rem;margin:.5rem 0;border-bottom:1px solid #ddd;display:flex;align-items:center;flex-wrap:wrap;gap:.5rem}
+.graph-select-toolbar button{flex:0 0 auto;max-width:100%;white-space:normal}
+#graphSelectionCount{display:block;flex:1 1 100%;font-size:.95rem;line-height:1.4}
+.graph-category{border:1px solid #ddd;border-radius:6px;padding:.65rem;margin:1rem 0 .4rem;background:#f7f7f7;display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;gap:.6rem}
+.graph-category label{display:flex;align-items:center;gap:.5rem;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.graph-category label input{flex:0 0 auto}
+
+.graph-options-list label{min-width:0;overflow-wrap:anywhere;line-height:1.35}
+#graphCheckboxList>label:not(.graph-category label){display:flex;align-items:flex-start}
+@media(max-width:480px){
+.graph-options-dialog{width:calc(100% - 1rem);padding:.75rem;max-height:88dvh;overflow-y:auto}
+#graphOptionsDialog>h3{top:-.75rem;margin:-.75rem -.75rem .6rem;padding:.75rem;line-height:1.25}
+#graphOptionsDialog .graph-options-actions{margin:0 -.75rem -.75rem;padding:.6rem .75rem;gap:.5rem}
+.graph-select-toolbar{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;gap:.5rem}
+.graph-select-toolbar button{width:100%;min-height:2.5rem}
+#graphSelectionCount{grid-column:1/-1}
+.graph-category{grid-template-columns:minmax(0,1fr);gap:.55rem}
+
+}
+#graphCheckboxList strong{display:block;margin-top:.65rem;border-bottom:1px solid #ddd;padding-bottom:.2rem}
+#graphCheckboxList label{align-items:flex-start}
+.graph-panel{margin:18px 0;padding:10px;border:1px solid #ddd;border-radius:6px}
+.graph-panel canvas{height:340px;max-width:100%;width:100%;box-sizing:border-box}
+#chart_distributionOfVariance{height:380px!important}
+@media(max-width:480px){#chart_distributionOfVariance{height:360px!important}}.graph-panel{max-width:100%;box-sizing:border-box;overflow:hidden}
+#anovaGroupData{font:14px/1.5 monospace}
+</style>
+
+
+<style id="professional-workspace-theme">
+:root{--app-bg:#f3f6fa;--surface:#fff;--ink:#172536;--muted:#64748b;--line:#d8e0e9;--line-strong:#bdc9d7;--accent:#245da8;--accent-hover:#194a89;--accent-soft:#eaf1fa;--success:#21734a;--danger:#b42318;--radius:8px;--shadow:0 1px 3px rgba(23,37,54,.06)}
+*{box-sizing:border-box}
+html,body{margin:0;max-width:100%;min-height:100%;overflow-x:hidden;background:var(--app-bg);color:var(--ink);font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.55}
+body{padding:0}
+button,input,select,textarea{font:inherit}
+button{border:1px solid var(--line-strong);border-radius:6px;background:#fff;color:var(--ink);padding:9px 13px;min-height:38px;font-weight:600;line-height:1.25;cursor:pointer;transition:background-color .15s,border-color .15s}
+button:hover{background:#f5f8fc;border-color:#8ea3ba}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #9abce7;outline-offset:2px}
+button:active{background:#eaf0f7}
+input,select,textarea{border:1px solid var(--line-strong);border-radius:6px;background:#fff;color:var(--ink);padding:9px 10px;max-width:100%}
+textarea{line-height:1.5}
+.app-topbar{height:66px;padding:0 clamp(16px,4vw,52px);display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fff;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none;min-width:0}
+.brand-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:7px;background:#245da8;color:#fff;font-family:Georgia,serif;font-size:25px;font-weight:700}
+.brand-copy{display:flex;flex-direction:column;line-height:1.15;letter-spacing:.8px}.brand-copy strong{font-size:13px;font-weight:800}.brand-copy small{margin-top:4px;color:var(--muted);font-size:9px;font-weight:700;letter-spacing:1.25px}
+.topbar-meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-weight:600}.status-dot{width:7px;height:7px;border-radius:50%;background:#39815d;display:inline-block}
+.page-shell{width:min(1440px,100%);margin:0 auto;padding:28px clamp(14px,3vw,38px) 36px}
+.page-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:0 0 26px;padding:0 0 22px;border-bottom:1px solid var(--line)}
+.eyebrow{margin:0 0 7px;color:var(--accent);font-size:10px;font-weight:800;letter-spacing:1.5px}
+.page-intro h1{margin:0;color:#14263b;font-size:clamp(25px,3vw,34px);line-height:1.15;letter-spacing:-.8px;font-weight:750}
+.intro-copy{max-width:700px;margin:10px 0 0;color:var(--muted);font-size:14px}
+.precision-note{display:flex;align-items:center;gap:10px;padding:10px 13px;border:1px solid var(--line);border-radius:7px;background:#fff;flex:0 0 auto}
+.precision-icon{display:grid;place-items:center;min-width:44px;height:36px;border-radius:5px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.precision-note strong,.precision-note small{display:block}.precision-note strong{font-size:12px}.precision-note small{margin-top:2px;color:var(--muted);font-size:10px}
+.legacy-title{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.page-shell>h3{margin:27px 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line);font-size:17px;line-height:1.35;letter-spacing:-.2px;font-weight:750;color:#20364d}
+.page-shell>h3:first-of-type{margin-top:0}
+.page-shell>p{color:var(--muted)}
+.page-shell>label{font-weight:650}
+#openDataTypeOptions,#calculateBtn,#openGraphOptions,#updateAnovaData{background:var(--accent);border-color:var(--accent);color:#fff}
+#openDataTypeOptions:hover,#calculateBtn:hover,#openGraphOptions:hover,#updateAnovaData:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+#calculateBtn{min-width:132px;font-size:14px;padding:11px 18px}
+#selectedDataType{color:var(--muted)!important;font-size:12px!important}
+#inputHeader th,#resultHeader th{background:#edf2f7;color:#33485e;font-weight:700}
+table{border-collapse:separate;border-spacing:0;background:#fff;color:var(--ink);font-size:13px}
+.page-shell>table{width:100%;margin:12px 0 18px;border:1px solid var(--line)!important;border-radius:7px;overflow:hidden}
+table th,table td{padding:9px 11px;border-color:var(--line)!important;vertical-align:middle}
+table th{font-weight:700;text-align:left}
+table tbody tr:nth-child(even){background:#f8fafc}
+table tbody tr:hover{background:#f0f5fb}
+#inputBody input{width:100%;min-width:90px}
+#inputBody td{min-width:130px}
+#resultHeader th{white-space:nowrap}
+#results td,#resultTotal td{font-variant-numeric:tabular-nums}
+#summary{width:100%;border:1px solid var(--line)!important;border-radius:7px;overflow:hidden}
+#summary td:first-child{width:65%;font-weight:550;color:#35495e}
+#summary td:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+#varianceCalculationOptions,#anovaInputPanel{background:#fff!important;border:1px solid var(--line)!important;border-radius:8px!important;box-shadow:var(--shadow)}
+#varianceCalculationOptions h3{margin-top:0;border:0;padding-bottom:0}
+#anovaGroupData{border:1px solid var(--line-strong);border-radius:6px;background:#fbfcfe;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;padding:12px}
+#anovaStatus{font-size:12px;color:var(--muted)}
+.graph-options-dialog{border:1px solid var(--line-strong);border-radius:9px;box-shadow:0 18px 60px #10243a26;background:#fff;color:var(--ink)}
+#graphOptionsDialog>h3{background:#fff;color:#20364d}
+.graph-category{border-color:var(--line)!important;background:#f0f4f8!important;border-radius:6px!important}
+.graph-panel{background:#fff;border:1px solid var(--line)!important;border-radius:8px!important;padding:14px!important;box-shadow:var(--shadow);margin:16px 0!important}
+.graph-panel h4{font-size:14px;color:#263c53;font-weight:750;margin:0 0 12px!important;padding-bottom:10px;border-bottom:1px solid #e8edf3}
+.graph-panel canvas{border:0!important;border-radius:4px;background:#fff}
+#graphSelectionMessage{padding:12px 14px;border:1px dashed var(--line-strong);border-radius:7px;background:#fff;color:var(--muted)}
+#error{color:var(--danger);font-weight:600}
+#solution{line-height:1.65;overflow-wrap:anywhere}
+#solution h4{margin:24px 0 8px;color:#203c5a;font-size:15px}
+#solution table{width:100%;margin:12px 0 18px;border:1px solid var(--line)}
+#solution p{margin:8px 0}
+.app-footer{display:flex;justify-content:space-between;gap:12px;padding:16px clamp(16px,4vw,52px);border-top:1px solid var(--line);background:#fff;color:var(--muted);font-size:11px}
+@media(max-width:760px){.app-topbar{height:58px;padding:0 14px}.brand-mark{width:34px;height:34px}.topbar-meta{font-size:11px}.page-shell{padding:20px 12px 28px}.page-intro{align-items:flex-start;flex-direction:column;gap:14px;margin-bottom:20px}.page-intro h1{font-size:27px}.precision-note{width:100%}.page-shell>h3{font-size:16px;margin-top:24px}.page-shell>table{display:block;max-width:100%;overflow-x:auto}#summary{display:table;table-layout:auto}#summary td{padding:8px}#summary td:first-child{min-width:180px}#summary td:last-child{min-width:90px}.graph-panel{padding:9px!important}.graph-panel canvas{height:300px!important}.app-footer{flex-direction:column;gap:4px}}
+@media(max-width:420px){.topbar-meta{display:none}.page-intro h1{font-size:25px}.page-shell{padding-left:10px;padding-right:10px}button{padding:8px 10px}.graph-panel canvas{height:270px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<header class="app-topbar">
+  <a class="brand" href="#pageTop" aria-label="Statistics Calculator home"><span class="brand-mark" aria-hidden="true">Σ</span><span class="brand-copy"><strong>STATISTICS</strong><small>CALCULATION WORKSPACE</small></span></a>
+  <div class="topbar-meta"><span class="status-dot" aria-hidden="true"></span><span>Statistical analysis tools</span></div>
+</header>
+<main class="page-shell" id="pageTop">
+<div class="page-intro"><div><p class="eyebrow">DATA ANALYSIS / WORKSPACE</p><h1>Statistics Calculator</h1><p class="intro-copy">Enter your dataset, calculate statistical measures, and explore data through interactive graphs.</p></div><div class="precision-note"><span class="precision-icon">0.00</span><span><strong>Display precision</strong><small>2 decimal places · Full precision calculations</small></span></div></div>
+<h2 class="legacy-title">Statistics Calculator</h2>
+<p id="buildVersion" style="font-size:0.85em;color:#666">Updated build: 2026-10-11 v5</p>
+
+<h3>1. Select Type of Data</h3>
+<label>Data type:</label><br>
+<button type="button" id="openDataTypeOptions">Select Data Type</button>
+<span id="selectedDataType">Selected: Ungrouped Data</span>
+<select id="dataType" aria-hidden="true" tabindex="-1">
+  <option value="ungrouped">Ungrouped Data</option>
+  <option value="discrete">Grouped Data - Discrete Frequency Distribution</option>
+  <option value="continuous">Grouped Data - Continuous Frequency Distribution</option>
+</select>
+<dialog id="dataTypeOptionsDialog" class="graph-options-dialog">
+  <h3>Select type of data</h3>
+  <div class="graph-options-list">
+    <label><input type="radio" name="dataTypeChoice" value="ungrouped" checked> Ungrouped Data</label>
+    <label><input type="radio" name="dataTypeChoice" value="discrete"> Grouped Data - Discrete Frequency Distribution</label>
+    <label><input type="radio" name="dataTypeChoice" value="continuous"> Grouped Data - Continuous Frequency Distribution</label>
+  </div>
+  <div class="graph-options-actions">
+    <button type="button" id="applyDataTypeOptions">Apply Data Type</button>
+    <button type="button" id="cancelDataTypeOptions">Cancel</button>
+  </div>
+</dialog>
+
+<h3>2. Enter Data</h3>
+<p>Example values are prefilled. Edit them, add/remove rows, or add/remove your own input columns.</p>
+<table border="1">
+  <thead><tr id="inputHeader"></tr></thead>
+  <tbody id="inputBody"></tbody>
+</table>
+<br>
+<button type="button" id="addRowBtn">Add Row</button>
+<button type="button" id="removeRowBtn">Remove Last Row</button>
+<button type="button" id="addColumnBtn">Add Column</button>
+<button type="button" id="removeColumnBtn">Remove Column</button>
+<br><br>
+<label for="assumedMean">Assumed mean A (optional):</label>
+<input id="assumedMean" type="number" step="any" placeholder="Automatic">
+<br><br>
+<label for="quantileMethod">Ungrouped/discrete quantile convention:</label>
+<select id="quantileMethod">
+  <option value="linear">Linear interpolation (R-7: h = 1 + (N − 1)p)</option>
+  <option value="nearest">Nearest-rank (ceil(Np))</option>
+</select>
+<br><br>
+<button type="button" id="calculateBtn">Calculate</button>
+<p id="error" role="alert"></p>
+
+<h3>3. Calculation Table</h3>
+<p>For continuous grouped data, xᵢ is the class mark: (lower class boundary + upper class boundary) / 2. Dᵢ = xᵢ − A; uᵢ = (xᵢ − A) / h; dᵢ = xᵢ − x̄.</p>
+<table border="1">
+  <thead><tr id="resultHeader"></tr></thead>
+  <tbody id="results"></tbody>
+  <tfoot><tr id="resultTotal"></tr></tfoot>
+</table>
+
+<h3>4. Calculated Values</h3>
+<table border="1"><tbody id="summary"></tbody></table>
+
+<h3>5. Graphs / Diagrams</h3>
+<p>Choose which graphs you want to display. Frequency and variance graphs use the data above. ANOVA graphs use the separate group data below.</p>
+
+<section id="anovaInputPanel" style="border:1px solid #bbb;padding:12px;margin:12px 0">
+  <h4>ANOVA Group Data</h4>
+  <p>Enter one group per line in the format <code>Group name: value, value, value</code>. Edit the examples or add more lines.</p>
+  <textarea id="anovaGroupData" rows="5" style="width:100%;max-width:760px;box-sizing:border-box">Group A: 8, 9, 7, 10, 8
+Group B: 12, 11, 13, 10, 12
+Group C: 15, 14, 16, 13, 15</textarea>
+  <br><label for="anovaAlpha">ANOVA significance level: </label>
+  <select id="anovaAlpha"><option value="0.10">0.10</option><option value="0.05" selected>0.05</option><option value="0.01">0.01</option></select>
+  <button type="button" id="updateAnovaData">Update ANOVA graphs</button>
+  <p id="anovaStatus" role="status">Example group data loaded.</p>
+</section>
+<section id="varianceCalculationOptions" class="variance-calculation-options" style="border:1px solid #ccc;border-radius:8px;padding:14px;margin:16px 0;">
+  <h3>Variance and Standard Deviation Calculations</h3>
+  <p>These four numerical results are displayed automatically when you click Calculate.</p>
+  <div id="varianceCalculationResults" aria-live="polite" style="margin-top:12px"><p>Enter your data and click <strong>Calculate</strong> to display all four values.</p></div>
+</section>
+<button type="button" id="openGraphOptions">Select Graphs</button>
+<dialog id="graphOptionsDialog" class="graph-options-dialog">
+  <h3>Select graphs to display</h3>
+  <p>Select any combination of graphs. Repeated items from the supplied list are included only once.</p>
+  <div class="graph-select-toolbar">
+    <button type="button" id="selectAllGraphs">Select All</button>
+    <button type="button" id="clearAllGraphs">Clear All</button>
+    <span id="graphSelectionCount" aria-live="polite">0 selected</span>
+  </div>
+  <div class="graph-options-list" id="graphCheckboxList">
+    <div class="graph-category" data-category="Frequency graphs"><label><input type="checkbox" class="category-select-all"> Frequency graphs</label></div>
+    <label><input type="checkbox" value="histogram"> Histogram</label>
+    <label><input type="checkbox" value="polygon"> Frequency Polygon</label>
+    <label><input type="checkbox" value="curve"> Frequency Curve</label>
+    <label><input type="checkbox" value="ogive"> Ogive / Cumulative Frequency Curve</label>
+    <label><input type="checkbox" value="pie"> Pie Chart</label>
+    <label><input type="checkbox" value="bar"> Bar Chart</label>
+    <div class="graph-category" data-category="Standard ANOVA graphs"><label><input type="checkbox" class="category-select-all"> Standard ANOVA graphs</label></div>
+    <label><input type="checkbox" value="anovaMeans"> Group Means Plot</label>
+    <label><input type="checkbox" value="anovaBox"> Box Plot for Group Comparison</label>
+    <label><input type="checkbox" value="anovaViolin"> Violin Plot for Group Comparison</label>
+    <label><input type="checkbox" value="anovaMeanCI"> Mean with Confidence Interval Plot</label>
+    <label><input type="checkbox" value="anovaInteraction"> Interaction Plot</label>
+    <label><input type="checkbox" value="anovaMainEffects"> Main Effects Plot</label>
+    <label><input type="checkbox" value="anovaResidualFit"> Residuals vs. Fitted Values Plot</label>
+    <label><input type="checkbox" value="anovaQQ"> Normal Q-Q Plot of Residuals</label>
+    <label><input type="checkbox" value="anovaResidualHist"> Residual Histogram</label>
+    <label><input type="checkbox" value="anovaOrder"> Residuals vs. Observation Order Plot</label>
+    <label><input type="checkbox" value="anovaF"> F-Distribution with Critical Value and P-Value</label>
+    <label><input type="checkbox" value="anovaDecomp"> Interactive ANOVA Decomposition Visualization</label>
+    <label><input type="checkbox" value="anovaComponents"> Variance Components Plot</label>
+    <label><input type="checkbox" value="anovaPostHoc"> Post-Hoc Mean Difference Plot (approximate pairwise intervals)</label>
+    <label><input type="checkbox" value="anovaTukey"> Tukey HSD Confidence Interval Plot (approximate)</label>
+    <div class="graph-category" data-category="Variance graphs"><label><input type="checkbox" class="category-select-all"> Variance graphs</label></div>
+    <label><input type="checkbox" value="varianceCompare"> Variance Comparison Bar Chart</label>
+    <label><input type="checkbox" value="varianceSd"> Variance and Standard Deviation Comparison Chart</label>
+    <label><input type="checkbox" value="varianceError"> Mean with Variance Error Bars</label>
+    <label><input type="checkbox" value="sdError"> Mean with Standard Deviation Error Bars</label>
+    <label><input type="checkbox" value="varianceDistribution"> Variance Distribution Plot</label>
+    <label><input type="checkbox" value="distributionOfVariance"> Distribution of Variance (Normal Curve)</label>
+    <label><input type="checkbox" value="squaredDeviation"> Squared Deviation Plot</label>
+    <label><input type="checkbox" value="varianceBox"> Box Plot</label>
+    <label><input type="checkbox" value="histMeanVariance"> Histogram with Mean and Variance</label>
+    <label><input type="checkbox" value="normalVariances"> Normal Distribution Curves with Different Variances</label>
+    <label><input type="checkbox" value="popSampleVariance"> Population vs. Sample Variance Comparison Chart</label>
+    <label><input type="checkbox" value="populationVariance"> Population Variance Comparison Plot</label>
+    <label><input type="checkbox" value="sampleVariance"> Sample Variance Comparison Plot</label>
+    <label><input type="checkbox" value="withinVariance"> Within-Group Variance Comparison Plot</label>
+    <label><input type="checkbox" value="betweenVariance"> Between-Group Variance Comparison Plot</label>
+    <label><input type="checkbox" value="varianceCategory"> Variance by Category Plot</label>
+    <label><input type="checkbox" value="varianceMean"> Variance vs. Mean Plot</label>
+    <label><input type="checkbox" value="sdByGroup"> Standard Deviation by Group Plot</label>
+    <label><input type="checkbox" value="cvByGroup"> Coefficient of Variation Comparison Plot</label>
+    <label><input type="checkbox" value="residualVariance"> Residual Variance Plot</label>
+    <div class="graph-category" data-category="Combined ANOVA and variance graphs"><label><input type="checkbox" class="category-select-all"> Combined ANOVA and variance graphs</label></div>
+    <label><input type="checkbox" value="meansVariance"> Group Means and Variance Comparison Plot</label>
+    <label><input type="checkbox" value="meansSD"> Group Means with Standard Deviation Error Bars</label>
+    <label><input type="checkbox" value="betweenWithin"> Between-Group and Within-Group Variation Plot</label>
+    <label><input type="checkbox" value="ssDecomp"> ANOVA Sum of Squares Decomposition Chart</label>
+    <label><input type="checkbox" value="msCompare"> ANOVA Mean Squares Comparison Chart</label>
+    <label><input type="checkbox" value="residualDiagnostic"> ANOVA Residual Variance Diagnostic Plot</label>
+    <label><input type="checkbox" value="groupDistributions"> ANOVA Group Distribution Comparison Plot</label>
+  </div>
+  <div class="graph-options-actions">
+    <button type="button" id="applyGraphOptions">Show Selected Graphs</button>
+    <button type="button" id="cancelGraphOptions">Cancel</button>
+  </div>
+</dialog>
+<p id="graphSelectionMessage">No graphs selected. Click “Select Graphs” and choose one or more options.</p>
+<div id="charts">
+  <section class="graph-panel" data-graph="histogram" hidden><h4>Histogram</h4><canvas id="histogramChart" width="700" height="280" aria-label="Histogram"></canvas></section>
+  <section class="graph-panel" data-graph="polygon" hidden><h4>Frequency Polygon</h4><canvas id="polygonChart" width="700" height="280" aria-label="Frequency polygon"></canvas></section>
+  <section class="graph-panel" data-graph="curve" hidden><h4>Frequency Curve</h4><canvas id="curveChart" width="700" height="280" aria-label="Frequency curve"></canvas></section>
+  <section class="graph-panel" data-graph="ogive" hidden><h4>Ogive / Cumulative Frequency Curve</h4><canvas id="ogiveChart" width="700" height="280" aria-label="Cumulative frequency curve"></canvas></section>
+  <section class="graph-panel" data-graph="pie" hidden><h4>Pie Chart</h4><canvas id="pieChart" width="500" height="300" aria-label="Pie chart"></canvas></section>
+  <section class="graph-panel" data-graph="bar" hidden><h4>Bar Chart</h4><canvas id="barChart" width="700" height="280" aria-label="Bar chart"></canvas></section>
+</div>
+<section class="graph-panel" data-graph="anovaMeans" hidden><h4>ANOVA: Group Means Plot</h4><canvas id="chart_anovaMeans" width="760" height="340" aria-label="ANOVA: Group Means Plot"></canvas></section>
+<section class="graph-panel" data-graph="anovaBox" hidden><h4>ANOVA: Box Plot for Group Comparison</h4><canvas id="chart_anovaBox" width="760" height="340" aria-label="ANOVA: Box Plot for Group Comparison"></canvas></section>
+<section class="graph-panel" data-graph="anovaViolin" hidden><h4>ANOVA: Violin Plot for Group Comparison</h4><canvas id="chart_anovaViolin" width="760" height="340" aria-label="ANOVA: Violin Plot for Group Comparison"></canvas></section>
+<section class="graph-panel" data-graph="anovaMeanCI" hidden><h4>ANOVA: Mean with Confidence Interval</h4><canvas id="chart_anovaMeanCI" width="760" height="340" aria-label="ANOVA: Mean with Confidence Interval"></canvas></section>
+<section class="graph-panel" data-graph="anovaInteraction" hidden><h4>ANOVA: Interaction Plot</h4><canvas id="chart_anovaInteraction" width="760" height="340" aria-label="ANOVA: Interaction Plot"></canvas></section>
+<section class="graph-panel" data-graph="anovaMainEffects" hidden><h4>ANOVA: Main Effects Plot</h4><canvas id="chart_anovaMainEffects" width="760" height="340" aria-label="ANOVA: Main Effects Plot"></canvas></section>
+<section class="graph-panel" data-graph="anovaResidualFit" hidden><h4>ANOVA: Residuals vs. Fitted Values</h4><canvas id="chart_anovaResidualFit" width="760" height="340" aria-label="ANOVA: Residuals vs. Fitted Values"></canvas></section>
+<section class="graph-panel" data-graph="anovaQQ" hidden><h4>ANOVA: Normal Q-Q Plot of Residuals</h4><canvas id="chart_anovaQQ" width="760" height="340" aria-label="ANOVA: Normal Q-Q Plot of Residuals"></canvas></section>
+<section class="graph-panel" data-graph="anovaResidualHist" hidden><h4>ANOVA: Residual Histogram</h4><canvas id="chart_anovaResidualHist" width="760" height="340" aria-label="ANOVA: Residual Histogram"></canvas></section>
+<section class="graph-panel" data-graph="anovaOrder" hidden><h4>ANOVA: Residuals vs. Observation Order</h4><canvas id="chart_anovaOrder" width="760" height="340" aria-label="ANOVA: Residuals vs. Observation Order"></canvas></section>
+<section class="graph-panel" data-graph="anovaF" hidden><h4>ANOVA: F-Distribution, Critical Value and P-Value</h4><canvas id="chart_anovaF" width="760" height="340" aria-label="ANOVA: F-Distribution, Critical Value and P-Value"></canvas></section>
+<section class="graph-panel" data-graph="anovaDecomp" hidden><h4>Interactive ANOVA Decomposition</h4><canvas id="chart_anovaDecomp" width="760" height="340" aria-label="Interactive ANOVA Decomposition"></canvas></section>
+<section class="graph-panel" data-graph="anovaComponents" hidden><h4>ANOVA: Variance Components</h4><canvas id="chart_anovaComponents" width="760" height="340" aria-label="ANOVA: Variance Components"></canvas></section>
+<section class="graph-panel" data-graph="anovaPostHoc" hidden><h4>ANOVA: Post-Hoc Mean Differences</h4><canvas id="chart_anovaPostHoc" width="760" height="340" aria-label="ANOVA: Post-Hoc Mean Differences"></canvas></section>
+<section class="graph-panel" data-graph="anovaTukey" hidden><h4>ANOVA: Tukey HSD Confidence Intervals</h4><canvas id="chart_anovaTukey" width="760" height="340" aria-label="ANOVA: Tukey HSD Confidence Intervals"></canvas></section>
+<section class="graph-panel" data-graph="varianceCompare" hidden><h4>Variance Comparison Bar Chart</h4><canvas id="chart_varianceCompare" width="760" height="340" aria-label="Variance Comparison Bar Chart"></canvas></section>
+<section class="graph-panel" data-graph="varianceSd" hidden><h4>Variance and Standard Deviation Comparison</h4><canvas id="chart_varianceSd" width="760" height="340" aria-label="Variance and Standard Deviation Comparison"></canvas></section>
+<section class="graph-panel" data-graph="varianceError" hidden><h4>Mean with Variance Error Bars</h4><canvas id="chart_varianceError" width="760" height="340" aria-label="Mean with Variance Error Bars"></canvas></section>
+<section class="graph-panel" data-graph="sdError" hidden><h4>Mean with Standard Deviation Error Bars</h4><canvas id="chart_sdError" width="760" height="340" aria-label="Mean with Standard Deviation Error Bars"></canvas></section>
+<section class="graph-panel" data-graph="varianceDistribution" hidden><h4>Variance Distribution Plot</h4><canvas id="chart_varianceDistribution" width="760" height="340" aria-label="Variance Distribution Plot"></canvas></section>
+<section class="graph-panel" data-graph="distributionOfVariance" hidden><h4>Distribution of Variance (Normal Curve)</h4><canvas id="chart_distributionOfVariance" width="760" height="340" aria-label="Distribution of Variance"></canvas></section>
+<section class="graph-panel" data-graph="squaredDeviation" hidden><h4>Squared Deviation Plot</h4><canvas id="chart_squaredDeviation" width="760" height="340" aria-label="Squared Deviation Plot"></canvas></section>
+<section class="graph-panel" data-graph="varianceBox" hidden><h4>Box Plot for Data Spread</h4><canvas id="chart_varianceBox" width="760" height="340" aria-label="Box Plot for Data Spread"></canvas></section>
+<section class="graph-panel" data-graph="histMeanVariance" hidden><h4>Histogram with Mean and Variance</h4><canvas id="chart_histMeanVariance" width="760" height="340" aria-label="Histogram with Mean and Variance"></canvas></section>
+<section class="graph-panel" data-graph="normalVariances" hidden><h4>Normal Curves with Different Variances</h4><canvas id="chart_normalVariances" width="760" height="340" aria-label="Normal Curves with Different Variances"></canvas></section>
+<section class="graph-panel" data-graph="popSampleVariance" hidden><h4>Population vs. Sample Variance</h4><canvas id="chart_popSampleVariance" width="760" height="340" aria-label="Population vs. Sample Variance"></canvas></section>
+<section class="graph-panel" data-graph="populationVariance" hidden><h4>Population Variance Comparison</h4><canvas id="chart_populationVariance" width="760" height="340" aria-label="Population Variance Comparison"></canvas></section>
+<section class="graph-panel" data-graph="sampleVariance" hidden><h4>Sample Variance Comparison</h4><canvas id="chart_sampleVariance" width="760" height="340" aria-label="Sample Variance Comparison"></canvas></section>
+<section class="graph-panel" data-graph="withinVariance" hidden><h4>Within-Group Variance Comparison</h4><canvas id="chart_withinVariance" width="760" height="340" aria-label="Within-Group Variance Comparison"></canvas></section>
+<section class="graph-panel" data-graph="betweenVariance" hidden><h4>Between-Group Variance Comparison</h4><canvas id="chart_betweenVariance" width="760" height="340" aria-label="Between-Group Variance Comparison"></canvas></section>
+<section class="graph-panel" data-graph="varianceCategory" hidden><h4>Variance by Category</h4><canvas id="chart_varianceCategory" width="760" height="340" aria-label="Variance by Category"></canvas></section>
+<section class="graph-panel" data-graph="varianceMean" hidden><h4>Variance vs. Mean</h4><canvas id="chart_varianceMean" width="760" height="340" aria-label="Variance vs. Mean"></canvas></section>
+<section class="graph-panel" data-graph="sdByGroup" hidden><h4>Standard Deviation by Group</h4><canvas id="chart_sdByGroup" width="760" height="340" aria-label="Standard Deviation by Group"></canvas></section>
+<section class="graph-panel" data-graph="cvByGroup" hidden><h4>Coefficient of Variation by Group</h4><canvas id="chart_cvByGroup" width="760" height="340" aria-label="Coefficient of Variation by Group"></canvas></section>
+<section class="graph-panel" data-graph="residualVariance" hidden><h4>Residual Variance Plot</h4><canvas id="chart_residualVariance" width="760" height="340" aria-label="Residual Variance Plot"></canvas></section>
+<section class="graph-panel" data-graph="meansVariance" hidden><h4>Group Means and Variance</h4><canvas id="chart_meansVariance" width="760" height="340" aria-label="Group Means and Variance"></canvas></section>
+<section class="graph-panel" data-graph="meansSD" hidden><h4>Group Means with Standard Deviation Error Bars</h4><canvas id="chart_meansSD" width="760" height="340" aria-label="Group Means with Standard Deviation Error Bars"></canvas></section>
+<section class="graph-panel" data-graph="betweenWithin" hidden><h4>Between-Group and Within-Group Variation</h4><canvas id="chart_betweenWithin" width="760" height="340" aria-label="Between-Group and Within-Group Variation"></canvas></section>
+<section class="graph-panel" data-graph="ssDecomp" hidden><h4>ANOVA Sum of Squares Decomposition</h4><canvas id="chart_ssDecomp" width="760" height="340" aria-label="ANOVA Sum of Squares Decomposition"></canvas></section>
+<section class="graph-panel" data-graph="msCompare" hidden><h4>ANOVA Mean Squares Comparison</h4><canvas id="chart_msCompare" width="760" height="340" aria-label="ANOVA Mean Squares Comparison"></canvas></section>
+<section class="graph-panel" data-graph="residualDiagnostic" hidden><h4>ANOVA Residual Variance Diagnostic</h4><canvas id="chart_residualDiagnostic" width="760" height="340" aria-label="ANOVA Residual Variance Diagnostic"></canvas></section>
+<section class="graph-panel" data-graph="groupDistributions" hidden><h4>ANOVA Group Distribution Comparison</h4><canvas id="chart_groupDistributions" width="760" height="340" aria-label="ANOVA Group Distribution Comparison"></canvas></section>
+
+<h3>6. Step-by-Step Solution</h3>
+<div id="solution"></div>
+
+</main>
+<footer class="app-footer"><span>Statistics Calculator</span><span>Clear inputs · Reliable calculations · Data-driven visualizations</span></footer>
+<script>
+"use strict";
+
+/*
+ Statistical conventions used:
+ - Ungrouped/discrete quantiles: selectable R-7 linear interpolation or nearest rank.
+ - Continuous grouped quantiles/median: linear interpolation inside the class containing
+   the requested cumulative-frequency position. This is an estimate, not raw-data exact.
+ - Continuous grouped mode: standard modal-class interpolation; assumes comparable class
+   widths. With unequal widths, modal class is selected by frequency density.
+ - Frequencies may be non-negative real weights. For weighted sample variance, the
+   conventional frequency-weight denominator (sum of weights - 1) is used; this has the
+   usual sample interpretation only when weights represent frequency counts.
+ - For continuous classes, entered intervals are treated as class boundaries if adjoining.
+   Inclusive integer class limits must be converted to true boundaries by the user (e.g.
+   10-19, 20-29 becomes 9.5-19.5, 19.5-29.5) before grouped interpolation.
+ - Open-ended classes are not accepted because class marks and class-based interpolation
+   cannot be calculated without an explicitly supplied representative value/boundary.
+*/
+
+const defaults = {
+  ungrouped: [{v:"10",f:"1"},{v:"20",f:"1"},{v:"30",f:"1"},{v:"40",f:"1"},{v:"50",f:"1"}],
+  discrete: [{v:"10",f:"3"},{v:"20",f:"5"},{v:"30",f:"8"},{v:"40",f:"4"},{v:"50",f:"2"}],
+  continuous: [{v:"45-55",f:"3"},{v:"55-65",f:"10"},{v:"65-75",f:"11"},{v:"75-85",f:"8"},{v:"85-95",f:"3"}]
+};
+let dataType = "ungrouped";
+let extraColumns = [];
+let nextExtraId = 1;
+const $ = id => document.getElementById(id);
+
+function clearOutput() {
+  $("error").textContent = "";
+  $("resultHeader").replaceChildren();
+  $("results").replaceChildren();
+  $("resultTotal").replaceChildren();
+  $("summary").replaceChildren();
+  $("solution").replaceChildren();
+}
+function addCell(row, text, header=false) {
+  const cell = document.createElement(header ? "th" : "td");
+  // Round numeric values only for display; calculations retain full precision.
+  cell.textContent = typeof text === "number" && Number.isFinite(text) ? fmt(text) : String(text);
+  row.appendChild(cell);
+  return cell;
+}
+function makeValueInput(value="") {
+  const input = document.createElement("input");
+  input.className = "valueInput";
+  input.value = value;
+  if (dataType === "continuous") {
+    input.type = "text";
+    input.placeholder = "e.g. 45-55";
+    input.setAttribute("aria-label", "Class interval");
+  } else {
+    input.type = "number";
+    input.step = "any";
+    input.setAttribute("aria-label", "Observation or value");
+  }
+  return input;
+}
+function makeFrequencyInput(value="1") {
+  const input = document.createElement("input");
+  input.className = "frequencyInput";
+  input.type = "number";
+  input.min = "0";
+  input.step = "any";
+  input.value = value;
+  input.setAttribute("aria-label", "Frequency or weight");
+  return input;
+}
+function renderInputTable(rows) {
+  const header = $("inputHeader");
+  header.replaceChildren();
+  addCell(header, dataType === "continuous" ? "Class Interval / Boundaries" : "Value (xᵢ)", true);
+  addCell(header, "Frequency (fᵢ)", true);
+  extraColumns.forEach(c => addCell(header, c.name, true));
+
+  const body = $("inputBody");
+  body.replaceChildren();
+  rows.forEach(item => {
+    const row = body.insertRow();
+    row.insertCell().appendChild(makeValueInput(item.v));
+    row.insertCell().appendChild(makeFrequencyInput(item.f));
+    extraColumns.forEach(c => {
+      const input = document.createElement("input");
+      input.className = "extraInput";
+      input.dataset.columnId = c.id;
+      input.placeholder = c.name;
+      row.insertCell().appendChild(input);
+    });
+  });
+}
+function changeType() {
+  dataType = $("dataType").value;
+  extraColumns = [];
+  $("assumedMean").value = "";
+  renderInputTable(defaults[dataType]);
+  clearOutput();
+}
+window.syncStatisticsDataType = function () {
+  const selected = $("dataType").value;
+  if (selected !== dataType) changeType();
+};
+function addRow() {
+  const row = $("inputBody").insertRow();
+  row.insertCell().appendChild(makeValueInput(""));
+  row.insertCell().appendChild(makeFrequencyInput("1"));
+  extraColumns.forEach(c => {
+    const input = document.createElement("input");
+    input.className = "extraInput";
+    input.dataset.columnId = c.id;
+    input.placeholder = c.name;
+    row.insertCell().appendChild(input);
+  });
+  clearOutput();
+}
+function removeRow() {
+  const body = $("inputBody");
+  if (body.rows.length > 1) body.deleteRow(body.rows.length - 1);
+  clearOutput();
+}
+function addColumn() {
+  const name = prompt("Heading for the additional input column:", "Additional column");
+  if (name === null) return;
+  if (!name.trim()) { alert("Enter a column heading."); return; }
+  const c = {id:"extra" + nextExtraId++, name:name.trim()};
+  extraColumns.push(c);
+  addCell($("inputHeader"), c.name, true);
+  [...$("inputBody").rows].forEach(row => {
+    const input = document.createElement("input");
+    input.className = "extraInput";
+    input.dataset.columnId = c.id;
+    input.placeholder = c.name;
+    row.insertCell().appendChild(input);
+  });
+  clearOutput();
+}
+function removeColumn() {
+  if (!extraColumns.length) { alert("There are no additional columns to remove."); return; }
+  extraColumns.pop();
+  $("inputHeader").deleteCell($("inputHeader").cells.length - 1);
+  [...$("inputBody").rows].forEach(row => row.deleteCell(row.cells.length - 1));
+  clearOutput();
+}
+function fmt(x) {
+  // Display formatting only. Keep all calculations on the original full-precision numbers.
+  if (typeof x !== "number" || !Number.isFinite(x)) return "Not defined";
+  if (Object.is(x, -0) || Math.abs(x) < 0.005) x = 0;
+  return x.toFixed(2);
+}
+function sum(values) {
+  // Neumaier compensated summation reduces avoidable floating-point accumulation error.
+  let s = 0, c = 0;
+  for (const x of values) {
+    const t = s + x;
+    if (Math.abs(s) >= Math.abs(x)) c += (s - t) + x;
+    else c += (x - t) + s;
+    s = t;
+  }
+  return s + c;
+}
+function parseInterval(raw) {
+  const match = raw.match(/^\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*-\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*$/);
+  if (!match) throw new Error("Enter finite numeric class boundaries such as 45-55. Open-ended classes need explicit boundaries and are not supported.");
+  const lower = Number(match[1]), upper = Number(match[2]);
+  if (!Number.isFinite(lower) || !Number.isFinite(upper) || upper <= lower)
+    throw new Error("Each class interval must have finite boundaries with upper > lower.");
+  return {lower, upper};
+}
+function readData() {
+  const valueInputs = [...document.querySelectorAll(".valueInput")];
+  const frequencyInputs = [...document.querySelectorAll(".frequencyInput")];
+  const data = [];
+  for (let i=0; i<valueInputs.length; i++) {
+    const raw = valueInputs[i].value.trim();
+    const rawF = frequencyInputs[i].value.trim();
+    if (raw === "" || rawF === "") throw new Error("A value/class interval or frequency is missing in row " + (i+1) + ".");
+    const f = Number(rawF);
+    if (!Number.isFinite(f) || f < 0) throw new Error("Frequencies must be finite and non-negative. Check row " + (i+1) + ".");
+    let xi, lower, upper, label;
+    if (dataType === "continuous") {
+      ({lower, upper} = parseInterval(raw));
+      xi = lower + (upper-lower)/2;
+      label = raw;
+    } else {
+      xi = Number(raw);
+      if (!Number.isFinite(xi)) throw new Error("Enter a finite numerical value in row " + (i+1) + ".");
+      label = raw;
+    }
+    data.push({label, f, xi, lower, upper, width: dataType==="continuous" ? upper-lower : null});
+  }
+  if (!data.length) throw new Error("Enter at least one row.");
+  if (dataType === "continuous") {
+    data.sort((a,b) => a.lower-b.lower);
+    for (let i=1;i<data.length;i++) {
+      const tol = 1e-10 * Math.max(1,Math.abs(data[i].lower),Math.abs(data[i-1].upper));
+      if (data[i].lower < data[i-1].upper-tol) throw new Error("Class intervals overlap. Check rows after sorting by lower boundary.");
+      if (data[i].lower > data[i-1].upper+tol) data[i].gapBefore = true;
+    }
+  } else {
+    // Combine repeated values so a discrete distribution has one row per distinct x.
+    const map = new Map();
+    data.forEach(x => {
+      const key = String(x.xi);
+      if (!map.has(key)) map.set(key, {...x});
+      else map.get(key).f += x.f;
+    });
+    data.splice(0,data.length,...[...map.values()].sort((a,b)=>a.xi-b.xi));
+  }
+  const N = sum(data.map(x=>x.f));
+  if (!(N > 0) || !Number.isFinite(N)) throw new Error("Total frequency must be positive and finite.");
+  return data;
+}
+function quantileSorted(values, p, method) {
+  if (!values.length || p < 0 || p > 1) return NaN;
+  if (p === 0) return values[0];
+  if (p === 1) return values[values.length-1];
+  if (method === "nearest") return values[Math.max(0,Math.ceil(values.length*p)-1)];
+  const pos = (values.length-1)*p;
+  const lo = Math.floor(pos), hi = Math.ceil(pos);
+  return values[lo] + (pos-lo)*(values[hi]-values[lo]);
+}
+function expandRaw(data) {
+  // Only used for actual integer frequency counts; avoids expanding unreasonably large samples.
+  const N = sum(data.map(x=>x.f));
+  if (!data.every(x=>Number.isInteger(x.f)) || N > 200000)
+    return null;
+  const out = [];
+  data.forEach(x => { for (let i=0;i<x.f;i++) out.push(x.xi); });
+  return out;
+}
+function groupedQuantile(data, p, N) {
+  if (p <= 0) return data.find(x=>x.f>0)?.lower ?? NaN;
+  if (p >= 1) return [...data].reverse().find(x=>x.f>0)?.upper ?? NaN;
+  const target = p*N;
+  let previousCF = 0;
+  for (const x of data) {
+    if (x.f > 0 && x.cf >= target) {
+      return x.lower + ((target-previousCF)/x.f)*x.width;
+    }
+    previousCF = x.cf;
+  }
+  return NaN;
+}
+function safeSummary(label, value, note = "") {
+  const row = document.createElement("tr");
+  const nameCell = document.createElement("td");
+  const valueCell = document.createElement("td");
+  nameCell.textContent = label;
+  valueCell.textContent = Number.isFinite(value) ? fmt(value) : "Not defined";
+  row.appendChild(nameCell);
+  row.appendChild(valueCell);
+  $("summary").appendChild(row);
+  return row;
+}
+function calculateStatistics(data) {
+  const N = sum(data.map(x=>x.f));
+  const sumX = dataType === "ungrouped" ? sum(data.map(x=>x.xi*x.f)) : null;
+  const sumFX = sum(data.map(x=>x.f*x.xi));
+  const sumFX2 = sum(data.map(x=>x.f*x.xi*x.xi));
+  const sumF2 = sum(data.map(x=>x.f*x.f));
+  const mean = sumFX/N;
+  const Ainput = $("assumedMean").value.trim();
+  const A = Ainput === "" ? data[Math.floor(data.length/2)].xi : Number(Ainput);
+  if (!Number.isFinite(A)) throw new Error("Assumed mean A must be a finite number.");
+  const widths = dataType === "continuous" ? data.map(x=>x.width) : [];
+  let h = widths.length ? widths[0] : 1;
+  if (!Number.isFinite(h) || h <= 0) throw new Error("Step width h must be a positive finite number.");
+  const equalWidths = widths.length < 2 || widths.every(w=>Math.abs(w-widths[0]) <= 1e-10*Math.max(1,w,widths[0]));
+  let cf = 0;
+  data.forEach(x => {
+    cf += x.f; x.cf = cf; x.fx = x.f*x.xi; x.fx2 = x.f*x.xi*x.xi;
+    x.Di = x.xi-A; x.ui = x.Di/h; x.devMean = x.xi-mean;
+  });
+  const sumFD = sum(data.map(x=>x.f*x.Di));
+  const sumFU = sum(data.map(x=>x.f*x.ui));
+  const meanAssumed = A + sumFD/N;
+  const meanStep = A + (sumFU/N)*h;
+
+  const varianceNumerator = sum(data.map(x=>x.f*(x.xi-mean)*(x.xi-mean)));
+  const variancePopulation = Math.max(0,varianceNumerator/N);
+  const varianceComputational = Math.max(0,sumFX2/N-mean*mean);
+  // Frequency-weight sample variance with denominator N-1.
+  const varianceSample = N > 1 ? varianceNumerator/(N-1) : NaN;
+  const sdPopulation = Math.sqrt(variancePopulation);
+  const sdSample = Math.sqrt(varianceSample);
+  const meanDeviationMean = sum(data.map(x=>x.f*Math.abs(x.xi-mean)))/N;
+
+  let median, q1, q3, quantileFunction, raw = null;
+  if (dataType === "continuous") {
+    median = groupedQuantile(data,0.5,N);
+    q1 = groupedQuantile(data,0.25,N);
+    q3 = groupedQuantile(data,0.75,N);
+    quantileFunction = p => groupedQuantile(data,p,N);
+  } else {
+    raw = expandRaw(data);
+    if (raw) {
+      const method = $("quantileMethod").value;
+      const methodQ = p => quantileSorted(raw,p,method);
+      median = raw.length%2 ? raw[(raw.length-1)/2] : (raw[raw.length/2-1]+raw[raw.length/2])/2;
+      q1 = methodQ(0.25); q3 = methodQ(0.75);
+      quantileFunction = methodQ;
+    } else {
+      // For fractional weights, use weighted cumulative-frequency interpolation between
+      // observed values; this is an explicit weighted quantile convention.
+      const weightedQ = p => {
+        if (p<=0) return data.find(x=>x.f>0)?.xi ?? NaN;
+        if (p>=1) return [...data].reverse().find(x=>x.f>0)?.xi ?? NaN;
+        const target=p*N;
+        for (const x of data) if (x.f>0 && x.cf>=target) return x.xi;
+        return NaN;
+      };
+      median=weightedQ(.5); q1=weightedQ(.25); q3=weightedQ(.75); quantileFunction=weightedQ;
+    }
+  }
+  const iqr=q3-q1;
+  const range = dataType==="continuous"
+    ? Math.max(...data.map(x=>x.upper))-Math.min(...data.map(x=>x.lower))
+    : Math.max(...data.map(x=>x.xi))-Math.min(...data.map(x=>x.xi));
+  // For grouped continuous data this is a class-mark estimate, not an exact raw-data value.
+  const meanDeviationMedian = raw
+    ? sum(raw.map(x=>Math.abs(x-median)))/raw.length
+    : sum(data.map(x=>x.f*Math.abs(x.xi-median)))/N;
+  const geometricMean = data.every(x=>x.xi>0)
+    ? Math.exp(sum(data.map(x=>x.f*Math.log(x.xi)))/N) : NaN;
+  const harmonicDen = sum(data.map(x=>x.f/x.xi));
+  const harmonicMean = data.every(x=>x.xi>0) && harmonicDen>0 ? N/harmonicDen : NaN;
+  const cvPopulation = mean!==0 ? sdPopulation/Math.abs(mean)*100 : NaN;
+  const cvSample = mean!==0 && Number.isFinite(sdSample) ? sdSample/Math.abs(mean)*100 : NaN;
+
+  // Mode for discrete/ungrouped data: all values tied at maximum positive frequency.
+  let mode = "Not unique";
+  if (dataType !== "continuous") {
+    const positiveRows=data.filter(x=>x.f>0);
+    if (positiveRows.length) {
+      const maxF=Math.max(...positiveRows.map(x=>x.f));
+      const modes=positiveRows.filter(x=>Math.abs(x.f-maxF)<=1e-12*Math.max(1,maxF)).map(x=>x.xi);
+      if (modes.length===1) mode=modes[0];
+      else mode="Multiple modes: "+modes.map(fmt).join(", ");
+    }
+  } else {
+    // Use frequency density for unequal-width classes to identify modal class.
+    const density=data.map(x=>x.f/x.width);
+    let mi=0;
+    for(let i=1;i<data.length;i++) if(density[i]>density[mi]) mi=i;
+    const m=data[mi];
+    const left=mi>0 ? density[mi-1] : 0;
+    const right=mi<data.length-1 ? density[mi+1] : 0;
+    const den=2*density[mi]-left-right;
+    if (m.f>0 && den>0) mode=m.lower+((density[mi]-left)/den)*m.width;
+    else mode="Not reliably estimable";
+  }
+  const sumAbs = sum(data.map(x=>x.f*Math.abs(x.xi-mean)));
+  const sumSquared = varianceNumerator;
+  const decileNames = [
+    "D₁ (First Decile — 10th Percentile)",
+    "D₂ (Second Decile — 20th Percentile)",
+    "D₃ (Third Decile — 30th Percentile)",
+    "D₄ (Fourth Decile — 40th Percentile)",
+    "D₅ (Fifth Decile — 50th Percentile)",
+    "D₆ (Sixth Decile — 60th Percentile)",
+    "D₇ (Seventh Decile — 70th Percentile)",
+    "D₈ (Eighth Decile — 80th Percentile)",
+    "D₉ (Ninth Decile — 90th Percentile)"
+  ];
+  const deciles = Array.from({length:9},(_,i)=>({label:decileNames[i],value:quantileFunction((i+1)/10)}));
+  const percentileNames = {
+    1: "P₁ (1st Percentile)",
+    5: "P₅ (5th Percentile)",
+    10: "P₁₀ (10th Percentile)",
+    25: "P₂₅ (25th Percentile — First Quartile, Q₁)",
+    50: "P₅₀ (50th Percentile — Median, Q₂)",
+    75: "P₇₅ (75th Percentile — Third Quartile, Q₃)",
+    90: "P₉₀ (90th Percentile)",
+    95: "P₉₅ (95th Percentile)",
+    99: "P₉₉ (99th Percentile)"
+  };
+  const percentiles = [1,5,10,25,50,75,90,95,99].map(p=>({
+    label:percentileNames[p],value:quantileFunction(p/100)
+  }));
+
+  return {N,sumX,sumFX,sumFX2,sumF2,mean,A,h,sumFD,sumFU,meanAssumed,meanStep,
+    varianceNumerator,variancePopulation,varianceComputational,varianceSample,sdPopulation,sdSample,
+    meanDeviationMean,meanDeviationMedian,median,q1,q3,iqr,range,geometricMean,harmonicMean,
+    cvPopulation,cvSample,mode,deciles,percentiles,equalWidths,raw};
+}
+function renderCalculationTable(data, s) {
+  const header=$("resultHeader");
+  ["CI / xᵢ","fᵢ","CF","Relative fᵢ","Percentage fᵢ","xᵢ","fᵢxᵢ","fᵢxᵢ²","Dᵢ = xᵢ − A","uᵢ = (xᵢ − A) / h","dᵢ = xᵢ − x̄"]
+    .forEach(t=>addCell(header,t,true));
+  data.forEach(x=>{
+    const row=$("results").insertRow();
+    const label=dataType==="continuous"?x.label:fmt(x.xi);
+    [label,x.f,fmt(x.cf),fmt(x.f/s.N),fmt(100*x.f/s.N)+"%",fmt(x.xi),fmt(x.fx),fmt(x.fx2),
+      fmt(x.Di),fmt(x.ui),fmt(x.devMean)].forEach(v=>addCell(row,v));
+  });
+  const total=$("resultTotal");
+  ["Total",fmt(s.N),fmt(s.N),"1","100%","-",fmt(s.sumFX),fmt(s.sumFX2),"-","-","-"]
+    .forEach(v=>addCell(total,v,true));
+}
+function renderSummary(s) {
+  safeSummary("Total frequency / weight N = Σfᵢ",s.N);
+  safeSummary("Σxᵢ (raw observations only)",s.sumX===null?"Not applicable to grouped tables":s.sumX);
+  safeSummary("Σfᵢxᵢ",s.sumFX);
+  safeSummary("Σfᵢxᵢ²",s.sumFX2);
+  safeSummary("Arithmetic mean, direct: x̄ = Σfᵢxᵢ / N",s.mean);
+  safeSummary("Arithmetic mean, assumed mean: A + ΣfᵢDᵢ / N",s.meanAssumed);
+  safeSummary("Arithmetic mean, step deviation: A + h(Σfᵢuᵢ / N)",s.meanStep);
+  safeSummary("Median",s.median);
+  safeSummary("Mode",s.mode);
+  safeSummary("First quartile Q₁",s.q1);
+  safeSummary("Second quartile Q₂",s.median);
+  safeSummary("Third quartile Q₃",s.q3);
+  s.deciles.forEach(q=>safeSummary(q.label,q.value));
+  s.percentiles.forEach(q=>safeSummary(q.label,q.value));
+  safeSummary("Range",s.range);
+  safeSummary("Interquartile range Q₃ − Q₁",s.iqr);
+  safeSummary("Quartile deviation (Q₃ − Q₁) / 2",s.iqr/2);
+  safeSummary("Mean deviation about mean",s.meanDeviationMean);
+  safeSummary("Mean deviation about median",s.meanDeviationMedian,
+    dataType==="continuous"?"Estimate using class marks; exact value requires raw observations.":"");
+  safeSummary("Population variance: Σfᵢ(xᵢ − x̄)² / N",s.variancePopulation);
+  safeSummary("Population variance, computational identity: Σfᵢxᵢ²/N − x̄²",s.varianceComputational);
+  safeSummary("Sample variance: Σfᵢ(xᵢ − x̄)² / (N − 1)",s.varianceSample);
+  safeSummary("Population standard deviation σ",s.sdPopulation);
+  safeSummary("Sample standard deviation s",s.sdSample);
+  safeSummary("Population coefficient of variation (%)",s.cvPopulation);
+  safeSummary("Sample coefficient of variation (%)",s.cvSample);
+  safeSummary("Geometric mean (positive observations only)",s.geometricMean);
+  safeSummary("Harmonic mean (positive observations only)",s.harmonicMean);
+}
+function renderSolution(s) {
+  const notes = [];
+  const data = readData();
+  // Populate CF, fi*xi, fi*xi^2, Di, ui and deviations before building the solution table.
+  calculateStatistics(data);
+  const grouped = dataType === "continuous";
+  const table = (headers, rows) => {
+    let out = '<table border="1"><thead><tr>' +
+      headers.map(h => `<th>${h}</th>`).join("") +
+      '</tr></thead><tbody>';
+    rows.forEach(row => out += '<tr>' + row.map(v => `<td>${v}</td>`).join("") + '</tr>');
+    return out + '</tbody></table>';
+  };
+  const displayMode = typeof s.mode === "number" ? fmt(s.mode) : s.mode;
+  const beforeCF = x => x ? x.cf - x.f : NaN;
+  const classFor = target => data.find(x => x.f > 0 && x.cf >= target);
+
+  notes.push("<h4>Complete Statistical Calculations</h4>");
+  notes.push(`<p><b>Data type:</b> ${grouped ? "Grouped continuous frequency distribution" : dataType === "discrete" ? "Discrete frequency distribution" : "Ungrouped observations"}.</p>`);
+  notes.push("<p>Symbols: CI = class interval; fᵢ = frequency; CF = cumulative frequency; xᵢ = observation or class mark; Dᵢ = xᵢ − A; uᵢ = (xᵢ − A)/h; dᵢ = xᵢ − x̄.</p>");
+  notes.push(table(
+    ["CI / xᵢ","fᵢ","CF","xᵢ","fᵢxᵢ","Dᵢ = xᵢ − A","uᵢ = (xᵢ − A)/h"],
+    data.map(x => [grouped ? x.label : fmt(x.xi),fmt(x.f),fmt(x.cf),fmt(x.xi),fmt(x.fx),fmt(x.Di),fmt(x.ui)])
+      .concat([["TOTAL",fmt(s.N),fmt(s.N),"-",fmt(s.sumFX),"-","-"]])
+  ));
+
+  notes.push(`<h4>1. Total Frequency</h4><p>N = Σfᵢ = ${data.map(x=>fmt(x.f)).join(" + ")} = <b>${fmt(s.N)}</b>.</p>`);
+  notes.push(`<h4>2. Summations</h4><p>Σfᵢxᵢ = <b>${fmt(s.sumFX)}</b>.</p><p>Σfᵢxᵢ² = <b>${fmt(s.sumFX2)}</b>.</p>`);
+
+  notes.push(`<h4>3. Arithmetic Mean</h4>
+    <p><b>A. Direct method:</b> x̄ = Σfᵢxᵢ / Σfᵢ = ${fmt(s.sumFX)} / ${fmt(s.N)} = <b>${fmt(s.mean)}</b>.</p>
+    <p><b>B. Assumed mean method:</b> Dᵢ = xᵢ − A; A = ${fmt(s.A)}; ΣfᵢDᵢ = ${fmt(s.sumFD)}.</p>
+    <p>x̄ = A + (ΣfᵢDᵢ/N) = ${fmt(s.A)} + (${fmt(s.sumFD)}/${fmt(s.N)}) = <b>${fmt(s.meanAssumed)}</b>.</p>
+    <p><b>C. Step-deviation method:</b> uᵢ = (xᵢ − A)/h; h = ${fmt(s.h)}; Σfᵢuᵢ = ${fmt(s.sumFU)}.</p>
+    <p>x̄ = A + (Σfᵢuᵢ/N) × h = ${fmt(s.A)} + (${fmt(s.sumFU)}/${fmt(s.N)}) × ${fmt(s.h)} = <b>${fmt(s.meanStep)}</b>.</p>
+    <p>Method differences: direct − assumed = ${fmt(s.mean-s.meanAssumed)}; direct − step-deviation = ${fmt(s.mean-s.meanStep)}.</p>`);
+
+  if (grouped) {
+    const med = classFor(s.N/2), q1c = classFor(s.N/4), q3c = classFor(3*s.N/4);
+    notes.push(`<h4>4. Median</h4><p>Median = L + [(N/2 − CF before)/fₘ] × class width.</p>
+      <p>N/2 = ${fmt(s.N/2)}; median class = ${med ? med.label : "not found"}; L = ${med ? fmt(med.lower) : "—"}; CF before = ${fmt(beforeCF(med))}; fₘ = ${med ? fmt(med.f) : "—"}; hₘ = ${med ? fmt(med.width) : "—"}.</p><p><b>Median ≈ ${fmt(s.median)}</b>.</p>
+      <h4>5. Mode</h4><p>Mode uses the modal class interpolation formula; frequency density is used to identify the modal class when widths differ.</p><p><b>Mode estimate ≈ ${displayMode}</b>.</p>
+      <h4>6. First Quartile (Q₁)</h4><p>N/4 = ${fmt(s.N/4)}; quartile class = ${q1c ? q1c.label : "not found"}; L = ${q1c ? fmt(q1c.lower) : "—"}; CF before = ${fmt(beforeCF(q1c))}; f = ${q1c ? fmt(q1c.f) : "—"}; class width = ${q1c ? fmt(q1c.width) : "—"}.</p><p>Q₁ = L + [(N/4 − CF before)/f] × class width = <b>${fmt(s.q1)}</b>.</p>
+      <h4>7. Second Quartile (Q₂)</h4><p>Q₂ = median = <b>${fmt(s.median)}</b>.</p>
+      <h4>8. Third Quartile (Q₃)</h4><p>3N/4 = ${fmt(3*s.N/4)}; quartile class = ${q3c ? q3c.label : "not found"}; L = ${q3c ? fmt(q3c.lower) : "—"}; CF before = ${fmt(beforeCF(q3c))}; f = ${q3c ? fmt(q3c.f) : "—"}; class width = ${q3c ? fmt(q3c.width) : "—"}.</p><p>Q₃ = L + [(3N/4 − CF before)/f] × class width = <b>${fmt(s.q3)}</b>.</p>`);
+  } else {
+    notes.push(`<h4>4. Median and Mode</h4><p>Median = <b>${fmt(s.median)}</b> using the selected quantile convention. Mode = <b>${displayMode}</b>.</p>
+      <h4>5. Quartiles</h4><p>Q₁ = <b>${fmt(s.q1)}</b>; Q₂ = <b>${fmt(s.median)}</b>; Q₃ = <b>${fmt(s.q3)}</b>. Quantile convention: ${$("quantileMethod").selectedOptions[0].textContent}.</p>`);
+  }
+
+  notes.push(`<h4>9. Interquartile Range</h4><p>IQR = Q₃ − Q₁ = ${fmt(s.q3)} − ${fmt(s.q1)} = <b>${fmt(s.iqr)}</b>.</p>
+    <h4>10. Quartile Deviation</h4><p>QD = (Q₃ − Q₁)/2 = ${fmt(s.iqr)}/2 = <b>${fmt(s.iqr/2)}</b>.</p>
+    <h4>11. Range</h4><p>Range = highest value/boundary − lowest value/boundary = <b>${fmt(s.range)}</b>.</p>
+    <h4>12. Mean Deviation About the Mean</h4><p>MD = Σfᵢ|xᵢ − x̄|/N = ${fmt(s.meanDeviationMean*s.N)}/${fmt(s.N)} = <b>${fmt(s.meanDeviationMean)}</b>.</p>
+    <h4>13. Mean Deviation About the Median</h4><p>MD = Σfᵢ|xᵢ − median|/N = <b>${fmt(s.meanDeviationMedian)}</b>${grouped ? " (class-mark estimate)" : ""}.</p>
+    <h4>14. Population Variance</h4><p>σ² = Σfᵢ(xᵢ − x̄)²/N = ${fmt(s.varianceNumerator)}/${fmt(s.N)} = <b>${fmt(s.variancePopulation)}</b>.</p>
+    <p>Computational identity: σ² = Σfᵢxᵢ²/N − x̄² = ${fmt(s.sumFX2)}/${fmt(s.N)} − (${fmt(s.mean)})² = <b>${fmt(s.varianceComputational)}</b>.</p>
+    <p>Difference between variance methods = ${fmt(Math.abs(s.variancePopulation-s.varianceComputational))}.</p>
+    <h4>15. Sample Variance</h4><p>s² = Σfᵢ(xᵢ − x̄)²/(N − 1) = ${fmt(s.varianceNumerator)}/(${fmt(s.N)} − 1) = <b>${fmt(s.varianceSample)}</b>.</p>
+    <h4>16. Population Standard Deviation</h4><p>σ = √σ² = √${fmt(s.variancePopulation)} = <b>${fmt(s.sdPopulation)}</b>.</p>
+    <h4>17. Sample Standard Deviation</h4><p>s = √s² = √${fmt(s.varianceSample)} = <b>${fmt(s.sdSample)}</b>.</p>
+    <h4>18. Population Coefficient of Variation</h4><p>CV = (σ/|x̄|) × 100 = <b>${fmt(s.cvPopulation)}%</b>.</p>
+    <h4>19. Sample Coefficient of Variation</h4><p>CV = (s/|x̄|) × 100 = <b>${fmt(s.cvSample)}%</b>.</p>
+    <h4>20. Geometric Mean</h4><p>GM = exp[Σfᵢ ln(xᵢ)/N], where all positive-weight values must be positive. Result = <b>${fmt(s.geometricMean)}</b>.</p>
+    <h4>21. Harmonic Mean</h4><p>HM = N/Σ(fᵢ/xᵢ), where all positive-weight values must be positive. Result = <b>${fmt(s.harmonicMean)}</b>.</p>`);
+
+  const summary = [
+    ["Total frequency (N)",s.N],["Σfᵢxᵢ",s.sumFX],
+    ["Mean (direct method)",s.mean],["Mean (assumed mean method)",s.meanAssumed],
+    ["Mean (step-deviation method)",s.meanStep],["Median",s.median],["Mode",displayMode],
+    ["First quartile Q₁",s.q1],["Second quartile Q₂",s.median],["Third quartile Q₃",s.q3],
+    ["Interquartile range",s.iqr],["Quartile deviation",s.iqr/2],["Range",s.range],
+    ["Mean deviation about mean",s.meanDeviationMean],["Mean deviation about median",s.meanDeviationMedian],
+    ["Population variance",s.variancePopulation],["Sample variance",s.varianceSample],
+    ["Population standard deviation",s.sdPopulation],["Sample standard deviation",s.sdSample],
+    ["Population coefficient of variation (%)",s.cvPopulation],["Sample coefficient of variation (%)",s.cvSample],
+    ["Geometric mean",s.geometricMean],["Harmonic mean",s.harmonicMean]
+  ];
+  notes.push("<h4>Final Answer: Summary Table</h4>");
+  notes.push(table(["No.","Statistical Measure","Answer"],summary.map((r,i)=>[i+1,r[0],typeof r[1]==="number"?fmt(r[1]):r[1]])));
+  if (grouped) notes.push("<p><b>Important:</b> grouped-data measures use class marks as representative values. Median, mode, quartiles, deciles and percentiles are interpolation estimates; they may differ from results based on the original raw observations.</p>");
+  if (!Number.isFinite(s.varianceSample)) notes.push("<p><b>Sample variance:</b> undefined because N must exceed 1.</p>");
+  if (!Number.isFinite(s.cvPopulation) || !Number.isFinite(s.cvSample)) notes.push("<p><b>Coefficient of variation:</b> undefined when the mean is zero or the required standard deviation is undefined.</p>");
+  if (!Number.isFinite(s.geometricMean)) notes.push("<p><b>Geometric mean:</b> undefined because positive-weight observations must be strictly positive.</p>");
+  if (!Number.isFinite(s.harmonicMean)) notes.push("<p><b>Harmonic mean:</b> undefined because positive-weight observations must be strictly positive.</p>");
+  $("solution").innerHTML = notes.join("");
+}
+window.selectedStatisticsGraphs = [];
+function updateGraphVisibility() {
+  const selected = window.selectedStatisticsGraphs || [];
+  document.querySelectorAll(".graph-panel[data-graph]").forEach(panel => {
+    panel.hidden = !selected.includes(panel.dataset.graph);
+  });
+  $("graphSelectionMessage").hidden = selected.length > 0;
+}
+function renderCharts(data, s) {
+  updateGraphVisibility();
+  const selected = window.selectedStatisticsGraphs || [];
+  if(!selected.length) return;
+  const rows=data.filter(x=>x.f>0).slice().sort((a,b)=>dataType==="continuous"?a.lower-b.lower:a.xi-b.xi);
+  if(!rows.length) return;
+  if(selected.includes("histogram")) drawFrequencyBars($("histogramChart"), rows, true);
+  if(selected.includes("polygon")) drawLineChart($("polygonChart"), rows.map(x=>({x:x.xi,y:x.f,label:dataType==="continuous"?x.label:fmt(x.xi)})), "Class mark / value", "Frequency", false);
+  if(selected.includes("curve")) drawLineChart($("curveChart"), rows.map(x=>({x:x.xi,y:x.f,label:dataType==="continuous"?x.label:fmt(x.xi)})), "Class mark / value", "Frequency", true);
+  if(selected.includes("ogive")) {
+    let cumulative=0;
+    const ogive=rows.map(x=>{ cumulative+=x.f; return {x:dataType==="continuous"?x.upper:x.xi,y:cumulative,label:dataType==="continuous"?fmt(x.upper):fmt(x.xi)}; });
+    if(dataType==="continuous" && rows.length) ogive.unshift({x:rows[0].lower,y:0,label:fmt(rows[0].lower)});
+    drawLineChart($("ogiveChart"), ogive, dataType==="continuous"?"Upper class boundary":"Value", "Cumulative frequency", false);
+  }
+  if(selected.includes("pie")) drawPie($("pieChart"), rows);
+  if(selected.includes("bar")) drawFrequencyBars($("barChart"), rows, false);
+  renderExtendedGraphs(data, s, selected);
+}
+function setupCanvas(canvas) {
+  // Render at high pixel density while keeping drawing coordinates in CSS pixels.
+  const logicalWidth = canvas.clientWidth || Number(canvas.getAttribute("width")) || 760;
+  const logicalHeight = canvas.clientHeight || Number(canvas.getAttribute("height")) || 340;
+  const dpr = Math.max(2, window.devicePixelRatio || 1);
+  const pixelWidth = Math.round(logicalWidth * dpr);
+  const pixelHeight = Math.round(logicalHeight * dpr);
+  if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+    canvas.width = pixelWidth;
+    canvas.height = pixelHeight;
+  }
+  const ctx=canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,logicalWidth,logicalHeight);
+  ctx.font="13px sans-serif"; ctx.lineWidth=1;
+  // Display-only formatting: keep all calculations at full precision, but round
+  // decimal numbers drawn on charts to at most 2 decimal places.
+  const nativeFillText = ctx.fillText.bind(ctx);
+  ctx.fillText = function(value, ...args) {
+    let shown = String(value).replace(/[-+]?\d*\.\d+(?:e[-+]?\d+)?/gi, token => {
+      const n = Number(token);
+      return Number.isFinite(n) ? String(Number(n.toFixed(2))) : token;
+    });
+    nativeFillText(shown, ...args);
+  };
+  return ctx;
+}
+function drawFrequencyBars(canvas, rows, histogram) {
+  const ctx=setupCanvas(canvas), W=(canvas.clientWidth || 760),H=(canvas.clientHeight || 340);
+  const left=52,right=18,top=16,bottom=62,pw=W-left-right,ph=H-top-bottom;
+  let vals=rows.map(x=>histogram&&dataType==="continuous"?x.f/x.width:x.f);
+  const max=Math.max(1,...vals), gap=histogram&&dataType==="continuous"?1:Math.min(12,pw/(rows.length*5));
+  ctx.strokeStyle="#222";ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left,top+ph);ctx.lineTo(left+pw,top+ph);ctx.stroke();
+  for(let k=0;k<=4;k++){let y=top+ph-k*ph/4;ctx.strokeStyle="#ddd";ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+pw,y);ctx.stroke();ctx.fillStyle="#222";ctx.textAlign="right";ctx.fillText(fmt(max*k/4),left-7,y+4);}
+  const slot=pw/rows.length;
+  rows.forEach((x,i)=>{
+    const bw=Math.max(1,slot-gap),v=vals[i],bh=v/max*ph,xx=left+i*slot+(slot-bw)/2,yy=top+ph-bh;
+    ctx.fillStyle="#8bb8dc";ctx.fillRect(xx,yy,bw,bh);ctx.strokeStyle="#333";ctx.strokeRect(xx,yy,bw,bh);
+    ctx.save();ctx.translate(xx+bw/2,top+ph+9);ctx.rotate(-Math.PI/4);ctx.textAlign="right";ctx.fillStyle="#222";ctx.fillText(dataType==="continuous"?x.label:fmt(x.xi),0,0);ctx.restore();
+  });
+  ctx.fillStyle="#222";ctx.textAlign="left";ctx.fillText(histogram?(dataType==="continuous"?"Frequency density":"Frequency (value-frequency bars)"):"Frequency",left,12);
+  if(histogram&&dataType!=="continuous")ctx.fillText("Histogram class intervals are available for continuous grouped data.",left,H-8);
+}
+function drawLineChart(canvas, points, xLabel, yLabel, smooth) {
+  const ctx=setupCanvas(canvas),W=(canvas.clientWidth || 760),H=(canvas.clientHeight || 340),left=55,right=18,top=18,bottom=55,pw=W-left-right,ph=H-top-bottom;
+  if(!points.length)return;
+  let minX=Math.min(...points.map(p=>p.x)),maxX=Math.max(...points.map(p=>p.x));
+  let minY=Math.min(0,...points.map(p=>p.y)),maxY=Math.max(1,...points.map(p=>p.y));
+  if(minX===maxX){minX-=1;maxX+=1;} if(minY===maxY)maxY=minY+1;
+  const X=x=>left+(x-minX)/(maxX-minX)*pw, Y=y=>top+ph-(y-minY)/(maxY-minY)*ph;
+  ctx.strokeStyle="#222";ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left,top+ph);ctx.lineTo(left+pw,top+ph);ctx.stroke();
+  for(let k=0;k<=4;k++){const val=minY+(maxY-minY)*k/4,yy=Y(val);ctx.strokeStyle="#ddd";ctx.beginPath();ctx.moveTo(left,yy);ctx.lineTo(left+pw,yy);ctx.stroke();ctx.fillStyle="#222";ctx.textAlign="right";ctx.fillText(fmt(val),left-7,yy+4);}
+  const coords=points.map(p=>({x:X(p.x),y:Y(p.y),label:p.label}));
+  ctx.strokeStyle="#2166ac";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(coords[0].x,coords[0].y);
+  if(smooth&&coords.length>2){for(let i=1;i<coords.length;i++){const prev=coords[i-1],cur=coords[i],mid=(prev.x+cur.x)/2;ctx.quadraticCurveTo(prev.x,prev.y,mid,(prev.y+cur.y)/2); }ctx.lineTo(coords[coords.length-1].x,coords[coords.length-1].y);}else coords.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+  coords.forEach((p,i)=>{ctx.fillStyle="#2166ac";ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();if(points.length<=12){ctx.save();ctx.translate(p.x,top+ph+8);ctx.rotate(-Math.PI/4);ctx.textAlign="right";ctx.fillStyle="#222";ctx.fillText(p.label??"",0,0);ctx.restore();}});
+  ctx.fillStyle="#222";ctx.textAlign="left";ctx.fillText(yLabel,left,12);ctx.textAlign="center";ctx.fillText(xLabel,left+pw/2,H-5);
+}
+function drawPie(canvas, rows) {
+  const ctx=setupCanvas(canvas), W=canvas.clientWidth||500, H=canvas.clientHeight||340;
+  const total=rows.reduce((a,x)=>a+x.f,0);
+  if(!(total>0))return;
+  const colors=["#8bb8dc","#e6a57e","#9bc79b","#d8a6cf","#e5d47d","#aaa3dc","#8fc8c8","#d99baf"];
+  // On narrow screens, put the legend below the pie instead of letting it run outside the canvas.
+  const compact=W<620, cx=compact?W/2:Math.min(W*0.32,175), cy=compact?Math.min(125,H*0.37):H/2;
+  const r=Math.max(45,Math.min(compact?Math.min(W*0.31,105):105,cy-18));
+  let angle=-Math.PI/2;
+  rows.forEach((x,i)=>{const end=angle+2*Math.PI*x.f/total;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,end);ctx.closePath();ctx.fillStyle=colors[i%colors.length];ctx.fill();ctx.strokeStyle="#fff";ctx.stroke();angle=end;});
+  rows.forEach((x,i)=>{
+    const label=dataType==="continuous"?x.label:fmt(x.xi);
+    const text=label+": "+fmt(x.f)+" ("+fmt(100*x.f/total)+"%)";
+    const itemY=compact?cy+r+20+i*19:22+i*23;
+    const itemX=compact?12:Math.min(W*0.58,Math.max(285,cx+r+18));
+    if(compact && itemY>H-5)return;
+    ctx.fillStyle=colors[i%colors.length];ctx.fillRect(itemX,itemY-10,11,11);
+    ctx.fillStyle="#222";ctx.textAlign="left";ctx.font="12px sans-serif";
+    const maxTextWidth=Math.max(40,W-itemX-28);
+    let shown=text;while(shown.length>4&&ctx.measureText(shown).width>maxTextWidth)shown=shown.slice(0,-2);
+    if(shown!==text)shown+="…";
+    ctx.fillText(shown,itemX+16,itemY);
+  });
+}
+
+
+
+// ANOVA and variance visualizations. Uses local canvas drawing and no external libraries.
+const EXT_GRAPH_IDS = ['anovaMeans', 'anovaBox', 'anovaViolin', 'anovaMeanCI', 'anovaInteraction', 'anovaMainEffects', 'anovaResidualFit', 'anovaQQ', 'anovaResidualHist', 'anovaOrder', 'anovaF', 'anovaDecomp', 'anovaComponents', 'anovaPostHoc', 'anovaTukey', 'varianceCompare', 'varianceSd', 'varianceError', 'sdError', 'varianceDistribution', 'squaredDeviation', 'varianceBox', 'histMeanVariance', 'normalVariances', 'popSampleVariance', 'populationVariance', 'sampleVariance', 'withinVariance', 'betweenVariance', 'varianceCategory', 'varianceMean', 'sdByGroup', 'cvByGroup', 'residualVariance', 'meansVariance', 'meansSD', 'betweenWithin', 'ssDecomp', 'msCompare', 'residualDiagnostic', 'groupDistributions'];
+function parseAnovaGroups() {
+  const raw = $("anovaGroupData").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const groups = [];
+  for (let i=0;i<raw.length;i++) {
+    const m = raw[i].match(/^([^:]+):\s*(.+)$/);
+    if (!m) throw new Error("ANOVA line " + (i+1) + " must use Group name: value, value, value.");
+    const vals = m[2].split(/[,\s;]+/).filter(Boolean).map(Number);
+    if (!vals.length || vals.some(v=>!Number.isFinite(v))) throw new Error("ANOVA line " + (i+1) + " contains an invalid number.");
+    groups.push({name:m[1].trim(), values:vals});
+  }
+  if (groups.length < 2) throw new Error("ANOVA needs at least two groups.");
+  return groups;
+}
+function anovaStats(groups) {
+  const all = groups.flatMap(g=>g.values);
+  const N = all.length, k = groups.length, grand = all.reduce((a,b)=>a+b,0)/N;
+  const enriched = groups.map(g=>{
+    const mean=g.values.reduce((a,b)=>a+b,0)/g.values.length;
+    const ss=g.values.reduce((a,x)=>a+(x-mean)**2,0);
+    const variance=g.values.length>1 ? ss/(g.values.length-1) : NaN;
+    const residuals=g.values.map(x=>x-mean);
+    return {...g,mean,ss,variance,sd:Math.sqrt(variance),residuals};
+  });
+  const ssb=enriched.reduce((a,g)=>a+g.values.length*(g.mean-grand)**2,0);
+  const ssw=enriched.reduce((a,g)=>a+g.ss,0);
+  const sst=ssb+ssw, dfb=k-1, dfw=N-k, msb=ssb/dfb, msw=dfw>0?ssw/dfw:NaN, F=msw>0?msb/msw:NaN;
+  const residuals=enriched.flatMap(g=>g.residuals);
+  return {groups:enriched,all,N,k,grand,ssb,ssw,sst,dfb,dfw,msb,msw,F,residuals,
+    withinVar:msw,betweenVar:dfb>0?ssb/dfb:NaN,
+    p: fSurvivalApprox(F,dfb,dfw), critical:fCriticalApprox( Number($("anovaAlpha").value), dfb, dfw)};
+}
+// Regularized incomplete beta, used for an approximate F-test tail probability.
+function betaCF(a,b,x) {
+  const MAX=160, EPS=3e-10, FPMIN=1e-30;
+  let qab=a+b,qap=a+1,qam=a-1,c=1,d=1-qab*x/qap;
+  if(Math.abs(d)<FPMIN)d=FPMIN; d=1/d; let h=d;
+  for(let m=1;m<=MAX;m++){
+    let m2=2*m, aa=m*(b-m)*x/((qam+m2)*(a+m2));
+    d=1+aa*d;if(Math.abs(d)<FPMIN)d=FPMIN;c=1+aa/c;if(Math.abs(c)<FPMIN)c=FPMIN;d=1/d;h*=d*c;
+    aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));
+    d=1+aa*d;if(Math.abs(d)<FPMIN)d=FPMIN;c=1+aa/c;if(Math.abs(c)<FPMIN)c=FPMIN;d=1/d;
+    const del=d*c;h*=del;if(Math.abs(del-1)<EPS)break;
+  } return h;
+}
+function logGamma(z) {
+  const p=[676.5203681218851,-1259.1392167224028,771.3234287776531,-176.6150291621406,12.507343278686905,-0.13857109526572012,9.984369578019572e-6,1.5056327351493116e-7];
+  if(z<.5)return Math.log(Math.PI)-Math.log(Math.sin(Math.PI*z))-logGamma(1-z);
+  z-=1;let x=.99999999999980993;for(let i=0;i<p.length;i++)x+=p[i]/(z+i+1);
+  const t=z+p.length-.5;return .5*Math.log(2*Math.PI)+(z+.5)*Math.log(t)-t+Math.log(x);
+}
+function betaI(x,a,b) {
+  if(x<=0)return 0;if(x>=1)return 1;
+  const bt=Math.exp(logGamma(a+b)-logGamma(a)-logGamma(b)+a*Math.log(x)+b*Math.log(1-x));
+  return x<(a+1)/(a+b+2) ? bt*betaCF(a,b,x)/a : 1-bt*betaCF(b,a,1-x)/b;
+}
+function fSurvivalApprox(F,df1,df2) {
+  if(!(F>=0)||!(df1>0)||!(df2>0))return NaN;
+  return Math.max(0,Math.min(1,1-betaI((df1*F)/(df1*F+df2),df1/2,df2/2)));
+}
+function fCriticalApprox(alpha,df1,df2) {
+  if(!(df1>0)||!(df2>0))return NaN;
+  let lo=0,hi=1;while(fSurvivalApprox(hi,df1,df2)>alpha&&hi<1e8)hi*=2;
+  for(let i=0;i<90;i++){const mid=(lo+hi)/2;if(fSurvivalApprox(mid,df1,df2)>alpha)lo=mid;else hi=mid;}
+  return (lo+hi)/2;
+}
+function chartBase(canvas,title,xLabel,yLabel) {
+  const ctx=setupCanvas(canvas),W=(canvas.clientWidth || 760),H=(canvas.clientHeight || 340),L=60,R=20,T=28,B=60;
+  ctx.fillStyle="#222";ctx.textAlign="left";ctx.font="bold 14px sans-serif";ctx.fillText(title, L, 17);
+  ctx.font="12px sans-serif";ctx.strokeStyle="#222";ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,H-B);ctx.lineTo(W-R,H-B);ctx.stroke();
+  ctx.textAlign="center";ctx.fillText(xLabel,(L+W-R)/2,H-12);ctx.save();ctx.translate(15,(T+H-B)/2);ctx.rotate(-Math.PI/2);ctx.fillText(yLabel,0,0);ctx.restore();
+  return {ctx,W,H,L,R,T,B,pw:W-L-R,ph:H-T-B};
+}
+function drawBars(canvas,title,labels,values,yLabel="Value") {
+  const b=chartBase(canvas,title,"Group / category",yLabel),{ctx,W,H,L,R,T,B,pw,ph}=b;
+  const finite=values.filter(Number.isFinite);if(!finite.length)return;
+  let min=Math.min(0,...finite),max=Math.max(1,...finite);if(max===min)max=min+1;
+  for(let j=0;j<=4;j++){const y=T+ph-j*ph/4,v=min+(max-min)*j/4;ctx.strokeStyle="#e1e1e1";ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();ctx.fillStyle="#222";ctx.textAlign="right";ctx.fillText(fmt(v),L-6,y+4);}
+  const slot=pw/labels.length;
+  values.forEach((v,i)=>{if(!Number.isFinite(v))return;const x=L+i*slot+slot*.18,y=T+ph-(v-min)/(max-min)*ph,h=T+ph-y;ctx.fillStyle="#8bb8dc";ctx.fillRect(x,y,slot*.64,h);ctx.fillStyle="#222";ctx.textAlign="center";ctx.fillText(labels[i],x+slot*.32,H-B+17);ctx.fillText(fmt(v),x+slot*.32,Math.max(T+12,y-5));});
+}
+function drawPoints(canvas,title,points,xLabel,yLabel,zeroLine=false) {
+  const b=chartBase(canvas,title,xLabel,yLabel),{ctx,W,H,L,R,T,B,pw,ph}=b;points=points.filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y));if(!points.length){ctx.fillStyle="#666";ctx.textAlign="center";ctx.fillText("No valid data to plot",W/2,H/2);return;}
+  let minX=Math.min(...points.map(p=>p.x)),maxX=Math.max(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y)),maxY=Math.max(...points.map(p=>p.y));
+  if(minX===maxX){minX-=1;maxX+=1;}if(minY===maxY){minY-=1;maxY+=1;}if(zeroLine){minY=Math.min(minY,0);maxY=Math.max(maxY,0);}
+  const X=x=>L+(x-minX)/(maxX-minX)*pw,Y=y=>T+ph-(y-minY)/(maxY-minY)*ph;
+  for(let j=0;j<=4;j++){const y=T+j*ph/4,v=maxY-(maxY-minY)*j/4;ctx.strokeStyle="#e1e1e1";ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();ctx.fillStyle="#222";ctx.textAlign="right";ctx.fillText(fmt(v),L-6,y+4);}
+  if(zeroLine&&minY<=0&&maxY>=0){ctx.strokeStyle="#666";ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(L,Y(0));ctx.lineTo(W-R,Y(0));ctx.stroke();ctx.setLineDash([]);}
+  ctx.strokeStyle="#2166ac";ctx.lineWidth=2;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(X(p.x),Y(p.y)):ctx.moveTo(X(p.x),Y(p.y)));ctx.stroke();
+  points.forEach(p=>{ctx.fillStyle="#2166ac";ctx.beginPath();ctx.arc(X(p.x),Y(p.y),3,0,Math.PI*2);ctx.fill();});
+}
+function normalDensity(x,mean,sd){return sd>0?Math.exp(-.5*((x-mean)/sd)**2)/(sd*Math.sqrt(2*Math.PI)):0;}
+function drawNormalCurves(canvas,stats) {
+  const b=chartBase(canvas,"Normal distribution curves with same mean and different variances","Observation value","Density"),{ctx,L,W,R,T,H,B,pw,ph}=b;
+  const sds=[Math.max(stats.sdPopulation*.5,.1),Math.max(stats.sdPopulation, .1),Math.max(stats.sdPopulation*1.8,.1)];
+  const mean=stats.mean,lo=mean-4*Math.max(...sds),hi=mean+4*Math.max(...sds),maxY=Math.max(...sds.map(sd=>normalDensity(mean,mean,sd)));
+  for(let j=0;j<=4;j++){const y=T+ph-j*ph/4;ctx.strokeStyle="#eee";ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();}
+  const colors=["#2166ac","#d97706","#26834a"];
+  sds.forEach((sd,idx)=>{ctx.strokeStyle=colors[idx];ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<=180;i++){const x=lo+(hi-lo)*i/180,y=normalDensity(x,mean,sd),px=L+(x-lo)/(hi-lo)*pw,py=T+ph-y/maxY*ph;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();ctx.fillStyle=colors[idx];ctx.fillText(["Low variance","Current variance","High variance"][idx]+" (SD "+fmt(sd)+")",L+idx*180,T+15);});
+}
+function drawVarianceDistribution(canvas,stats,rows) {
+  // Data-driven normal curve with real-value x-axis and uncluttered labels.
+  // Calculations use full precision; displayed values are rounded to 2 decimals.
+  const ctx=setupCanvas(canvas), W=canvas.clientWidth||760, H=canvas.clientHeight||420;
+  const mobile=W<520, L=mobile?52:72, R=mobile?18:30, T=mobile?100:105, B=mobile?88:82;
+  const pw=Math.max(120,W-L-R), ph=Math.max(100,H-T-B);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#222';ctx.textAlign='left';
+  ctx.font=`bold ${mobile?14:20}px sans-serif`;
+  ctx.fillText('Distribution of Variance (Normal Curve)',L,mobile?21:27);
+  ctx.font=`${mobile?11:14}px sans-serif`;
+  ctx.fillText(`Mean μ = ${fmt(stats.mean)}   |   Population SD σ = ${fmt(stats.sdPopulation)}`,L,mobile?47:56);
+  ctx.fillText(`Population variance σ² = ${fmt(stats.variancePopulation)}`,L,mobile?68:79);
+
+  const valid=(rows||[]).filter(r=>Number.isFinite(r.xi)&&Number.isFinite(r.f)&&r.f>0);
+  if(!valid.length){ctx.fillText('Enter valid data and positive frequencies.',L,T+30);return;}
+  const mean=stats.mean, sd=stats.sdPopulation;
+  if(!Number.isFinite(sd)||sd<=0){
+    ctx.textAlign='center';ctx.fillText('All values are equal; a normal curve needs a positive standard deviation.',W/2,T+ph/2);return;
+  }
+
+  // Use the input data's actual value scale, centered on its computed mean.
+  const lo=mean-3.5*sd, hi=mean+3.5*sd;
+  const X=x=>L+(x-lo)/(hi-lo)*pw;
+  const density=x=>Math.exp(-0.5*((x-mean)/sd)**2)/(sd*Math.sqrt(2*Math.PI));
+  const maxY=density(mean)*1.12, Y=y=>T+ph-(y/maxY)*ph;
+  const baseY=T+ph;
+
+  // Horizontal grid and readable density ticks.
+  for(let j=0;j<=4;j++){
+    const y=T+ph-j*ph/4, val=maxY*j/4;
+    ctx.strokeStyle='#e2e6ea';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();
+    ctx.fillStyle='#444';ctx.font=`${mobile?9:11}px sans-serif`;ctx.textAlign='right';
+    ctx.fillText(val.toFixed(2),L-7,y+4);
+  }
+
+  // Shade the standard-deviation regions with a consistent muted palette.
+  const bands=[[-3,-2,'#dceaf6'],[-2,-1,'#9bcbe0'],[-1,0,'#6e97b7'],[0,1,'#6e97b7'],[1,2,'#9bcbe0'],[2,3,'#dceaf6']];
+  bands.forEach(([a,b,color])=>{
+    ctx.beginPath();ctx.moveTo(X(mean+a*sd),baseY);
+    for(let i=0;i<=50;i++){
+      const z=a+(b-a)*i/50, x=mean+z*sd;
+      ctx.lineTo(X(x),Y(density(x)));
+    }
+    ctx.lineTo(X(mean+b*sd),baseY);ctx.closePath();ctx.fillStyle=color;ctx.fill();
+  });
+
+  // Curve drawn above the fill.
+  ctx.strokeStyle='#294b6b';ctx.lineWidth=mobile?2.5:3;ctx.beginPath();
+  for(let i=0;i<=320;i++){
+    const x=lo+(hi-lo)*i/320, y=density(x);
+    i?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y));
+  }
+  ctx.stroke();
+
+  // Standard deviation boundaries: numeric values on x-axis, with σ-band labels above.
+  [-3,-2,-1,0,1,2,3].forEach(z=>{
+    const xValue=mean+z*sd, x=X(xValue);
+    ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=z===0?'#ffffff':'#526b7d';
+    ctx.lineWidth=z===0?2.5:1.4;ctx.beginPath();ctx.moveTo(x,T+2);ctx.lineTo(x,baseY);ctx.stroke();ctx.restore();
+    ctx.fillStyle='#222';ctx.textAlign='center';ctx.font=`${mobile?9:11}px sans-serif`;
+    ctx.fillText(xValue.toFixed(2),x,baseY+16);
+    // Put sigma labels at the top of the plotting area so they never collide
+    // with the curve, mean marker, or numeric values below the x-axis.
+    ctx.font=`${mobile?9:12}px sans-serif`;
+    ctx.textAlign='center';
+    ctx.fillStyle='#263746';
+    ctx.fillText(z===0?'μ':`${z<0?'−':''}${Math.abs(z)}σ`,x,T+15);
+  });
+
+  // Mean and SD are already printed clearly above the plot; avoid a floating
+  // annotation box over the curve, which can obscure the data visualization.
+
+  ctx.fillStyle='#333';ctx.textAlign='center';ctx.font=`${mobile?9:12}px sans-serif`;
+  ctx.fillText('Normal rule: ≈68.3% within ±1σ  •  ≈95.4% within ±2σ  •  ≈99.7% within ±3σ',W/2,H-31);
+  ctx.font=`${mobile?10:13}px sans-serif`;
+  ctx.fillText('Class interval / value boundaries (computed from the supplied data)',W/2,H-10);
+}
+function drawGroupBoxes(canvas,stats,violin=false) {
+  const b=chartBase(canvas,violin?"Group distribution / violin-style comparison":"Group box plot comparison","Group","Observation"),{ctx,W,H,L,R,T,B,pw,ph}=b;
+  const all=stats.groups.flatMap(g=>g.values),min=Math.min(...all),max=Math.max(...all);let lo=min,hi=max;if(lo===hi){lo-=1;hi+=1;}
+  const Y=v=>T+ph-(v-lo)/(hi-lo)*ph;
+  for(let j=0;j<=4;j++){const y=T+j*ph/4,v=hi-(hi-lo)*j/4;ctx.strokeStyle="#eee";ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(W-R,y);ctx.stroke();ctx.fillStyle="#222";ctx.textAlign="right";ctx.fillText(fmt(v),L-6,y+4);}
+  const slot=pw/stats.groups.length;
+  stats.groups.forEach((g,i)=>{const a=g.values.slice().sort((x,y)=>x-y),q=p=>a[Math.min(a.length-1,Math.max(0,Math.floor((a.length-1)*p)))],x=L+(i+.5)*slot,med=q(.5),q1=q(.25),q3=q(.75),mn=a[0],mx=a[a.length-1];
+    ctx.strokeStyle="#333";ctx.beginPath();ctx.moveTo(x,Y(mn));ctx.lineTo(x,Y(mx));ctx.moveTo(x-slot*.12,Y(mn));ctx.lineTo(x+slot*.12,Y(mn));ctx.moveTo(x-slot*.12,Y(mx));ctx.lineTo(x+slot*.12,Y(mx));ctx.stroke();
+    if(violin){for(let j=0;j<30;j++){const v=lo+(hi-lo)*j/29,d=g.values.reduce((s,x)=>s+Math.exp(-.5*((v-x)/(Math.max(g.sd*.45,.1)))**2),0);const w=Math.min(slot*.28,d*slot*.045);ctx.strokeStyle="#8bb8dc";ctx.beginPath();ctx.moveTo(x-w,Y(v));ctx.lineTo(x+w,Y(v));ctx.stroke();}}
+    else{ctx.fillStyle="#dceaf6";ctx.fillRect(x-slot*.22,Y(q3),slot*.44,Y(q1)-Y(q3));ctx.strokeStyle="#333";ctx.strokeRect(x-slot*.22,Y(q3),slot*.44,Y(q1)-Y(q3));ctx.strokeStyle="#c05a25";ctx.beginPath();ctx.moveTo(x-slot*.22,Y(med));ctx.lineTo(x+slot*.22,Y(med));ctx.stroke();}
+    ctx.fillStyle="#222";ctx.textAlign="center";ctx.fillText(g.name,x,H-B+18);
+  });
+}
+function renderExtendedGraphs(data,s,selected) {
+  if(!selected.some(id=>EXT_GRAPH_IDS.includes(id)))return;
+  let a;
+  try { a=anovaStats(parseAnovaGroups()); $("anovaStatus").textContent=`ANOVA data valid: ${a.k} groups, N = ${a.N}; F = ${fmt(a.F)}, p = ${fmt(a.p)}.`; }
+  catch(e){$("anovaStatus").textContent=e.message;a=null;}
+  const rows=data.filter(x=>x.f>0), vals=[];
+  if(dataType==="ungrouped" || dataType==="discrete") {
+    rows.forEach(x=>{for(let i=0;i<Math.min(10000,Math.round(x.f));i++)vals.push(x.xi);});
+  } else rows.forEach(x=>{for(let i=0;i<Math.min(1000,Math.round(x.f));i++)vals.push(x.xi);});
+  const mean=s.mean, pop=s.variancePopulation, sample=s.varianceSample, sd=s.sdPopulation;
+  const render=(id,fn)=>{if(selected.includes(id)){const el=$("chart_"+id);if(el){try{fn(el);}catch(err){const ctx=el.getContext("2d");ctx.clearRect(0,0,el.width,el.height);ctx.fillStyle="#a00";ctx.font="14px sans-serif";ctx.fillText("Could not render this graph: "+(err.message||err),12,28);console.error("Graph render failed:",id,err);}}}};
+  render("normalVariances",c=>drawNormalCurves(c,s));
+  render("varianceCompare",c=>drawBars(c,"Variance comparison",["Population","Sample"],[pop,sample],"Variance"));
+  render("varianceSd",c=>drawBars(c,"Variance and standard deviation",["Variance","Standard deviation"],[pop,sd],"Value"));
+  render("varianceError",c=>drawPoints(c,"Mean with variance-based error range",[{x:0,y:mean-Math.sqrt(Math.max(0,pop))},{x:1,y:mean},{x:2,y:mean+Math.sqrt(Math.max(0,pop))}],"Lower / mean / upper","Value",true));
+  render("sdError",c=>drawPoints(c,"Mean with standard-deviation error range",[{x:0,y:mean-sd},{x:1,y:mean},{x:2,y:mean+sd}],"Lower / mean / upper","Value",true));
+  render("varianceDistribution",c=>drawPoints(c,"Squared deviations from mean",rows.map((x,i)=>({x:i+1,y:(x.xi-mean)**2})),"Row / class index","Squared deviation"));
+  render("distributionOfVariance",c=>drawVarianceDistribution(c,s,rows));
+  render("squaredDeviation",c=>drawBars(c,"Squared deviation contribution by value",rows.map(x=>x.label),rows.map(x=>(x.xi-mean)**2),"Squared deviation"));
+  render("varianceBox",c=>{if(a)drawGroupBoxes(c,a,false);else drawPoints(c,"Data spread (box plot requires group data)",rows.map((x,i)=>({x:i+1,y:x.xi})),"Index","Value");});
+  render("histMeanVariance",c=>{const pts=rows.map(x=>({x:x.xi,y:x.f}));drawPoints(c,"Frequency with mean reference",pts,"Value / class mark","Frequency");const ctx=c.getContext("2d");ctx.fillStyle="#b45309";ctx.fillText("Mean = "+fmt(mean)+" | Variance = "+fmt(pop)+" | SD = "+fmt(sd),65,32);});
+  render("popSampleVariance",c=>drawBars(c,"Population vs sample variance",["Population σ²","Sample s²"],[pop,sample],"Variance"));
+  render("populationVariance",c=>drawBars(c,"Population variance by category",rows.map(x=>x.label),rows.map(x=>(x.xi-mean)**2),"Squared deviation"));
+  render("sampleVariance",c=>drawBars(c,"Sample variance contributions by category",rows.map(x=>x.label),rows.map(x=>x.f*(x.xi-mean)**2),"Weighted squared deviation"));
+  render("varianceCategory",c=>drawBars(c,"Variance contribution by category",rows.map(x=>x.label),rows.map(x=>x.f*(x.xi-mean)**2),"Contribution"));
+  render("varianceMean",c=>drawPoints(c,"Variance vs mean (category-level)",rows.map(x=>({x:x.xi,y:(x.xi-mean)**2})),"Value / class mark","Squared deviation"));
+  render("sdByGroup",c=>{if(a)drawBars(c,"Standard deviation by group",a.groups.map(g=>g.name),a.groups.map(g=>g.sd),"SD");else drawBars(c,"Standard deviation",["Population","Sample"],[s.sdPopulation,s.sdSample],"SD");});
+  render("cvByGroup",c=>{if(a)drawBars(c,"Coefficient of variation by group",a.groups.map(g=>g.name),a.groups.map(g=>g.mean!==0?g.sd/Math.abs(g.mean)*100:NaN),"CV (%)");else drawBars(c,"Coefficient of variation",["Population","Sample"],[s.cvPopulation,s.cvSample],"CV (%)");});
+  render("withinVariance",c=>drawBars(c,"Within-group variance",a?a.groups.map(g=>g.name):["Current data"],a?a.groups.map(g=>g.variance):[sample],"Sample variance"));
+  render("betweenVariance",c=>drawBars(c,"Between-group variation",a?["Between groups","Within groups"]:["Population variance"],a?[a.betweenVar,a.withinVar]:[pop],"Mean square / variance"));
+  render("residualVariance",c=>drawPoints(c,"Residual variance by observation order",a?a.residuals.map((v,i)=>({x:i+1,y:v*v})):rows.map((x,i)=>({x:i+1,y:(x.xi-mean)**2})),"Observation order","Squared residual"));
+  if(!a)return;
+  const labels=a.groups.map(g=>g.name), means=a.groups.map(g=>g.mean), variances=a.groups.map(g=>g.variance), sds=a.groups.map(g=>g.sd);
+  render("anovaMeans",c=>drawBars(c,"Group means",labels,means,"Mean"));
+  render("anovaBox",c=>drawGroupBoxes(c,a,false));
+  render("anovaViolin",c=>drawGroupBoxes(c,a,true));
+  render("anovaMeanCI",c=>drawPoints(c,"Group means (95% CI approximation)",a.groups.flatMap((g,i)=>[{x:i+.7,y:g.mean-1.96*g.sd/Math.sqrt(g.values.length)},{x:i+1,y:g.mean},{x:i+1.3,y:g.mean+1.96*g.sd/Math.sqrt(g.values.length)}]),"Group index","Mean / CI"));
+  render("anovaInteraction",c=>drawPoints(c,"Interaction-style group profile",a.groups.flatMap((g,i)=>g.values.map((v,j)=>({x:j+1,y:v,label:g.name}))),"Observation position within group","Value"));
+  render("anovaMainEffects",c=>drawBars(c,"Main effects: group means",labels,means,"Mean"));
+  render("anovaResidualFit",c=>drawPoints(c,"Residuals vs fitted group means",a.groups.flatMap(g=>g.values.map(v=>({x:g.mean,y:v-g.mean}))),"Fitted value (group mean)","Residual",true));
+  render("anovaQQ",c=>{const sorted=a.residuals.slice().sort((x,y)=>x-y);const pts=sorted.map((v,i)=>({x:inverseNormal((i+.5)/sorted.length),y:v})).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));drawPoints(c,"Normal Q-Q plot of ANOVA residuals",pts,"Theoretical normal quantile","Ordered residual",true);if(pts.length){const ctx=c.getContext("2d"),W=(c.clientWidth || 760),H=(c.clientHeight || 340),L=60,R=20,T=28,B=60;const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);if(xmax>xmin&&ymax>ymin){const X=x=>L+(x-xmin)/(xmax-xmin)*(W-L-R),Y=y=>T+(ymax-y)/(ymax-ymin)*(H-T-B);ctx.save();ctx.strokeStyle="#d97706";ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(X(xmin),Y(ymin));ctx.lineTo(X(xmax),Y(ymax));ctx.stroke();ctx.restore();}}});
+  render("anovaResidualHist",c=>{const r=a.residuals.filter(Number.isFinite);if(!r.length){drawBars(c,"Residual histogram",["No data"],[0],"Count");return;}const lo=Math.min(...r),hi=Math.max(...r),bins=Math.max(3,Math.min(8,Math.ceil(Math.sqrt(r.length)))),width=(hi-lo||1)/bins,counts=Array(bins).fill(0),labels=[];r.forEach(v=>counts[Math.min(bins-1,Math.floor((v-lo)/width))]++);for(let i=0;i<bins;i++)labels.push(fmt(lo+i*width)+" to "+fmt(lo+(i+1)*width));drawBars(c,"Residual histogram",labels,counts,"Count");});
+  render("anovaOrder",c=>drawPoints(c,"Residuals vs observation order",a.residuals.map((v,i)=>({x:i+1,y:v})),"Observation order","Residual",true));
+  render("anovaF",c=>drawPoints(c,"F statistic and critical value",[{x:0,y:0},{x:1,y:a.F},{x:2,y:a.critical},{x:3,y:Math.max(a.F,a.critical)*1.1}],"0 = baseline, 1 = F, 2 = critical F","F value"));
+  render("anovaDecomp",c=>drawBars(c,"ANOVA decomposition: sums of squares",["Between (SSB)","Within (SSW)","Total (SST)"],[a.ssb,a.ssw,a.sst],"Sum of squares"));
+  render("anovaComponents",c=>drawBars(c,"ANOVA variance components",["Between MS","Within MS"],[a.msb,a.msw],"Mean square"));
+  const pairs=[];for(let i=0;i<a.groups.length;i++)for(let j=i+1;j<a.groups.length;j++){const g=a.groups[i],h=a.groups[j];pairs.push({label:g.name+" − "+h.name,d:g.mean-h.mean,se:Math.sqrt(a.msw*(1/g.values.length+1/h.values.length))});}
+  render("anovaPostHoc",c=>drawBars(c,"Pairwise mean differences (unadjusted)",pairs.map(p=>p.label),pairs.map(p=>p.d),"Mean difference"));
+  render("anovaTukey",c=>drawPoints(c,"Pairwise mean differences with approximate 1.96 SE intervals",pairs.flatMap((p,i)=>[{x:i+.8,y:p.d-1.96*p.se},{x:i+1,y:p.d},{x:i+1.2,y:p.d+1.96*p.se}]),"Pairwise comparison index","Difference / interval",true));
+  render("meansVariance",c=>drawBars(c,"Group means",labels,means,"Mean"));
+  render("meansSD",c=>drawPoints(c,"Group means with SD range",a.groups.flatMap((g,i)=>[{x:i+.75,y:g.mean-g.sd},{x:i+1,y:g.mean},{x:i+1.25,y:g.mean+g.sd}]),"Group index","Mean ± SD"));
+  render("betweenWithin",c=>drawBars(c,"Between-group vs within-group variation",["SSB","SSW"],[a.ssb,a.ssw],"Sum of squares"));
+  render("ssDecomp",c=>drawBars(c,"ANOVA sum-of-squares decomposition",["SSB","SSW","SST"],[a.ssb,a.ssw,a.sst],"Sum of squares"));
+  render("msCompare",c=>drawBars(c,"ANOVA mean squares",["MSB","MSW"],[a.msb,a.msw],"Mean square"));
+  render("residualDiagnostic",c=>drawPoints(c,"Residual diagnostic",a.residuals.map((v,i)=>({x:i+1,y:v})),"Observation order","Residual",true));
+  render("groupDistributions",c=>drawGroupBoxes(c,a,true));
+  $("anovaStatus").textContent=`One-way ANOVA: SSB=${fmt(a.ssb)}, SSW=${fmt(a.ssw)}, SST=${fmt(a.sst)}, df=(${a.dfb}, ${a.dfw}), MSB=${fmt(a.msb)}, MSW=${fmt(a.msw)}, F=${fmt(a.F)}, p≈${fmt(a.p)}, critical F≈${fmt(a.critical)}, α=${$("anovaAlpha").value}. `+(Number.isFinite(a.p)?(a.p<Number($("anovaAlpha").value)?"Reject H₀: at least one group mean differs.":"Do not reject H₀: insufficient evidence of different means."):"F-test could not be computed.");
+}
+function inverseNormal(p) {
+  // Acklam approximation for the standard normal quantile.
+  const a=[-39.6968302866538,220.946098424521,-275.928510446969,138.357751867269,-30.6647980661472,2.50662827745924];
+  const b=[-54.4760987982241,161.585836858041,-155.698979859887,66.8013118877197,-13.2806815528857];
+  const c=[-.00778489400243029,-.322396458041136,-2.40075827716184,-2.54973253934373,4.37466414146497,2.93816398269878];
+  const d=[.00778469570904146,.32246712907004,2.445134137143,3.75440866190742];
+  const pl=.02425,ph=1-pl;let q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p>ph){q=Math.sqrt(-2*Math.log(1-p));return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  q=p-.5;r=q*q;const num=(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q;const den=((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1;return num/den;
+}
+$("updateAnovaData").addEventListener("click",()=>{try{const a=anovaStats(parseAnovaGroups());$("anovaStatus").textContent=`ANOVA data valid: ${a.k} groups, N=${a.N}, F=${fmt(a.F)}, p≈${fmt(a.p)}.`;if(($("results").rows.length||$("resultHeader").children.length))calculate();else renderExtendedGraphs([], {mean:0,variancePopulation:0,varianceSample:0,sdPopulation:0,cvPopulation:0,cvSample:0},window.selectedStatisticsGraphs||[]);}catch(e){$("anovaStatus").textContent=e.message;}});
+$("anovaGroupData").addEventListener("input",()=>{if(($("results").rows.length||$("resultHeader").children.length))calculate();});
+$("anovaAlpha").addEventListener("change",()=>{if(($("results").rows.length||$("resultHeader").children.length))calculate();});
+
+function renderVarianceCalculationResults(stats) {
+  const box = document.getElementById("varianceCalculationResults");
+  if (!box || !stats) return;
+  const rows = [
+    ["Population variance (σ²)", stats.variancePopulation],
+    ["Sample variance (s²)", stats.varianceSample],
+    ["Population standard deviation (σ)", stats.sdPopulation],
+    ["Sample standard deviation (s)", stats.sdSample]
+  ];
+  box.innerHTML = "<table style=\"width:100%;border-collapse:collapse\"><tbody>" + rows.map(([label, value]) =>
+    `<tr><th scope="row" style="text-align:left;border:1px solid #ccc;padding:8px">${label}</th><td style="border:1px solid #ccc;padding:8px">${fmt(value)}</td></tr>`
+  ).join("") + "</tbody></table>";
+}
+
+function calculate() {
+  clearOutput();
+  try {
+    const firstValue = [...$("inputBody").querySelectorAll(".valueInput")].map(el => el.value.trim()).find(v => v !== "") || "";
+    if (dataType !== "continuous" && /^[-+]?\d+(?:\.\d+)?\s*[-–]\s*[-+]?\d+(?:\.\d+)?$/.test(firstValue)) {
+      throw new Error('You entered class intervals (for example, 10-19). Select “Grouped Data - Continuous Frequency Distribution” from the Data type menu, then enter the intervals and frequencies.');
+    }
+    const data=readData();
+    const s=calculateStatistics(data);
+    renderVarianceCalculationResults(s);
+    renderCalculationTable(data,s);
+    renderSummary(s);
+    renderCharts(data, s);
+    renderSolution(s);
+  } catch(err) {
+    $("error").textContent=err && err.message ? err.message : "Unable to calculate. Check the entered data.";
+  }
+}
+
+// Recalculate when relevant inputs change, without requiring stale previous results.
+$("dataType").addEventListener("change",changeType);
+$("addRowBtn").addEventListener("click",addRow);
+$("removeRowBtn").addEventListener("click",removeRow);
+$("addColumnBtn").addEventListener("click",addColumn);
+$("removeColumnBtn").addEventListener("click",removeColumn);
+$("calculateBtn").addEventListener("click",calculate);
+$("inputBody").addEventListener("input",()=>{ if($("results").rows.length) calculate(); });
+$("assumedMean").addEventListener("input",()=>{ if($("results").rows.length) calculate(); });
+$("quantileMethod").addEventListener("change",()=>{ if($("results").rows.length) calculate(); });
+changeType();
+</script>
+
+
+<script>
+(function () {
+  const dialog = document.getElementById("dataTypeOptionsDialog");
+  const openBtn = document.getElementById("openDataTypeOptions");
+  const typeSelect = document.getElementById("dataType");
+  const selectedLabel = document.getElementById("selectedDataType");
+  const radios = Array.from(dialog.querySelectorAll('input[name="dataTypeChoice"]'));
+  const labels = {
+    ungrouped: "Ungrouped Data",
+    discrete: "Grouped Data - Discrete Frequency Distribution",
+    continuous: "Grouped Data - Continuous Frequency Distribution"
+  };
+  const closeDialog = () => dialog.close ? dialog.close() : dialog.removeAttribute("open");
+  openBtn.addEventListener("click", () => {
+    radios.forEach(radio => radio.checked = radio.value === typeSelect.value);
+    if (dialog.showModal) dialog.showModal();
+    else dialog.setAttribute("open", "");
+  });
+  document.getElementById("cancelDataTypeOptions").addEventListener("click", closeDialog);
+  document.getElementById("applyDataTypeOptions").addEventListener("click", () => {
+    const chosen = radios.find(radio => radio.checked);
+    if (!chosen) return;
+    const changed = typeSelect.value !== chosen.value;
+    typeSelect.value = chosen.value;
+    selectedLabel.textContent = "Selected: " + labels[chosen.value];
+    closeDialog();
+    if (changed) typeSelect.dispatchEvent(new Event("change", {bubbles:true}));
+  });
+  typeSelect.addEventListener("change", () => {
+    selectedLabel.textContent = "Selected: " + labels[typeSelect.value];
+    radios.forEach(radio => radio.checked = radio.value === typeSelect.value);
+  });
+})();
+</script>
+
+<script>
+(function () {
+  const graphList = document.getElementById("graphCheckboxList");
+  const graphChecks = () => [...graphList.querySelectorAll('input[type="checkbox"][value]')];
+  // Category headings and graph options are sibling elements, not nested together.
+  // Collect each category's graph checkboxes until the next category heading.
+  const categoryItems = (category) => {
+    const items = [];
+    let node = category.nextElementSibling;
+    while (node && !node.classList.contains("graph-category")) {
+      if (node.matches && node.matches('label:has(input[type="checkbox"][value])')) {
+        const box = node.querySelector('input[type="checkbox"][value]');
+        if (box) items.push(box);
+      } else if (node.querySelectorAll) {
+        items.push(...node.querySelectorAll('input[type="checkbox"][value]'));
+      }
+      node = node.nextElementSibling;
+    }
+    return [...new Set(items)];
+  };
+  const updateGraphSelectionUI = () => {
+    const checks = graphChecks();
+    const selectedCount = checks.filter(c => c.checked).length;
+    const count = document.getElementById("graphSelectionCount");
+    if (count) count.textContent = `${selectedCount} of ${checks.length} selected`;
+    const all = document.getElementById("selectAllGraphs");
+    if (all) all.textContent = selectedCount === checks.length && checks.length ? "Deselect All" : "Select All";
+    graphList.querySelectorAll(".graph-category").forEach(category => {
+      const categoryChecks = categoryItems(category);
+      const chosen = categoryChecks.filter(c => c.checked).length;
+      const master = category.querySelector(".category-select-all");
+      if (master) {
+        master.checked = categoryChecks.length > 0 && chosen === categoryChecks.length;
+        master.indeterminate = chosen > 0 && chosen < categoryChecks.length;
+      }
+    });
+  };
+  document.getElementById("selectAllGraphs").addEventListener("click", () => {
+    const checks = graphChecks();
+    const select = checks.some(c => !c.checked);
+    checks.forEach(c => c.checked = select);
+    updateGraphSelectionUI();
+  });
+  document.getElementById("clearAllGraphs").addEventListener("click", () => {
+    graphChecks().forEach(c => c.checked = false);
+    updateGraphSelectionUI();
+  });
+  graphList.querySelectorAll(".graph-category").forEach(category => {
+    const master = category.querySelector(".category-select-all");
+    const setCategory = (select) => {
+      categoryItems(category).forEach(c => c.checked = select);
+      updateGraphSelectionUI();
+    };
+    if (master) master.addEventListener("change", () => setCategory(master.checked));
+  });
+  graphList.addEventListener("change", e => {
+    if (e.target.matches('input[type="checkbox"][value]')) updateGraphSelectionUI();
+  });
+  updateGraphSelectionUI();
+
+  const dialog = document.getElementById("graphOptionsDialog");
+  const openBtn = document.getElementById("openGraphOptions");
+  if (!dialog || !openBtn) return;
+  const boxes = Array.from(dialog.querySelectorAll('input[type="checkbox"]'));
+  const closeDialog = () => dialog.close ? dialog.close() : dialog.removeAttribute("open");
+  openBtn.addEventListener("click", () => {
+    boxes.forEach(box => box.checked = (window.selectedStatisticsGraphs || []).includes(box.value));
+    if (dialog.showModal) dialog.showModal();
+    else dialog.setAttribute("open", "");
+  });
+  document.getElementById("cancelGraphOptions").addEventListener("click", closeDialog);
+  document.getElementById("applyGraphOptions").addEventListener("click", () => {
+    window.selectedStatisticsGraphs = boxes.filter(box => box.checked).map(box => box.value);
+    closeDialog();
+    updateGraphVisibility();
+    if ($("results").rows.length || $("resultHeader").children.length) calculate();
+    else {
+      document.querySelectorAll(".graph-panel[data-graph]").forEach(panel => { panel.hidden = !(window.selectedStatisticsGraphs||[]).includes(panel.dataset.graph); });
+      if ((window.selectedStatisticsGraphs||[]).some(id => EXT_GRAPH_IDS.includes(id))) {
+        try { const d=readData(), st=calculateStatistics(d); renderExtendedGraphs(d,st,window.selectedStatisticsGraphs||[]); } catch(e) { $("anovaStatus").textContent=e.message; }
+      }
+    }
+  });
+  updateGraphVisibility();
+})();
+</script>
+
+
+
+</body>
+</html>
